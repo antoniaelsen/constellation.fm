@@ -1,0 +1,69 @@
+{
+  "name": "constellation",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@auth0/auth0-spa-js": "^1.15.0",
+    "@material-ui/core": "^4.9.14",
+    "@material-ui/icons": "^4.9.1",
+    "@material-ui/styles": "^4.9.14",
+    "@reduxjs/toolkit": "^1.7.1",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
+    "@types/jest": "^24.9.1",
+    "@types/lodash": "^4.14.150",
+    "@types/node": "^12.12.39",
+    "@types/react": "^16.9.35",
+    "@types/react-dom": "^16.9.8",
+    "@types/react-redux": "^7.1.8",
+    "@types/react-router-dom": "^5.1.5",
+    "@types/spotify-api": "^0.0.12",
+    "clsx": "^1.1.0",
+    "immutable": "^4.0.0-rc.12",
+    "js-cookie": "^3.0.1",
+    "js-logger": "^1.6.0",
+    "lodash": "^4.17.15",
+    "normalizr": "^3.6.1",
+    "react": "^16.13.1",
+    "react-dnd": "^10.0.2",
+    "react-dnd-html5-backend": "^10.0.2",
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.0",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "3.4.1",
+    "redux": "^4.0.5",
+    "redux-api-middleware": "^3.2.1",
+    "redux-devtools-extension": "^2.13.8",
+    "redux-logger": "^3.0.6",
+    "reselect": "^4.0.0",
+    "save": "^2.4.0",
+    "typescript": "^4.1.2"
+  },
+  "scripts": {
+    "start": "env-cmd -f ./.env.local env-cmd -f ./.env.local.start react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/js-cookie": "^3.0.1",
+    "@types/redux-api-middleware": "^3.2.3",
+    "env-cmd": "10.1.0"
+  }
+}
