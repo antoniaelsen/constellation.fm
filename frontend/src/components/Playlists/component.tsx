@@ -49,7 +49,7 @@ export const Playlists: React.SFC<PlaylistsProps> = (props) => {
         </ListSubheader>
       }
     >
-      <ListItem dense={true} onClick={handleClick}>
+      <ListItem dense={true} disableGutters={true} sx={{ px: 1 }} onClick={handleClick}>
         <ListItemText primary="Spotify" />
         {open ? <ExpandLess /> : <ExpandMore />}
       </ListItem>

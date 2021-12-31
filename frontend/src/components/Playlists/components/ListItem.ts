@@ -3,13 +3,11 @@ import { styled } from '@mui/material/styles';
 
 export const ListItem = styled(MuiListItem)(({ theme }) => {
   return {
-    '&:hover': {
-      backgroundColor: '#111',
-    },
     borderRadius: theme.shape.borderRadius,
+    overflowX: "hidden",
     '&. MuiListItemSecondaryAction-root': {
       display: "flex",
-    }
+    },
   }
 });
 
