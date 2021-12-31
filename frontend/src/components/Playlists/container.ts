@@ -23,7 +23,9 @@ const userSelector = (state: RootState) => {
 };
 
 const editablePlaylistSelector = createSelector([playlistSelector, userSelector], (playlists, user) =>
-  playlists.map((playlist: Playlist) => ({ ...playlist, editable: playlist.owner.id === user.id }))
+  playlists
+    .map((playlist: Playlist) => ({ ...playlist, editable: playlist.owner.id === user.id }))
+    .filter(({ editable }: Playlist) => editable)
 );
 
 interface ContainerProps {

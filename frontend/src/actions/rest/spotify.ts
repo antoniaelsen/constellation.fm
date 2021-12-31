@@ -84,7 +84,6 @@ export const getUserPlaylists = (offset: number) => ({
     fetch: fetchOffsets(
       ({ next }) => next,
       { callbackFn: (acc, e) => ([...acc, ...e.items]), initialValue: [] },
-      2,
     ),
     method: 'GET',
     types: [
