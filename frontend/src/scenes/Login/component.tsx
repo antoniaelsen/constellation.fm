@@ -1,7 +1,9 @@
 import React from 'react';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import StarBorderRoundedIcon from '@material-ui/icons/StarBorderRounded';
+import { Theme } from '@mui/material/styles';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import Button from '@mui/material/Button';
+import StarBorderRoundedIcon from '@mui/icons-material/StarBorderRounded';
 
 
 const useStyles = makeStyles((theme: Theme) =>

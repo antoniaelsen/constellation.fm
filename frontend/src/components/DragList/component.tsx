@@ -1,15 +1,17 @@
 import React from 'react';
 
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import { Theme } from '@mui/material/styles';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import List from '@mui/material/List';
+import ListSubheader from '@mui/material/ListSubheader';
 
 import { DragListItem } from 'components/DragListItem';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      padding: `0 ${theme.spacing(1)}px`,
+      padding: `0 ${theme.spacing(1)}`,
       width: '100%',
       // maxWidth: 360,
       backgroundColor: theme.palette.background.paper,
@@ -21,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) =>
 export interface DragListProps {
   children: JSX.Element | JSX.Element[];
   move: (id: number, index:number) => void;
-};
+}
 
 export const DragList: React.SFC<DragListProps> = (props) => {
   const { children } = props;

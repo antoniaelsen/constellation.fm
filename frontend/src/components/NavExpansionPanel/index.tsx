@@ -1,11 +1,13 @@
 import React from 'react';
 
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Typography from '@material-ui/core/Typography';
+import { Theme } from '@mui/material/styles';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Typography from '@mui/material/Typography';
 
 
 
@@ -34,7 +36,7 @@ const useStylesPanel = makeStyles((theme: Theme) =>
 interface NavExpansionPanelProps {
   details: React.ReactNode,
   title: string,
-};
+}
 
 
 const NavExpansionPanel: React.SFC<NavExpansionPanelProps> = (props) => {
@@ -44,8 +46,8 @@ const NavExpansionPanel: React.SFC<NavExpansionPanelProps> = (props) => {
   const aria = `panel${title ? '_' + title : ''}`;
 
   return (
-    <ExpansionPanel classes={classesPanel} defaultExpanded={true} >
-      <ExpansionPanelSummary
+    <Accordion classes={classesPanel} defaultExpanded={true} >
+      <AccordionSummary
         aria-controls={`${aria}-content`}
         expandIcon={<ExpandMoreIcon color='primary' />}
         id={`${aria}-header`}
@@ -57,11 +59,11 @@ const NavExpansionPanel: React.SFC<NavExpansionPanelProps> = (props) => {
         >
           {title}
         </Typography>
-      </ExpansionPanelSummary>
-      <ExpansionPanelDetails>
+      </AccordionSummary>
+      <AccordionDetails>
         {details}
-      </ExpansionPanelDetails>
-    </ExpansionPanel>
+      </AccordionDetails>
+    </Accordion>
   );
 }
 

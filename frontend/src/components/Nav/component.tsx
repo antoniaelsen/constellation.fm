@@ -1,10 +1,13 @@
 import React, { useEffect } from 'react';
 
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { Theme } from '@mui/material/styles';
 
-import Drawer from '@material-ui/core/Drawer';
-import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+
+import Drawer from '@mui/material/Drawer';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
 
 import { Playlists } from 'components/Playlists';
 

@@ -9,8 +9,8 @@ import store from 'store/createStore';
 // import Backend from 'react-dnd-html5-backend';
 
 // General
-import CssBaseline from '@material-ui/core/CssBaseline';
-import { MuiThemeProvider } from '@material-ui/core/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles';
 import { theme } from 'theme';
 
 import { AuthProvider } from './components/AuthProvider';
@@ -41,16 +41,18 @@ declare var process: {
 
 const App: React.FC = () => {
   return (
-    // <DndProvider backend={Backend}>
-      <MuiThemeProvider theme={theme}>
+    <StyledEngineProvider injectFirst>
+      {/* <DndProvider backend={Backend}> */}
+      <ThemeProvider theme={theme}>
         <StoreProvider store={store}>
           <AuthProvider>
             <CssBaseline />
             <Root/>
           </AuthProvider>
         </StoreProvider>
-      </MuiThemeProvider>
-    // </DndProvider>
+      </ThemeProvider>
+      {/* </DndProvider> */}
+    </StyledEngineProvider>
   );
 }
 

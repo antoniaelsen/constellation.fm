@@ -1,13 +1,15 @@
 import React, {useRef} from 'react';
 
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemText from '@material-ui/core/ListItemText';
-import GroupOutlinedIcon from '@material-ui/icons/GroupOutlined';
+import { Theme } from '@mui/material/styles';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import ListItemText from '@mui/material/ListItemText';
+import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 
-import IconButton from '@material-ui/core/IconButton';
+import IconButton from '@mui/material/IconButton';
 
 
 const useStyles = makeStyles(({ spacing, shape }: Theme) =>
@@ -25,7 +27,7 @@ const useStyles = makeStyles(({ spacing, shape }: Theme) =>
       opacity: 0.5,
     },
     text: {
-      margin: `${spacing(1)/2}px ${spacing(1)}px`
+      margin: `calc(${spacing(1)} / 2) ${spacing(1)}`
     }
   }),
 );
@@ -35,7 +37,7 @@ export interface PlaylistProps {
   editable: boolean;
   id: string;
   name: string;
-};
+}
 
 export const PlaylistItem: React.SFC<PlaylistProps> = (props) => {
   const {
@@ -45,10 +47,9 @@ export const PlaylistItem: React.SFC<PlaylistProps> = (props) => {
     name,
   } = props;
   const classes = useStyles();
-  const ref = useRef<HTMLDivElement>(null);
 
   return (
-    <ListItem className={classes.root} key={id} innerRef={ref} role={undefined} dense disableGutters={true}>
+    <ListItem className={classes.root} key={id} role={undefined} dense disableGutters={true}>
       
       <ListItemText
         className={classes.text}

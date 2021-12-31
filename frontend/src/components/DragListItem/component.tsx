@@ -4,10 +4,12 @@ import React, {useRef} from 'react';
 // import {DropTargetMonitor, useDrag, useDrop} from 'react-dnd';
 // import {DnDTypes} from 'lib/dndTypes';
 
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-// import ListItemIcon from '@material-ui/core/ListItemIcon';
+import { Theme } from '@mui/material/styles';
+import createStyles from '@mui/styles/createStyles';
+import makeStyles from '@mui/styles/makeStyles';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+// import ListItemIcon from '@mui/material/ListItemIcon';
 
 import {Constellation} from 'store/constellation/types';
 
@@ -21,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) =>
       borderRadius: theme.shape.borderRadius,
     },
     text: {
-      margin: `${theme.spacing(1)/2}px ${theme.spacing(1)}px`
+      margin: `calc(${theme.spacing(1)} / 2) ${theme.spacing(1)}`
     }
   }),
 );
@@ -30,14 +32,14 @@ interface DragItem {
   id: number;
   index: number;
   type: string;
-};
+}
 
 export interface OwnProps extends Partial<Constellation> {
   id: number;
   // index: number;
   // move: (id: number, index: number) => void;
   // update: (constellation: Partial<Constellation>) => void;
-};
+}
 
 export const DragListItem: React.SFC<OwnProps> = (props) => {
   const {
@@ -91,7 +93,7 @@ export const DragListItem: React.SFC<OwnProps> = (props) => {
   // This component is both a drop target and drag item 
   // drop(preview(ref));
   return (
-    <ListItem className={classes.root} key={id} innerRef={ref} role={undefined} dense disableGutters={true}>
+    <ListItem className={classes.root} key={id} role={undefined} dense disableGutters={true}>
       {/* <ListItemIcon ref={drag}>
         <IconButton edge="end" aria-label="collaborative icon">
           // Collaborative icon
