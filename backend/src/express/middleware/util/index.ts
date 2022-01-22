@@ -1,6 +1,4 @@
 import cors from 'cors';
-import expressWinston from 'express-winston';
-import winston from 'winston';
 import type { NextFunction, Request, Response } from "express";
 import type { MiddlewareFunc } from '../../../express/types/MiddlewareFunc';
 

@@ -6,6 +6,9 @@ import { Connection } from "rest/constants";
 export const CREATE_PLAYLIST_REQUEST = "CREATE_PLAYLIST_REQUEST";
 export const CREATE_PLAYLIST_SUCCESS = "CREATE_PLAYLIST_SUCCESS";
 export const CREATE_PLAYLIST_FAILURE = "CREATE_PLAYLIST_FAILURE";
+export const GET_PLAYLIST_REQUEST = "GET_PLAYLIST_REQUEST";
+export const GET_PLAYLIST_SUCCESS = "GET_PLAYLIST_SUCCESS";
+export const GET_PLAYLIST_FAILURE = "GET_PLAYLIST_FAILURE";
 export const GET_USER_REQUEST = "GET_USER_REQUEST";
 export const GET_USER_SUCCESS = "GET_USER_SUCCESS";
 export const GET_USER_FAILURE = "GET_USER_FAILURE";
@@ -73,6 +76,19 @@ export const createPlaylist = (userId: string) => ({
       CREATE_PLAYLIST_REQUEST,
       CREATE_PLAYLIST_SUCCESS,
       CREATE_PLAYLIST_FAILURE
+    ].map(spotifyType),
+  }
+});
+
+export const getPlaylist = (playlistId: string) => ({
+  [RSAA]: {
+    ...requestParams,
+    endpoint: `${config.api.spotify}/playlists/${playlistId}`,
+    method: 'GET',
+    types: [
+      GET_PLAYLIST_REQUEST,
+      GET_PLAYLIST_SUCCESS,
+      GET_PLAYLIST_FAILURE
     ].map(spotifyType),
   }
 });

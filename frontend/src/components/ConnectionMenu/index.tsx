@@ -13,6 +13,7 @@ const useStyles = makeStyles(({ spacing }: Theme) =>
       top: spacing(2),
       display: "flex",
       flexFlow: "column nowrap",
+      zIndex: 100,
     }
   })
 );

@@ -1,69 +1,100 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
+import { useParams } from 'react-router';
+import { Provider as StoreProvider, ReactReduxContext } from 'react-redux'
+import { useContextBridge } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
 
-
-import { BrowserRouter as Router, Route, Redirect, Switch, useLocation } from 'react-router-dom';
 import { Theme } from '@mui/material/styles';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
-import { Login } from 'scenes/Login';
-import { Space } from 'scenes/Space';
 
-import { useAuth } from 'components/AuthProvider';
+import { Nav } from 'components/Nav';
+import { ConnectionMenu } from 'components/ConnectionMenu';
+import { Space } from 'components/Space';
+import { Playback } from 'components/Playback';
+import { Connection } from 'rest/constants';
 
+
+import { useTheme, ThemeProvider } from '@mui/material/styles'; // TODO(aelsen): move to providers
+import { StyledBox } from 'components/StyledBox';
+
+const drawerWidth = 360;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    '@global': {
-      'html, body, #root': {
-        height: '100%',
-        // overflow: 'hidden',
-      },
-      // h2: {
-      //   'font-size': '1.5rem',
-      // },
-      // h3: {
-      //   'font-size': '1.2rem',
-      // },
-      // h4: {
-      //   'font-size': '0.9rem',
-      // },
-      // 'html': {
-      //   fontSize: '16px',
-      // },
-      '::-webkit-scrollbar': {
-          width: '0px',
-          background: 'transparent',
-      }
-    },
-    root: {
+    canvasMain: {
+      backgroundColor: 'red',
       height: '100%',
-      display: 'flex',
+      width: '100%',
+    },
+    drawer: {
+      width: drawerWidth,
+      flexShrink: 0,
+    },
+    content: {
+      flexGrow: 1,
+    },
+    heading: {
+      fontSize: theme.typography.pxToRem(24),
     },
   })
 );
-interface Props {
-  isAuthenticated: boolean;
-  setAuthentication: (state: boolean) => void;
+
+interface RootProps {
+  connections: Connection[];
+  getUser: () => void;
+  getUserPlaylists: () => void;
 }
 
-export const Root: React.FC<Props> = (props) => {
-  const { isAuthenticated } = useAuth();
+let connectionsOld: any = null;
+export const Root = (props: RootProps) => {
+  const ContextBridge = useContextBridge(ReactReduxContext);
+  const theme = useTheme();
+  console.log("Root | theme", theme);
+
   const classes = useStyles();
-  console.log("Root | isAuthenticated:", isAuthenticated);
+  const params: any = useParams();
+  const playlistId = params.playlistId;
+  const { connections, getUser, getUserPlaylists } = props;
+
+  const fetchSpotify = () => {
+    if (connections !== connectionsOld) {
+      console.log("Connections changed");
+      connectionsOld = connections;
+    }
+    console.log("Root | Checking if should spotify...", connections);
+
+    if (!connections.includes(Connection.SPOTIFY)) return;
+  
+    console.log("Root | Fetching spotify...");
+    console.time("Root | spotify")
+    getUser();
+    getUserPlaylists();
+  }
+
+  useEffect(fetchSpotify, [connections, getUser, getUserPlaylists]);
+  console.log("Root | playlistId", playlistId, params);
+  
 
   return (
-    <Router>
-      <div className={classes.root}>
-        <Switch>
-          <Route exact path="/" render={() => {
-              if (!isAuthenticated) {
-                return (<Login/>);
-              }
-              return (<Space/>);
-            }}
-          />
-        </Switch>
-      </div>
-    </Router>
+    <StyledBox sx={{ display: "flex", flexFlow: "column", flex: 1 }}>
+      <ConnectionMenu open={true}/>
+
+      <StyledBox sx={{ display: "flex", flex: 1, transform: "rotate(0deg)" }}>
+        <Nav />
+        <main className={classes.content} >
+          <Canvas camera={{ fov: 75, near: 0.1, far: 100000, position: [0, 0, 5] }}>
+            <ContextBridge>
+              <ThemeProvider theme={theme}>
+                <Space constellationId={playlistId}/>
+              </ThemeProvider>
+            </ContextBridge>
+          </Canvas>
+        </main>
+      </StyledBox>
+  
+      <Playback /> 
+    </StyledBox>
   );
 }
+

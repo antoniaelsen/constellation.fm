@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "env-cmd -f .env.dev env-cmd -f .env.local env-cmd -f .env.secret nodemon --experimental-specifier-resolution=node --experimental-modules dist/index.js",
     "watch:compile": "tsc -w --preserveWatchOutput",
-    "watch:start": "tsc && concurrently \"npm run watch:compile\" \"npm run start\""
+    "watch": "tsc && concurrently \"npm run watch:compile\" \"npm run start\""
   },
   "dependencies": {
     "axios": "^0.21.1",

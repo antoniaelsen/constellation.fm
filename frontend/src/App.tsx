@@ -14,7 +14,7 @@ import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles
 import { theme } from 'theme';
 
 import { AuthProvider } from './components/AuthProvider';
-import { Root } from 'scenes/Root';
+import { Router } from 'scenes/Router';
 
 // declare var process: {
 //   env: {
@@ -47,7 +47,7 @@ const App: React.FC = () => {
         <StoreProvider store={store}>
           <AuthProvider>
             <CssBaseline />
-            <Root/>
+            <Router/>
           </AuthProvider>
         </StoreProvider>
       </ThemeProvider>

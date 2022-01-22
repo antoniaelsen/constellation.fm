@@ -14,13 +14,38 @@ export interface Image {
   width?: number;
 }
 
-export interface Track {
-  connectionId: string;
+export interface Album {
   connection: Connection;
+  connectionId: string;
+  id: string;
+  image: Image;
+  name: string;
+  url: string;
+}
+
+export interface Artist {
+  connection: Connection;
+  connectionId: string;
+  id: string;
+  name: string;
+  url: string;
+}
+
+export interface Track {
+  connection: Connection;
+  connectionId: string;
+  id: string;
+  album: Album;
+  artists: Artist[];
+  name: string;
+  trackNumber: number;
+  url: string;
 }
 
 export interface PlaylistTrack {
-
+  addedAt: string;
+  addedBy: User;
+  track: Track;
 }
 
 export interface Playlist {
@@ -30,10 +55,10 @@ export interface Playlist {
   collaborative: boolean;
   description?: string;
   editable?: boolean;
-  image: ImageBitmap;
+  image: Image;
   isPublic: boolean;
   name: string;
-  order: number;
+  order?: number;
   owner: User;
   tracks: PlaylistTrack[];
   url: string;
