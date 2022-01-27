@@ -2,12 +2,14 @@ import { AnyAction } from 'redux';
 import {
   CLEAR_TOKENS,
   SET_AUTHENTICATION,
+  UPDATE_CONNECTIONS,
   UPDATE_TOKENS,
 } from 'actions/auth';
 import { AuthState } from 'store/auth/types';
 
 const initialState: AuthState = {
   isAuthenticated: false,
+  connections: [],
   tokens: {},
 };
 
@@ -19,6 +21,14 @@ const reducers: AuthReducer = {
     return {
       ...prevState,
       tokens: {}
+    };
+  },
+  [UPDATE_CONNECTIONS]: (prevState, action) => {
+    const connections = action.payload;
+  
+    return {
+      ...prevState,
+      connections,
     };
   },
   [UPDATE_TOKENS]: (prevState, action) => {

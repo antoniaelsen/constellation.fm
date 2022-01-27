@@ -12,6 +12,7 @@ export interface RootState {
 export const initialState = {
   auth: {
     isAuthenticated: false,
+    connections: [],
     tokens: {},
   }
 };

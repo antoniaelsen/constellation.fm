@@ -1,23 +1,27 @@
 import createAuthMiddleware from "./auth";
 import createUtilMiddleware from "./util";
+import createReverseProxyMiddleware from "./reverse-proxy";
+import createSessionMiddleware from "./session";
 import { MiddlewareFunc } from "../../express/types/MiddlewareFunc";
 
 interface Middleware {
   auth: MiddlewareFunc[],
   util: MiddlewareFunc[],
+  reverseProxy: MiddlewareFunc[],
+  session: MiddlewareFunc[],
 }
 
 const createMiddleware = ({ config, logger }): Middleware => {
-  const { mw: auth, jwtVerify } = createAuthMiddleware({
-    config: config.auth,
-    logger,
-    path: "/auth"
-  });
+  const { mw: session } = createSessionMiddleware({ config, logger });
   const { mw: util } = createUtilMiddleware({ config, logger });
+  const { mw: auth } = createAuthMiddleware({ config, logger, path: "/auth" });
+  const { mw: reverseProxy } = createReverseProxyMiddleware({ config, logger, path: "/api" });
 
   return {
     auth,
-    util
+    util,
+    reverseProxy,
+    session
   };
 };
 

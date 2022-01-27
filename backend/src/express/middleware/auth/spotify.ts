@@ -1,6 +1,8 @@
-import { Request, Response, Router } from "express";
+import { NextFunction, Response, Router } from "express";
 import passport from "passport";
 import { Strategy as SpotifyStrategy } from "passport-spotify";
+
+import { Request } from "express/types/Request";
 
 const scopes = [
   "playlist-modify-private",
@@ -11,76 +13,69 @@ const scopes = [
   "streaming",
 ];
 
+const scopesPlayback = [
+  "user-read-playback-state",
+  "user-modify-playback-state"
+];
+
 const createSpotifyAuthMiddleware = ({
   config,
   logger: mainLogger,
   path,
-  redirectWithToken,
+  addConnection,
+  connectAndRedirect,
+  redirectToReturnTo,
   saveReturnTo
 }) => {
   const logger = mainLogger.child({ labels: ['spotify']});
-  const { clientID, clientSecret } = config.spotify;
+  const { clientID, clientSecret } = config.auth.spotify;
   logger.info(`Client Id  : ${clientID}`);
   logger.info(`Secret     : ${clientSecret}`);
-  logger.info(`Redirect   : ${config.callbackDomain}`);
-  logger.info(`Callback   : ${`https://${config.callbackDomain}${path}/callback`}`);
+  logger.info(`Redirect   : ${config.backendDomain}`);
+  logger.info(`Callback   : ${`https://${config.backendDomain}${path}/callback`}`);
 
   const params = {
     clientID,
     clientSecret,
     passReqToCallback: true,
-    callbackURL: `https://${config.callbackDomain}${path}/callback`,
+    callbackURL: `https://${config.backendDomain}${path}/callback`,
   };
 
-  const connectAndRedirect = (req, res) => {
-    const user = req.user;
-    const account = req.account;
+  const connectAndRequestToken = (req: Request, res: Response) => {
+    addConnection(req, res);
+    res.redirect(`${path}/playback`);
+  };
 
-    logger.info(`Connect and redirect`)
-    logger.info(`- req cookies: ${JSON.stringify(req.cookies)}`);
-    logger.info(`- user: ${JSON.stringify(user, null, 2)}`)
-    logger.info(`- account: ${JSON.stringify(account, null, 2)}`);
-
-    if (!user) {
-      logger.info(`Error connecting account -- invalid user`);
+  const connect = (req: Request, res: Response) => {
+    if (req.session?.target === "spotify") {
+      connectAndRequestToken(req, res);
+      return;
     }
-  
-    user.account = req.account;
-    req.logIn(user, (error) => {
-      if (!error) {
-        logger.info("- successfully updated user");
-        return;
-      }
-      logger.error("- failed to update user");
-    });
-    
-    redirectWithToken(req, res);
-    // // TODO(aelsen)
-    // if (!account) {
-    //   logger.info(`Error connecting account`);
-    // }
 
-    // account.userId = user.id;
-    // account.save((err) => {
-    //   if (err) {
-    //     // TODO(aelsen)
-    //     logger.info(` Error connecting account: ${JSON.stringify(err, null, 2)}`);
-    //   }
-  
-    //   redirectWithToken(req, res);
-    // });
-  }
+    connectAndRedirect(req, res);
+  };
+
+  const setScopeTarget = (target: string) => (req: Request, res: Response, next: NextFunction) => {
+    if (!req.session) {
+      req.session = {};
+    }
+    req.session.target = target;
+    return next();
+  };
 
   const verifyCallback = (req, accessToken, refreshToken, expires_in, profile, done) =>  {
-    logger.info(`Got user login`);
-    logger.info(`- req cookies: ${JSON.stringify(req.cookies)}`);
-    logger.info(`- access token: ${accessToken}`);
-    logger.info(`- refresh token: ${refreshToken}`);
-    logger.info(`- token expires in: ${expires_in}`);
-    logger.info(`- profile: ${JSON.stringify(profile, null, 2)}`);
+    const target = req.session.target;
+    logger.info(`Got user [${req.user?.id}] ${profile.id} tokens for scope "${target}" `);
 
     // TODO(aelsen): verify?
-    return done(null, { spotify: { accessToken }});
+    const account = {
+      service: target,
+      tokens: {
+        accessToken,
+        refreshToken
+      }
+    };
+    return done(null, account);
   };
 
   passport.use(
@@ -96,9 +91,31 @@ const createSpotifyAuthMiddleware = ({
     session: false, // TODO(aelsen): what?
   });
 
+  const authenticatePlayback = passport.authorize("spotify", {
+    failureRedirect: "/", // TODO(aelsen): to frontend?
+    scope: scopesPlayback,
+    session: false, // TODO(aelsen): what?
+  });
+
   const router = Router();
-  router.get("/", saveReturnTo, authenticate);
-  router.get("/callback", authenticate, connectAndRedirect);
+  router.get(
+    "/",
+    saveReturnTo,
+    setScopeTarget("spotify"),
+    authenticate
+  );
+
+  router.get(
+    "/playback",
+    setScopeTarget("spotify-playback"),
+    authenticatePlayback
+  );
+
+  router.get(
+    "/callback", 
+    authenticate, 
+    connect
+  );
 
   return router;
 };

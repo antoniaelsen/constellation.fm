@@ -59,7 +59,7 @@ export const Root = (props: RootProps) => {
 
   const fetchSpotify = () => {
     if (connections !== connectionsOld) {
-      console.log("Connections changed");
+      console.log("Root | Connections changed");
       connectionsOld = connections;
     }
     console.log("Root | Checking if should spotify...", connections);

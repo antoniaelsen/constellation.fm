@@ -37,21 +37,28 @@ export const GET_TRACKS_AUDIO_FEATURES_REQUEST = "GET_TRACKS_AUDIO_FEATURES_REQU
 export const GET_TRACKS_AUDIO_FEATURES_SUCCESS = "GET_TRACKS_AUDIO_FEATURES_SUCCESS"
 export const GET_TRACKS_AUDIO_FEATURES_FAILURE = "GET_TRACKS_AUDIO_FEATURES_FAILURE"
 
+const SPOTIFY_URL = "https://api.spotify.com/v1";
+
+const nextUrl = (json) => {
+  const nextSpotify = json.next;
+  if (!nextSpotify) return null;
+
+  const nextProxied = nextSpotify.replace(SPOTIFY_URL, config.api.spotify);
+  return nextProxied;
+};
+
 export const requestParams = {
-  headers: (state: any) => {
-    return {
-      'Authorization': `Bearer ${state.auth.tokens.spotify}`,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    };
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
   },
+  credentials: "include"
 };
 
 export const spotifyType = (type: string) => ({
   meta: { connection: Connection.SPOTIFY },
   type
 });
-
 
 export const getUser = () => ({
   [RSAA]: {
@@ -65,7 +72,6 @@ export const getUser = () => ({
     ].map(spotifyType),
   }
 });
-
 
 export const createPlaylist = (userId: string) => ({
   [RSAA]: {
@@ -98,7 +104,7 @@ export const getUserPlaylists = (offset: number) => ({
     ...requestParams,
     endpoint: `${config.api.spotify}/me/playlists?limit=50${offset ? `&offset=${offset}` : ''}`,
     fetch: fetchOffsets(
-      ({ next }) => next,
+      nextUrl,
       { callbackFn: (acc, e) => ([...acc, ...e.items]), initialValue: [] },
     ),
     method: 'GET',

@@ -41,34 +41,38 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   })
 );
+
+const PrivateRoute = (props) => {
+  const { children, ...etc } = props;
+  const { isAuthenticated } = useAuth();
+  console.log("Private Route | isAuthenticated?", isAuthenticated);
+  return (
+    <Route {...etc} render={() => {
+      return isAuthenticated
+       ? children
+      :  <Login />
+    }}/>
+  );
+};
+
 interface Props {
   isAuthenticated: boolean;
   setAuthentication: (state: boolean) => void;
 }
 
 export const Router: React.FC<Props> = (props) => {
-  const { isAuthenticated } = useAuth();
   const classes = useStyles();
-  console.log("Router | isAuthenticated:", isAuthenticated);
 
   return (
     <BrowserRouter>
       <div className={classes.root}>
         <Switch>
-          <Route exact path="/playlist/:playlistId" render={() => {
-              if (!isAuthenticated) {
-                return (<Login/>);
-              }
-              return (<Root/>);
-            }}
-          />
-          <Route path="/" render={() => {
-              if (!isAuthenticated) {
-                return (<Login/>);
-              }
-              return (<Root/>);
-            }}
-          />
+          <PrivateRoute path="/playlist/:playlistId">
+            <Root/>
+          </PrivateRoute>
+          <PrivateRoute path="/">
+            <Root/>
+          </PrivateRoute>
         </Switch>
       </div>
     </BrowserRouter>

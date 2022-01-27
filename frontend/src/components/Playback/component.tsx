@@ -23,19 +23,19 @@ const connectionComponents: { [key: string]: React.FC<ConnectionPlaybackProps> }
 
 
 interface PlaybackProps {
-  connections: { [key: string]: string | null };
+  connectionTokens: { [key: string]: string | null };
 }
 
 export const Playback = (props: PlaybackProps) => {
-  const { connections } = props;
+  const { connectionTokens } = props;
 
   // const connection = Connection.SPOTIFY; // TODO(aelsen)
   const connection = Connection.SPOTIFY; // TODO(aelsen)
-  const token = connections[connection!];
+  const token = connectionTokens[connection!];
   const track = null;
 
   const ConnectionPlayback = (connection && token) ? connectionComponents[connection!] : NoPlayback;
-  console.log("Playback | connection:",connection, token, track);
+  console.log("Playback | connection:", connection, token, track, connectionTokens);
 
   return (
     <>

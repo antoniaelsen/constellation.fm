@@ -1,12 +1,11 @@
 export default {
-  frontend: {
-  },
   express: {
+    backendDomain: process.env.BACKEND_DOMAIN_NAME,
+    frontendDomain: process.env.FRONTEND_DOMAIN_NAME,
+
     auth: {
       // cookieDomainName: process.env,
       authTokenSecret: process.env.AUTH_TOKEN,
-      callbackDomain: process.env.BACKEND_DOMAIN_NAME,
-      redirectDomain: process.env.FRONTEND_DOMAIN_NAME,
       apple: {
         keyID: process.env.APPLE_KEY_ID,
         teamID: process.env.APPLE_TEAM_ID,

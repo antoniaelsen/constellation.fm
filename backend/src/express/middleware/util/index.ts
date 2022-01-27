@@ -1,12 +1,16 @@
 import cors from 'cors';
-import type { NextFunction, Request, Response } from "express";
-import type { MiddlewareFunc } from '../../../express/types/MiddlewareFunc';
+import type { NextFunction, Response } from "express";
+import type { MiddlewareFunc } from 'express/types/MiddlewareFunc';
+import type { Request } from 'express/types/Request';
 
 const createUtilMiddleware = ({ config, logger }): { mw: MiddlewareFunc[] } => {
   const childLogger = logger.child({ label: 'express' });
   const logMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    childLogger.info(`[${req.method}] "${req.path}"${req.xhr ? ' XHR' : ''}`,
-      `from "${req.headers.referer}" (${req.get('Origin')})`)
+    const session = req.sessionID ? `[${req.sessionID}]` : '[no session]';
+    const user = req.user ? `[${req.user?.id}]` : '[no user]';
+    const prefix = [session, user].join(' ');
+    
+    childLogger.info(`${prefix} [${req.method}] "${req.path}"${req.xhr ? ' XHR' : ''} from origin ${req.get('Origin')} "${req.path}"`)
     next();
   };
 

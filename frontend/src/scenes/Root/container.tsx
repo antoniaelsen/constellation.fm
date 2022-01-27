@@ -9,13 +9,7 @@ import { Root as Component } from './component';
 import { Connection } from 'rest/constants';
 
 
-const selectTokens = (state: RootState) => state.auth.tokens;
-const selectConnections = createSelector(selectTokens, (tokens) => Object.entries(tokens)
-  .filter(([key, value]) => !!value && Object.values((Connection as any)).includes(key))
-  .map(([key, _]) => (key as Connection))
-);
-
-
+const selectConnections = (state: RootState) => state.auth.connections;
 interface ContainerProps {
 };
 

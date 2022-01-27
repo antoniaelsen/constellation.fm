@@ -5,19 +5,29 @@ import { RootState } from 'store';
 import { Playback as Component } from './component';
 
 
-const connectionsSelector = (state: RootState) => {
-  const tokens = state.auth.tokens;
-  return tokens;
+const connectionTokensSelector = (state: RootState) => {
+  const { connections, tokens } = state.auth;
+  console.log("Playback HOC | Connections", connections, "tokens", tokens);
+  const playbackConnectionTokens = connections.reduce((acc, connection) => {
+    const tokenKeys = Object.keys(tokens);
+    const playbackKey = `${connection}-playback`;
+    if (!tokenKeys.includes[playbackKey]) return acc;
+    return {
+      ...acc,
+      [connection]: tokens[playbackKey]
+    };
+  }, {});
+  return playbackConnectionTokens;
 };
 
 interface ContainerProps {};
 
 const mapStateToProps = (state: RootState) =>  {
-  const connections = connectionsSelector(state);
-  console.log("Playback Hoc | connections:", connections);
+  const connectionTokens = connectionTokensSelector(state);
+  console.log("Playback Hoc | connectionTokens:", connectionTokens);
 
   return {
-    connections
+    connectionTokens
   };
 };
 

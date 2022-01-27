@@ -21,6 +21,7 @@ const selectPlaylistById = (state: RootState, props: ContainerProps): Playlist |
   const { playlist: playlists } = entities;
   if (!playlists) return null;
   const normalized = playlists[props.id];
+  console.log("Constellation Container | selected plist normalized ", normalized);
   const playlist = denormalize(normalized, schemas.playlist, entities);
   return playlist;
 }
@@ -29,6 +30,7 @@ const selectPlaylistById = (state: RootState, props: ContainerProps): Playlist |
 const mapStateToProps = (state: RootState, props: ContainerProps) =>  {
   console.log("Constellation Container | Map state to props - ", state, props);
   const playlist = selectPlaylistById(state, props);
+  console.log("Constellation Container | selected plist ", props.id, playlist);
   return {
     constellation: {},
     playlist

@@ -1,8 +1,9 @@
 import { Dispatch, AnyAction } from 'redux';
 import { connect } from 'react-redux';
-import { clearTokens, updateTokens, setAuthentication } from 'actions';
+import { clearTokens, updateConnections, updateTokens, setAuthentication } from 'actions';
 import { RootState } from 'store';
 import { AuthProvider as Component } from './component';
+import { Connection } from 'rest/constants';
 export { useAuth } from './component';
 
 interface ContainerProps {
@@ -20,6 +21,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, props: ContainerProps
   return {
     setAuthentication: (state: boolean) => dispatch(setAuthentication(state)),
     clearTokens: () => dispatch(clearTokens()),
+    updateConnections: (connections: Connection[]) => dispatch(updateConnections(connections)),
     updateTokens: (tokens: { [key: string]: string | null }) => dispatch(updateTokens(tokens)),
   }
 };

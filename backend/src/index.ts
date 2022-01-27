@@ -17,9 +17,11 @@ const createServer = () => {
 
   const middleware = createMiddleware({ config: config.express, logger });
 
+  middleware.session.forEach((mw) => app.use(mw));
   middleware.util.forEach((mw) => app.use(mw));
-
+  
   app.use('/auth', middleware.auth);
+  app.use('/api', middleware.reverseProxy);
 
   const httpsServer = https.createServer(credentials, app);
   return httpsServer;

@@ -1,5 +1,6 @@
 export const SET_AUTHENTICATION = 'SET_AUTHENTICATION';
 export const CLEAR_TOKENS = "CLEAR_TOKENS";
+export const UPDATE_CONNECTIONS = "UPDATE_CONNECTIONS";
 export const UPDATE_TOKENS = "UPDATE_TOKENS";
 
 export const setAuthentication = (state: boolean) => ({
@@ -9,6 +10,11 @@ export const setAuthentication = (state: boolean) => ({
 
 export const clearTokens = () => ({
   type: CLEAR_TOKENS,
+});
+
+export const updateConnections = (connections: string[]) => ({
+  type: UPDATE_CONNECTIONS,
+  payload: connections,
 });
 
 export const updateTokens = (tokens: { [key: string]: string | null }) => ({

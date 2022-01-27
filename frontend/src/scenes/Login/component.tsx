@@ -5,6 +5,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import Button from '@mui/material/Button';
 import StarBorderRoundedIcon from '@mui/icons-material/StarBorderRounded';
 
+import { useAuth } from "components/AuthProvider";
+
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -26,6 +28,7 @@ interface Props {
 
 export const Login: React.FC<Props> = (props) => {
   const classes = useStyles();
+  const { login } = useAuth();
   console.log("Login | Rendering");
 
   return (
@@ -34,9 +37,7 @@ export const Login: React.FC<Props> = (props) => {
         variant="contained"
         color="primary"
         className={classes.button}
-        href={`${process.env.REACT_APP_BACKEND_URL}/auth/auth0?returnTo=${
-          window.location.href
-        }`}
+        onClick={() => login()}
         endIcon={<StarBorderRoundedIcon/>}
       >
         login
