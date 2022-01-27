@@ -53,7 +53,7 @@ export const StarTooltip = (props: StarTooltipProps) => {
   const showImage = true;
 
   const handleClick = () => onClick(id);
-  console.log("Star |", track)
+  // console.log("Star |", track)
   return (
     <Html
       as='div'

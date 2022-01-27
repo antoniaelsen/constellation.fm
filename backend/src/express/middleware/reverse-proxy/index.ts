@@ -37,14 +37,6 @@ const createReverseProxy = (service: string, url: string, { config, logger: main
   };
 
   return ExpressHttpProxy(url, { proxyReqOptDecorator, userResHeaderDecorator });
-
-  // const mw = (req: Request, res) => {
-  //   const token = getToken(req);
-  //   logger.info(`Proxying request for user ${(req.user as any)?.id} with token ${token}`)
-  //   res.headers['Authorization'] = `Bearer ${token}`;
-  //   res.send(`user: ${JSON.stringify(req.user)}`);
-  // };
-  // return [mw];
 };
 
 

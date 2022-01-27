@@ -149,7 +149,7 @@ const createAuthMiddleware = ({ config, logger: mainLogger, path }) => {
       return;
     }
     setAuthStateCookie(req, res);
-    // setAccessTokenCookies(req, res);
+    setAccessTokenCookies(req, res);
     res.send();
   });
   

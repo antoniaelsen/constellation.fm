@@ -11,7 +11,7 @@ const connectionTokensSelector = (state: RootState) => {
   const playbackConnectionTokens = connections.reduce((acc, connection) => {
     const tokenKeys = Object.keys(tokens);
     const playbackKey = `${connection}-playback`;
-    if (!tokenKeys.includes[playbackKey]) return acc;
+    if (!tokenKeys.includes(playbackKey)) return acc;
     return {
       ...acc,
       [connection]: tokens[playbackKey]

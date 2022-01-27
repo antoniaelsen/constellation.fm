@@ -64,7 +64,7 @@ export const Constellation = (props: ConstellationProps) => {
       <axesHelper args={[20]} />
       <WebCola
         renderLayout={(layout: any) => {
-          console.log("Render layout");
+          // console.log("Render layout");
           return (
             <>
               {/* {layout.groups().map(
