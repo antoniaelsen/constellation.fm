@@ -1,4 +1,4 @@
-import { Track } from "store/music/types";
+import { Track } from "store/types/music";
 
 export interface ConnectionPlaybackProps {
   token: string;

@@ -17,6 +17,7 @@ import { Connection } from 'rest/constants';
 
 import { useTheme, ThemeProvider } from '@mui/material/styles'; // TODO(aelsen): move to providers
 import { StyledBox } from 'components/StyledBox';
+import { useStore } from 'store/createStoreZ';
 
 const drawerWidth = 360;
 
@@ -41,12 +42,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface RootProps {
-  connections: Connection[];
-  getUser: () => void;
-  getUserPlaylists: () => void;
 }
 
-let connectionsOld: any = null;
 export const Root = (props: RootProps) => {
   const ContextBridge = useContextBridge(ReactReduxContext);
   const theme = useTheme();
@@ -55,24 +52,26 @@ export const Root = (props: RootProps) => {
   const classes = useStyles();
   const params: any = useParams();
   const playlistId = params.playlistId;
-  const { connections, getUser, getUserPlaylists } = props;
+  const { connections } = useStore(({ auth }) => auth.connections);
+  // TODO(aelsen)
+  // const { getUser, getUserPlaylists } = 
 
-  const fetchSpotify = () => {
-    if (connections !== connectionsOld) {
-      console.log("Root | Connections changed");
-      connectionsOld = connections;
-    }
-    console.log("Root | Checking if should spotify...", connections);
+  // const fetchSpotify = () => {
+  //   if (connections !== connectionsOld) {
+  //     console.log("Root | Connections changed");
+  //     connectionsOld = connections;
+  //   }
+  //   console.log("Root | Checking if should spotify...", connections);
 
-    if (!connections.includes(Connection.SPOTIFY)) return;
+  //   if (!connections.includes(Connection.SPOTIFY)) return;
   
-    console.log("Root | Fetching spotify...");
-    console.time("Root | spotify")
-    getUser();
-    getUserPlaylists();
-  }
+  //   console.log("Root | Fetching spotify...");
+  //   console.time("Root | spotify")
+  //   getUser();
+  //   getUserPlaylists();
+  // }
 
-  useEffect(fetchSpotify, [connections, getUser, getUserPlaylists]);
+  // useEffect(fetchSpotify, [connections, getUser, getUserPlaylists]);
   console.log("Root | playlistId", playlistId, params);
   
 

@@ -9,7 +9,7 @@ import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 
 import { StyledBox } from 'components/StyledBox';
-import { Track } from "store/music/types";
+import { Track } from "store/types/music";
 import { ConnectionPlaybackProps } from "../ConnectionPlayback";
 
 

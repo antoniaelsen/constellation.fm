@@ -2,13 +2,11 @@ import { createStore, applyMiddleware } from 'redux';
 import { apiMiddleware } from 'redux-api-middleware';
 import { composeWithDevTools } from 'redux-devtools-extension';
 
-import { apiFailureMiddleware } from 'middleware';
 import reducers from 'reducers';
 import { initialState } from 'store';
 
 let middleware = [
   apiMiddleware,
-  apiFailureMiddleware,
 ];
 
 if (process.env.NODE_ENV !== 'production') {

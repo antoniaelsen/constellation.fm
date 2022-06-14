@@ -8,7 +8,7 @@ import { styled } from "@mui/material/styles";
 import { Link, LinkProps, Typography } from "@mui/material";
 
 import { StyledBox } from 'components/StyledBox';
-import { Album, Artist, Playlist, Track } from 'store/music/types';
+import { Album, Artist, Playlist, Track } from 'store/types/music';
 
 const IMG_WIDTH = 72;
 const STAR_RADIUS = 5;

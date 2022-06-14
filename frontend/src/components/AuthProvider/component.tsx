@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import cookies from "js-cookie";
 import config from "config";
 import { Connection } from "rest/constants";
+import { useStore } from "store/createStoreZ"
 
 const COOKIE_KEY_AUTH_STATE = "cfm-auth";
 const COOKIE_KEY_TOKEN_PREFIX = `${COOKIE_KEY_AUTH_STATE}-token`;
@@ -47,16 +48,12 @@ export const useAuth = () => useContext(AuthContext);
 
 export interface AuthProviderProps {
   children: JSX.Element | JSX.Element[];
-  isAuthenticated: boolean;
-  tokens: Tokens;
-  clearTokens: () => void;
-  setAuthentication: (state: boolean) => void;
-  updateConnections: (connections: Connection[]) => void;
-  updateTokens: (tokens: Tokens) => void;
 }
 
 export const AuthProvider = (props: AuthProviderProps) => {
-  const { children, isAuthenticated, clearTokens, updateConnections, updateTokens, setAuthentication } = props;
+  const { children } = props;
+  const { isAuthenticated, clearTokens, setAuthentication, updateConnections, updateTokens } = useStore(state => state.auth)
+  console.log("Auth Provider | isAuthenticated", isAuthenticated);
 
   const clearAuthState = useCallback(() => {
     console.log("Auth Provider | clearAuthState");
@@ -82,6 +79,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
     console.log("Auth Provider | getTokens");
     try {
       const res = await fetch(`${config.api.backend}/auth`, { credentials: "include" });
+      console.log("Auth Provider | getTokens - 401");
       if (res.status === 401) {
         clearAuthState();
         return;
@@ -91,6 +89,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
       console.log("Auth Provider | getTokens - got", tokens);
       updateTokens(tokens);
     } catch (e) {
+      console.log("Auth Provider | getTokens - error", e);
       clearAuthState();
     }
   }, [setAuthentication, clearAuthState, updateTokens]);
@@ -113,7 +112,6 @@ export const AuthProvider = (props: AuthProviderProps) => {
     getTokens();
     getAuthState();
   }, [getAuthState, getTokens]);
-
 
   return (
     <AuthContext.Provider value={{

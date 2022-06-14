@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 
-
 import { BrowserRouter, Route, Redirect, Switch, useLocation } from 'react-router-dom';
 import { Theme } from '@mui/material/styles';
 import createStyles from '@mui/styles/createStyles';
@@ -56,11 +55,9 @@ const PrivateRoute = (props) => {
 };
 
 interface Props {
-  isAuthenticated: boolean;
-  setAuthentication: (state: boolean) => void;
 }
 
-export const Router: React.FC<Props> = (props) => {
+export const Router: React.FC<Props> = () => {
   const classes = useStyles();
 
   return (

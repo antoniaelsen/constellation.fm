@@ -11,7 +11,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 // import ListItemIcon from '@mui/material/ListItemIcon';
 
-import {Constellation} from 'store/constellation/types';
+import {Constellation} from 'store/types/constellation';
 
 
 const useStyles = makeStyles((theme: Theme) =>

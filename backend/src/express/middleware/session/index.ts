@@ -5,7 +5,7 @@ import passport from "passport";
 const createSessionMiddleware = ({ config, logger: mainLogger }) => {
   const logger = mainLogger.child({ labels: ['session'] });
 
-  const cookieParams:CookieOptions = {
+  const cookieParams: CookieOptions = {
     // domain:,
     httpOnly: true,
     // maxAge:,

@@ -15,7 +15,7 @@ import {
   PlaylistTrack,
   Track,
   User
-} from 'store/music/types';
+} from 'store/types/music';
 import schemas from 'store/entities';
 
 

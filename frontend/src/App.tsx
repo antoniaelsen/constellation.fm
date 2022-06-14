@@ -1,8 +1,10 @@
 import React from 'react';
-import { Provider as StoreProvider} from 'react-redux';
+// import { Provider as StoreProvider} from 'react-redux';
+import { QueryClientProvider } from 'react-query';
 
 import './App.css';
-import store from 'store/createStore';
+import queryClient from 'rest/createClient';
+// import store from 'store/createStore';
 
 // DnD
 // import {DndProvider} from 'react-dnd';
@@ -15,6 +17,7 @@ import { theme } from 'theme';
 
 import { AuthProvider } from './components/AuthProvider';
 import { Router } from 'scenes/Router';
+
 
 // declare var process: {
 //   env: {
@@ -39,17 +42,20 @@ declare var process: {
 };
 
 
+
 const App: React.FC = () => {
   return (
     <StyledEngineProvider injectFirst>
       {/* <DndProvider backend={Backend}> */}
       <ThemeProvider theme={theme}>
-        <StoreProvider store={store}>
-          <AuthProvider>
-            <CssBaseline />
-            <Router/>
-          </AuthProvider>
-        </StoreProvider>
+        {/* <StoreProvider store={store}> */}
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <CssBaseline />
+              <Router/>
+            </AuthProvider>
+          </QueryClientProvider>
+        {/* </StoreProvider> */}
       </ThemeProvider>
       {/* </DndProvider> */}
     </StyledEngineProvider>

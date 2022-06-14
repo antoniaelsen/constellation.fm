@@ -11,7 +11,8 @@ import IconButton from '@mui/material/IconButton';
 
 import { Playlists } from 'components/Playlists';
 
-import { Constellation } from 'store/constellation/types';
+import { Constellation } from 'store/types/constellation';
+import { useStore } from 'store/createStoreZ';
 
 
 const drawerWidth = 240;
@@ -39,12 +40,11 @@ const useStyles = makeStyles((theme: Theme) =>
 
 
 interface Props {
-  createConstellation: (constellation: Partial<Constellation>) => void;
 }
 
 export const Nav: React.SFC<Props> = (props) => {
   const classes = (useStyles as any)(); // TODO(aelsen) wtf
-  const { createConstellation } = props;
+  const { createConstellation } = useStore(({ constellation }) => constellation.createConstellation);
 
   return (
     <nav>

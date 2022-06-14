@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": "../shibefy"
+		},
+		{
+			"path": "../modbot/composer"
+		},
+		{
+			"path": "../shibefy-main"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../modbot/brain"
+		},
+		{
+			"path": "../modbot/master-controller"
+		},
+		{
+			"path": "../modbot/modbot-api"
+		}
+	],
+	"settings": {}
+}
