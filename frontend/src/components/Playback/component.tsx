@@ -35,7 +35,6 @@ export const Playback = (props: PlaybackProps) => {
   const track = null;
 
   const ConnectionPlayback = (connection && token) ? connectionComponents[connection!] : NoPlayback;
-  console.log("Playback | connection:", connection, token, track, connectionTokens);
 
   return (
     <>

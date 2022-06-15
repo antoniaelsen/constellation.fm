@@ -1,30 +1,37 @@
-import React, { MouseEventHandler, useEffect, useRef, useState } from 'react';
-import WebCola from 'react-cola';
-import { Html, Line } from '@react-three/drei';
-import { useFrame, useThree } from '@react-three/fiber';
+import React, { useRef, useState } from 'react';
+import { Html } from '@react-three/drei';
+import { useFrame, } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { styled } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
 
 import { StyledBox } from 'components/StyledBox';
 import { Track } from 'store/types/music';
 import { SongInfo } from 'components/SongInfo';
+import { ThemeProvider } from '@mui/styles';
 
 const STAR_RADIUS = 5;
 const STAR_HEIGHT_SEGS = 16;
 const STAR_WIDTH_SEGS = 16;
 
 
-export const StarTooltipCard = styled(StyledBox)(({ theme }) => ({
-  backgroundColor: `rgba(255, 0, 0, 0.5)`,
-  borderRadius: theme.shape.borderRadius,
-  display: "flex", 
-  padding: theme.spacing(1),
-  "&:hover": {
-    backgroundColor: `rgba(255, 0, 0, 0.75)`,
-    
-  }
-}));
+export const StarTooltipCard = (({ children, onClick }) => {
+  return (
+    <StyledBox onClick={onClick} sx={(theme) => ({
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      border: `1px solid rgba(255, 255, 255, 0.2)`,
+      // borderRadius: theme.shape.borderRadius,
+      display: "flex", 
+      padding: theme.spacing(1),
+      "&:hover": {
+        backgroundColor: `rgba(255, 255, 255, 0.15)`,
+      }
+    })}
+    >
+      {children}
+    </StyledBox>
+  )
+});
 
 interface StarTooltipProps {
   track: Track;
@@ -37,13 +44,13 @@ interface StarTooltipProps {
  * @returns 
  */
 export const StarTooltip = (props: StarTooltipProps) => {
+  const theme = useTheme();
   const { track, onClick } = props;
   const { id } = track;
   const [hovered, hover] = useState(false);
   const hideImage = false;
 
   const handleClick = () => onClick(id);
-  // console.log("Star |", track)
   return (
     <Html
       as='div'
@@ -51,9 +58,11 @@ export const StarTooltip = (props: StarTooltipProps) => {
       onPointerOver={() => hover(true)}
       onPointerOut={() => hover(false)}
     >
-      <StarTooltipCard onClick={handleClick}>
-        <SongInfo track={track} hideImage={hideImage} />
-      </StarTooltipCard>
+      <ThemeProvider theme={theme}>
+        <StarTooltipCard onClick={handleClick}>
+          <SongInfo track={track} hideImage={hideImage} />
+        </StarTooltipCard>
+      </ThemeProvider>
     </Html>
   );
 }
@@ -65,6 +74,7 @@ type StarProps = JSX.IntrinsicElements['group'] &  {
 }
 
 export const Star = (props: StarProps) => {
+  const theme = useTheme();
   const { track, position, onTooltipClick } = props;
   const ref = useRef<THREE.Mesh>(null!);
   const [hovered, hover] = useState(false);
@@ -80,7 +90,7 @@ export const Star = (props: StarProps) => {
         onPointerOut={() => hover(false)}
       >
         <sphereGeometry args={[STAR_RADIUS, STAR_WIDTH_SEGS, STAR_HEIGHT_SEGS]} />
-        <meshStandardMaterial color={clicked ? 'green' : 'white'} opacity={0.5} />
+        <meshStandardMaterial color={clicked ? 'green' : theme.palette.primary.main} opacity={0.5} />
       </mesh>
       <StarTooltip track={track} onClick={onTooltipClick}/>
     </group>

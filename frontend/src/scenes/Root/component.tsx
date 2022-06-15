@@ -1,6 +1,6 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useParams } from 'react-router';
-import { Provider as StoreProvider, ReactReduxContext } from 'react-redux'
+import { ReactReduxContext } from 'react-redux'
 import { useContextBridge } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 
@@ -15,10 +15,13 @@ import { Playback } from 'components/Playback';
 import { Connection } from 'rest/constants';
 
 
-import { useTheme, ThemeProvider } from '@mui/material/styles'; // TODO(aelsen): move to providers
+import { ThemeProvider } from '@mui/material/styles'; // TODO(aelsen): move to providers
 import { StyledBox } from 'components/StyledBox';
+import { theme } from 'theme';
+import { HtmlContainerContext } from './HtmlContainerContext';
 
 const drawerWidth = 360;
+
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -49,31 +52,30 @@ interface RootProps {
 let connectionsOld: any = null;
 export const Root = (props: RootProps) => {
   const ContextBridge = useContextBridge(ReactReduxContext);
-  const theme = useTheme();
-  console.log("Root | theme", theme);
 
   const classes = useStyles();
+  const ref = useRef(null);
   const params: any = useParams();
   const playlistId = params.playlistId;
   const { connections, getUser, getUserPlaylists } = props;
 
   const fetchSpotify = () => {
     if (connections !== connectionsOld) {
-      console.log("Root | Connections changed");
+      // console.log("Root | Connections changed");
       connectionsOld = connections;
     }
-    console.log("Root | Checking if should spotify...", connections);
+    // console.log("Root | Checking if should spotify...", connections);
 
     if (!connections.includes(Connection.SPOTIFY)) return;
   
-    console.log("Root | Fetching spotify...");
-    console.time("Root | spotify")
+    // console.log("Root | Fetching spotify...");
+    // console.time("Root | spotify")
     getUser();
     getUserPlaylists();
   }
 
   useEffect(fetchSpotify, [connections, getUser, getUserPlaylists]);
-  console.log("Root | playlistId", playlistId, params);
+  // console.log("Root | playlistId", playlistId, params);
   
 
   return (
@@ -82,12 +84,14 @@ export const Root = (props: RootProps) => {
 
       <StyledBox sx={{ display: "flex", flex: 1, transform: "rotate(0deg)" }}>
         <Nav />
-        <main className={classes.content} >
+        <main className={classes.content} ref={ref}>
           <Canvas camera={{ fov: 75, near: 0.1, far: 100000, position: [0, 0, 5] }}>
             <ContextBridge>
-              <ThemeProvider theme={theme}>
-                <Space constellationId={playlistId}/>
-              </ThemeProvider>
+              <HtmlContainerContext.Provider value={{ containerRef: ref }}>
+                <ThemeProvider theme={theme}>
+                  <Space constellationId={playlistId}/>
+                </ThemeProvider>
+              </HtmlContainerContext.Provider>
             </ContextBridge>
           </Canvas>
         </main>

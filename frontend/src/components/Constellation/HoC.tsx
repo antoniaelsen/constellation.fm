@@ -19,7 +19,6 @@ export const ConstellationHoC = (props: ConstellationHoCProps) => {
   console.log("ConstellationHoC |", id, constellation, playlist);
 
   useEffect(() => {
-    console.log("ConstellationHoC | Getting playlist");
     if (!connectionId) return;
     getPlaylist(connectionId);
   }, [connectionId]);

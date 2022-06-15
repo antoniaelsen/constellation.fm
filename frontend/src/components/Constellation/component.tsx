@@ -4,16 +4,18 @@ import { Line } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { Album, Artist, Playlist, Track } from 'store/types/music';
+import { Playlist, Track } from 'store/types/music';
 import { Star } from './Star';
+import { useTheme } from '@mui/material/styles';
 
-
-// Average link length in webcola is '20'
 
 const GRAPH_WIDTH = 500;
 const GRAPH_HEIGHT = 500;
 const GRAPH_DEPTH = 250;
 
+const COLA_LINK_DISTANCE = 50;
+const COLA_AVOID_OVERLAPS = true;
+const COLA_HANDLE_DISCONNECTED = false;
 
 interface Node {
   index: number;
@@ -40,54 +42,36 @@ export interface ConstellationProps {
 export const Constellation = (props: ConstellationProps) => {
   // HOC
   const { constellation, id, playlist, selectTrack } = props;
-  console.log("Constellation |", id, constellation, playlist);
 
   const nodes = playlist?.tracks?.map(({ track }) => ({ id: track.id, track }));
-  const links = nodes?.slice(0, -1).map((node, i) => ({ source: i, target: i + 1 }));
-  console.log("nodes, links", nodes, links);
+  const links = nodes && nodes.length > 1 ? [
+    ...nodes.slice(0, -1).map((node, i) => ({ source: i, target: i + 1 })),
+    { source: 0, target: nodes.length - 1, length: COLA_LINK_DISTANCE * 3 }
+  ] : undefined;
 
 
   const { camera } = useThree();
   useEffect(() => {
-    console.log("Constellation | Setting camera");
     camera.position.set(0, 0, GRAPH_DEPTH * 2);
   }, [camera]);
 
 
-  // return (
-  //   <>
-  //     <axesHelper args={[20]} />
-  //   </>
-  // );
   return (
     <>
       <axesHelper args={[20]} />
       <WebCola
+        onHandleLayout={
+          (cola, nodes, links, constraints, groups) => cola
+            .nodes(nodes)
+            .links(links)
+            .groups(groups)
+            .constraints(constraints)
+            .linkDistance((link) => link.length || COLA_LINK_DISTANCE)
+            .avoidOverlaps(COLA_AVOID_OVERLAPS)
+            .handleDisconnected(COLA_HANDLE_DISCONNECTED)}
         renderLayout={(layout: any) => {
-          // console.log("Render layout");
           return (
             <>
-              {/* {layout.groups().map(
-                ({ bounds: { x, X, y, Y } }, i) => {
-                  const width = X - x;
-                  const height = Y - y;
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        position: 'absolute',
-                        left: x,
-                        top: y,
-                        width,
-                        height,
-                        backgroundColor: 'orange',
-                        borderRadius: 5,
-                        zIndex: -2,
-                      }}
-                    />
-                  );
-                },
-              )} */}
               {layout.links().map(
                 ({ source: a, target: b }: { source: Node, target: Node }, i: number) => {
                   const pointA = new THREE.Vector3(

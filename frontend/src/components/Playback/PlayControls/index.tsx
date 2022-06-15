@@ -88,23 +88,23 @@ export const PlayControls = (props: PlayControlsProps) => {
         </IconButton>
 
         <PlaybackButton aria-label="previous track" size="large" disabled={disabled} onClick={onPreviousTrack}>
-          <SkipPreviousIcon fontSize="inherit" />
+          <SkipPreviousIcon fontSize="large" />
         </PlaybackButton>
 
         {paused && (
           <PlaybackButton aria-label="play track" size="large" disabled={disabled} onClick={onPlay}>
-            <PlayCircleIcon fontSize="inherit" />
+            <PlayCircleIcon fontSize="large" />
           </PlaybackButton>
         )}
 
         {!paused && (
           <PlaybackButton aria-label="pause track" size="large" disabled={disabled} onClick={onPause}>
-            <PauseCircleIcon fontSize="inherit" />
+            <PauseCircleIcon fontSize="large" />
           </PlaybackButton>
         )}
 
         <PlaybackButton aria-label="next track" size="large" disabled={disabled} onClick={onNextTrack}>
-          <SkipNextIcon fontSize="inherit" />
+          <SkipNextIcon fontSize="large" />
         </PlaybackButton>
 
         <IconButton aria-label="repeat" size="small" color={repeat !== RepeatState.OFF ? "primary" : "info"} disabled={disabled} onClick={onRepeat}>

@@ -1,10 +1,15 @@
-import { merge, union } from 'lodash';
+import { cloneDeep, merge, union } from 'lodash';
 import { normalize } from 'normalizr';
 import {
   CREATE_PLAYLIST_SUCCESS,
+  GET_PLAYLIST_SUCCESS,
   GET_USER_SUCCESS,
   GET_USER_PLAYLISTS_SUCCESS,
-  GET_PLAYLIST_SUCCESS
+  GET_USER_PLAYLISTS_LIMIT_SUCCESS,
+  GET_USER_PLAYLISTS_LIMIT_REQUEST,
+  GET_USER_PLAYLISTS_LIMIT_FAILURE,
+  GET_USER_PLAYLISTS_REQUEST,
+  GET_USER_PLAYLISTS_FAILURE,
 } from 'actions/rest/spotify';
 import { MusicState } from 'store/types/music';
 import schemas from 'store/entities';
@@ -21,7 +26,7 @@ export const reducers: {[key: string]: MusicReducer} = {
     return {
       ...prevState,
       currentUser: result,
-      entities: merge(prevState.entities, entities)
+      entities: merge(cloneDeep(prevState.entities), entities)
     };
   },
   [CREATE_PLAYLIST_SUCCESS]: (prevState, action) => {
@@ -33,18 +38,26 @@ export const reducers: {[key: string]: MusicReducer} = {
     return prevState;
   },
   [GET_PLAYLIST_SUCCESS]: (prevState, action) => {
-    console.log("Get Playlist Success:")
     const playlist = action.payload;
-    console.log("Raw:", playlist)
     const transformed = transformPlaylistFull(playlist);
-    console.log("Transformed:", transformed)
     const normalized = normalize(transformed, schemas.playlist);
     const { entities, result } = normalized;
-    console.log("Normalized:", normalized, prevState)
     return {
       ...prevState,
-      entities: merge(prevState.entities, entities),
+      entities: merge(cloneDeep(prevState.entities), entities),
       playlists: union(prevState.playlists, [result])
+    };
+  },
+  [GET_USER_PLAYLISTS_REQUEST]: (prevState, action) => {
+    return {
+      ...prevState,
+      loadingPlaylists: true
+    };
+  },
+  [GET_USER_PLAYLISTS_FAILURE]: (prevState, action) => {
+    return {
+      ...prevState,
+      loadingPlaylists: false
     };
   },
   [GET_USER_PLAYLISTS_SUCCESS]: (prevState, action) => {
@@ -52,11 +65,35 @@ export const reducers: {[key: string]: MusicReducer} = {
     const transformed = items.map(transformPlaylistSimplified);
     const normalized = normalize(transformed, [schemas.playlist]);
     const { entities, result } = normalized;
-    console.log("Normalized:", normalized, prevState)
     return {
       ...prevState,
-      entities: merge(prevState.entities, entities),
+      loadingPlaylists: false,
+      entities: merge(cloneDeep(prevState.entities), entities),
       playlists: union(prevState.playlists, result)
+    };
+  },
+  [GET_USER_PLAYLISTS_LIMIT_REQUEST]: (prevState, action) => {
+    return {
+      ...prevState,
+      loadingPlaylists: true
+    };
+  },
+  [GET_USER_PLAYLISTS_LIMIT_FAILURE]: (prevState, action) => {
+    return {
+      ...prevState,
+      loadingPlaylists: false
+    };
+  },
+  [GET_USER_PLAYLISTS_LIMIT_SUCCESS]: (prevState, action) => {
+    const { items, offset, total } = action.payload;
+    const transformed = items.map(transformPlaylistSimplified);
+    const normalized = normalize(transformed, [schemas.playlist]);
+    const { entities, result } = normalized;
+    return {
+      ...prevState,
+      entities: merge(cloneDeep(prevState.entities), entities),
+      playlists: union(prevState.playlists, result),
+      loadingPlaylists: offset > total
     };
   },
 }

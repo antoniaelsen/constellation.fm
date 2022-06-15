@@ -19,7 +19,7 @@ let muiTheme = createTheme(adaptV4Theme({
       main: grey['500'],
     },
     text: {
-      primary: grey['300'],
+      primary: grey['200'],
     }
   },
   shape: {

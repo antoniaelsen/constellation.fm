@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Menu, MenuItem } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import DevicesIcon from "@mui/icons-material/Devices";
 
 import config from "config";
 import { StyledBox } from "components/StyledBox";
@@ -223,7 +221,7 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   return (
     <PlaybackBox>
       <StyledBox sx={{ display: "flex", gridColumn: 1, gridRow: 1 }}>
-        {currentTrack && <SongInfo track={currentTrack} imageWidth={48}/>}
+        {currentTrack && <SongInfo track={currentTrack} imageWidth={48} hideAlbum={true}/>}
       </StyledBox>
       
       <PlayControls

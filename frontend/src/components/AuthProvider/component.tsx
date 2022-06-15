@@ -19,13 +19,11 @@ const clearCookies = () => {
 }
 
 const parseAccessTokens = () => {
-  console.log("AuthProvider | Parsing ATs");
   const tokens: Tokens = {};
   COOKIE_KEY_TOKENS.forEach((connection) => {
     const key = `${COOKIE_KEY_TOKEN_PREFIX}-${connection}`;
     const token = cookies.get(key);
     if (!token) return;
-    console.log(`Auth Provider | Got AT for ${key}, deleting cookie and storing in memory...`);
     tokens[connection] = token;
     cookies.remove(key);
   });
@@ -34,11 +32,13 @@ const parseAccessTokens = () => {
 };
 
 interface AuthContextType {
+  isAuthenticated: boolean;
   login: () => void;
   logout: () => void;
 }
 
-const AuthContext = createContext<any>({
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
   login: () => {},
   logout: () => {},
 });
@@ -59,7 +59,6 @@ export const AuthProvider = (props: AuthProviderProps) => {
   const { children, isAuthenticated, clearTokens, updateConnections, updateTokens, setAuthentication } = props;
 
   const clearAuthState = useCallback(() => {
-    console.log("Auth Provider | clearAuthState");
     setAuthentication(false);
     updateConnections([]);
     clearTokens();
@@ -67,19 +66,16 @@ export const AuthProvider = (props: AuthProviderProps) => {
   }, []);
   
   const getAuthState = useCallback(() => {
-    console.log("Auth Provider | getAuthState");
     const authStateStr = cookies.get(COOKIE_KEY_AUTH_STATE);
     if (!authStateStr) {
       return;
     }
     const authState = JSON.parse(authStateStr);
-    console.log("Auth Provider | getAuthState - got", authState);
     setAuthentication(authState.isLoggedIn);
     updateConnections(authState.connections);
   }, []);
 
   const getTokens = useCallback(async () => {
-    console.log("Auth Provider | getTokens");
     try {
       const res = await fetch(`${config.api.backend}/auth`, { credentials: "include" });
       if (res.status === 401) {
@@ -88,7 +84,6 @@ export const AuthProvider = (props: AuthProviderProps) => {
       }
       
       const tokens = parseAccessTokens();
-      console.log("Auth Provider | getTokens - got", tokens);
       updateTokens(tokens);
     } catch (e) {
       clearAuthState();

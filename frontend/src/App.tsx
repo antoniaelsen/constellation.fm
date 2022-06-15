@@ -10,7 +10,7 @@ import store from 'store/createStore';
 
 // General
 import CssBaseline from '@mui/material/CssBaseline';
-import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles';
+import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { theme } from 'theme';
 
 import { AuthProvider } from './components/AuthProvider';

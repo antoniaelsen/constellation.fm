@@ -12,6 +12,7 @@ import { PlaylistItem } from "components/Playlists/components/PlaylistItem";
 import { ListItem } from "components/Playlists/components/ListItem";
 import { ListItemText } from "components/Playlists/components/ListItemText";
 import type { Playlist } from "store/types/music"
+import { Skeleton } from "@mui/material";
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -27,14 +28,14 @@ const useStyles = makeStyles((theme: Theme) =>
 
 
 interface PlaylistsProps {
-  playlists: Playlist[]
+  loading: boolean;
+  playlists: Playlist[];
 }
 
 export const Playlists: React.SFC<PlaylistsProps> = (props) => {
-  const { playlists } = props;
+  const { loading, playlists } = props;
   const classes = useStyles();
   const [open, setOpen] = useState(true);
-  console.log("Playlists | playlists -", playlists)
 
   const handleClick = useCallback(() => {
     setOpen(!open);
@@ -55,6 +56,15 @@ export const Playlists: React.SFC<PlaylistsProps> = (props) => {
       </ListItem>
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
+          {(loading && playlists.length === 0) && Array.from(new Array(100)).map((e, i) => (
+            <ListItem
+              dense={true}
+              disablePadding={true}
+            >
+              <Skeleton sx={{ flex: 1, mx: 2, my: 0.5, maxWidth: `${Math.random() * 70 + 30}%` }} variant="text" />
+            </ListItem>
+          ))}
+
           {playlists.map(({ id, collaborative, editable, name, }: any, i: number) => {
             return (
               <PlaylistItem

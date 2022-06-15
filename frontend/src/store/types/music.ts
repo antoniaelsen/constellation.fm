@@ -69,6 +69,7 @@ export interface Playlist {
 export interface MusicState {
   currentUser: User | null,
   entities: any,
+  loadingPlaylists: boolean,
   playlists: Playlist[],
   users: User[],
 }

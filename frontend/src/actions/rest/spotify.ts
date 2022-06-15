@@ -15,6 +15,9 @@ export const GET_USER_FAILURE = "GET_USER_FAILURE";
 export const GET_USER_PLAYLISTS_REQUEST = "GET_USER_PLAYLISTS_REQUEST";
 export const GET_USER_PLAYLISTS_SUCCESS = "GET_USER_PLAYLISTS_SUCCESS";
 export const GET_USER_PLAYLISTS_FAILURE = "GET_USER_PLAYLISTS_FAILURE";
+export const GET_USER_PLAYLISTS_LIMIT_REQUEST = "GET_USER_PLAYLISTS_LIMIT_REQUEST";
+export const GET_USER_PLAYLISTS_LIMIT_SUCCESS = "GET_USER_PLAYLISTS_LIMIT_SUCCESS";
+export const GET_USER_PLAYLISTS_LIMIT_FAILURE = "GET_USER_PLAYLISTS_LIMIT_FAILURE";
 export const UPDATE_PLAYLIST_REQUEST = "UPDATE_PLAYLIST_REQUEST";
 export const UPDATE_PLAYLIST_SUCCESS = "UPDATE_PLAYLIST_SUCCESS";
 export const UPDATE_PLAYLIST_FAILURE = "UPDATE_PLAYLIST_FAILURE";
@@ -112,6 +115,19 @@ export const getUserPlaylists = (offset: number) => ({
       GET_USER_PLAYLISTS_REQUEST,
       GET_USER_PLAYLISTS_SUCCESS,
       GET_USER_PLAYLISTS_FAILURE
+    ].map(spotifyType),
+  }
+});
+
+export const getUserPlaylistsLimited = (offset: number) => ({
+  [RSAA]: {
+    ...requestParams,
+    endpoint: `${config.api.spotify}/me/playlists?limit=50${offset ? `&offset=${offset}` : ''}`,
+    method: 'GET',
+    types: [
+      GET_USER_PLAYLISTS_LIMIT_REQUEST,
+      GET_USER_PLAYLISTS_LIMIT_SUCCESS,
+      GET_USER_PLAYLISTS_LIMIT_FAILURE
     ].map(spotifyType),
   }
 });

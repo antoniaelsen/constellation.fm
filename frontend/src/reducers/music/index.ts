@@ -6,6 +6,7 @@ import { reducers as musicReducers } from "./spotify"
 export const initialState: MusicState = {
   currentUser: null,
   entities: {},
+  loadingPlaylists: false,
   playlists: [],
   users: [],
 };

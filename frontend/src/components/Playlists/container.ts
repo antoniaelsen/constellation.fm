@@ -35,6 +35,7 @@ const mapStateToProps = (state: RootState, props: ContainerProps) =>  {
   const playlists = editablePlaylistSelector(state);
 
   return {
+    loading: state.music.loadingPlaylists,
     playlists
   };
 };

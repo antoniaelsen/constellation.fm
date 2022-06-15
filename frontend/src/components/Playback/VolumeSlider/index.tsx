@@ -1,6 +1,5 @@
-import React from "react";
-import { styled } from "@mui/material/styles";
-import { BoxProps, Slider } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { BoxProps, IconButton, Slider } from "@mui/material";
 import VolumeDownIcon from "@mui/icons-material/VolumeDown";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
@@ -23,6 +22,11 @@ export interface VolumeSliderProps {
 
 export const VolumeSlider = (props: VolumeSliderProps) => {
   const { disabled, value, onVolume } = props;
+  const [lastVolume, setLastVolume] = useState(0);
+
+  useEffect(() => {
+    if (value !== 0) setLastVolume(0);
+  }, [value])
 
   const VolumeIcon = getVolumeIcon(value);
 
@@ -30,9 +34,21 @@ export const VolumeSlider = (props: VolumeSliderProps) => {
     onVolume(value);
   };
 
+  const handleMute = () => {
+    if (lastVolume !== 0) {
+      setLastVolume(0);
+      onVolume(lastVolume);
+      return;
+    } 
+    setLastVolume(value);
+    onVolume(0);
+  };
+
   return (
       <StyledBox sx={{ display: "flex", alignItems: "center", minWidth: "120px", width: "30%" }}>
-        <VolumeIcon />
+        <IconButton aria-label="mute" color="info" onClick={handleMute} sx={{ minWidth: "32px" }}>
+          <VolumeIcon />
+        </IconButton>
         
         <Slider
           aria-label="device-volume-slider"

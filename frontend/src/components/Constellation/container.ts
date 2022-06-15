@@ -1,40 +1,57 @@
 import { Dispatch, AnyAction } from 'redux';
 import { connect } from 'react-redux';
-import { createSelector } from '@reduxjs/toolkit'
+import { createSelector } from 'reselect'
 
 import { getPlaylist } from 'actions/rest/spotify';
 import { RootState } from 'store';
 import { ConstellationHoC as Component } from './HoC';
-import { Connection } from 'rest/constants';
-import { Playlist } from 'store/types/music';
 import schemas from 'store/entities';
 import { denormalize } from 'normalizr';
+import { isEqual } from 'lodash';
 
 
 interface ContainerProps {
   id: string;
 };
 
+const createSelectPlaylistById = () => createSelector(
+  [
+    (state) => state.music.entities,
+    (state) => state.music.entities?.playlist || [],
+    (_, props) => props.id,
+  ],
+  (entities, playlists, id) => {
+    const normalized = playlists[id]
+    if (!playlists || playlists.length === 0) return null;
+    console.time("Denormalizing playlists");
+    const de = denormalize(normalized, schemas.playlist, entities);
+    console.timeEnd("Denormalizing playlists");
+    return de;
+  }, 
+  {
+    memoizeOptions: {
+      resultEqualityCheck: (a, b) => {
+        console.log("Comparing", isEqual(a, b), a, b)
+        return isEqual(a, b)
+      }
+    }
+  }
+);
 
-const selectPlaylistById = (state: RootState, props: ContainerProps): Playlist | null => {
-  const { entities } = state.music;
-  const { playlist: playlists } = entities;
-  if (!playlists) return null;
-  const normalized = playlists[props.id];
-  console.log("Constellation Container | selected plist normalized ", normalized);
-  const playlist = denormalize(normalized, schemas.playlist, entities);
-  return playlist;
-}
+const makeMapStateToProps = () => {
+  const selectPlaylistById = createSelectPlaylistById();
+  const empty = {};
+  let temp = null;
 
-
-const mapStateToProps = (state: RootState, props: ContainerProps) =>  {
-  console.log("Constellation Container | Map state to props - ", state, props);
-  const playlist = selectPlaylistById(state, props);
-  console.log("Constellation Container | selected plist ", props.id, playlist);
-  return {
-    constellation: {},
-    playlist
-  };
+  return (state: RootState, props: ContainerProps) =>  {
+    const playlist = selectPlaylistById(state, props);
+    console.log("Constellation Container | Map state to props - plist", temp === playlist, playlist);
+    temp = playlist;
+    return {
+      constellation: empty,
+      playlist
+    };
+  }
 };
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, props: ContainerProps) => {
@@ -54,12 +71,7 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, props: ContainerProps
   }
 };
 
-type StateProps = ReturnType<typeof mapStateToProps>;
+type StateProps = ReturnType<typeof makeMapStateToProps>;
 type DispatchProps = ReturnType<typeof mapDispatchToProps>;
 
-export const Constellation = connect<
-  StateProps,
-  DispatchProps,
-  ContainerProps,
-  RootState
->(mapStateToProps, mapDispatchToProps)(Component);
+export const Constellation = connect(makeMapStateToProps, mapDispatchToProps)(Component);

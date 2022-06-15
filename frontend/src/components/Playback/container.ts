@@ -7,7 +7,6 @@ import { Playback as Component } from './component';
 
 const connectionTokensSelector = (state: RootState) => {
   const { connections, tokens } = state.auth;
-  console.log("Playback HOC | Connections", connections, "tokens", tokens);
   const playbackConnectionTokens = connections.reduce((acc, connection) => {
     const tokenKeys = Object.keys(tokens);
     const playbackKey = `${connection}-playback`;
@@ -24,7 +23,6 @@ interface ContainerProps {};
 
 const mapStateToProps = (state: RootState) =>  {
   const connectionTokens = connectionTokensSelector(state);
-  console.log("Playback Hoc | connectionTokens:", connectionTokens);
 
   return {
     connectionTokens
