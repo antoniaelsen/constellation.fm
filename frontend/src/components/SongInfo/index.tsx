@@ -47,7 +47,7 @@ export const SongInfo = (props: SongInfoProps) => {
           {artists.map(({ name, url }, i) => (
             <React.Fragment key={url}>
               {i > 0 && <Typography sx={{ display: "inline-block", mr: 1 }} variant="caption">, </Typography>}
-              <SongInfoLink href={url} variant="caption">{name}</SongInfoLink>
+              <SongInfoLink key={url} href={url} variant="caption">{name}</SongInfoLink>
             </React.Fragment>
           ))}
         </StyledBox>

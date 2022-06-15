@@ -4,6 +4,7 @@ import { BoxProps, IconButton, Slider, Typography } from "@mui/material";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import PauseCircleIcon from "@mui/icons-material/PauseCircle";
 import RepeatIcon from "@mui/icons-material/Repeat";
+import RepeatOneIcon from "@mui/icons-material/RepeatOne";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
@@ -43,6 +44,8 @@ export interface PlayControlsProps {
   duration: number;
   paused: boolean;
   position: number;
+  repeat: RepeatState;
+  shuffle: boolean;
   onPause: () => void,
   onPlay: () => void,
   onRepeat: () => void,
@@ -59,6 +62,8 @@ export const PlayControls = (props: PlayControlsProps) => {
     duration,
     paused,
     position,
+    repeat,
+    shuffle,
     onPause,
     onPlay,
     onRepeat,
@@ -69,6 +74,8 @@ export const PlayControls = (props: PlayControlsProps) => {
     boxProps,
   } = props;
 
+  const RepeatStateIcon = repeat === RepeatState.TRACK ? RepeatOneIcon : RepeatIcon;
+
   const handleSeek = (_, value) => {
     onSeek(value);
   };
@@ -76,9 +83,9 @@ export const PlayControls = (props: PlayControlsProps) => {
   return (
     <StyledBox {...boxProps} sx={{ display: "flex", flexFlow: "column nowrap", alignItems: "center", alignSelf: "stretch", ...boxProps?.sx }}>
       <StyledBox sx={{ display: "flex" }}>
-        <PlaybackButton aria-label="shuffle" size="small" disabled={disabled} onClick={onShuffle}>
+        <IconButton aria-label="shuffle" size="small" color={shuffle ? "primary" : "info"} disabled={disabled} onClick={onShuffle}>
           <ShuffleIcon fontSize="inherit" />
-        </PlaybackButton>
+        </IconButton>
 
         <PlaybackButton aria-label="previous track" size="large" disabled={disabled} onClick={onPreviousTrack}>
           <SkipPreviousIcon fontSize="inherit" />
@@ -100,12 +107,12 @@ export const PlayControls = (props: PlayControlsProps) => {
           <SkipNextIcon fontSize="inherit" />
         </PlaybackButton>
 
-        <PlaybackButton aria-label="repeat" size="small" disabled={disabled} onClick={onRepeat}>
-          <RepeatIcon fontSize="inherit" />
-        </PlaybackButton>
+        <IconButton aria-label="repeat" size="small" color={repeat !== RepeatState.OFF ? "primary" : "info"} disabled={disabled} onClick={onRepeat}>
+          <RepeatStateIcon fontSize="inherit" />
+        </IconButton>
       </StyledBox>
 
-      <StyledBox sx={{ display: "flex", minWidth: "300px", width: "30%" }}>
+      <StyledBox sx={{ display: "flex", minWidth: "300px", width: "100%" }}>
         <Typography variant="caption" sx={{ lineHeight: "1.75rem" }}>{msToClock(position)}</Typography>
 
         <Slider
@@ -117,7 +124,7 @@ export const PlayControls = (props: PlayControlsProps) => {
           step={1}
           max={duration}
           onChange={handleSeek}
-          sx={{ mx: 1 }}
+          sx={{ mx: 2 }}
         />
 
         <Typography variant="caption" sx={{ lineHeight: "1.75rem" }}>{msToClock(duration)}</Typography>

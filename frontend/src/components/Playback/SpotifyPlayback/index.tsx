@@ -10,6 +10,7 @@ import { transformTrack } from "lib/spotify";
 import { DeviceMenu } from "./DeviceMenu";
 import { ConnectionPlaybackProps } from "../ConnectionPlayback";
 import { PlayControls, RepeatState } from "../PlayControls";
+import _ from "lodash";
 
 
 export const PlaybackBox = styled(StyledBox)(({ theme }) => ({
@@ -22,37 +23,25 @@ interface SpotifyPlaybackProps extends ConnectionPlaybackProps {
 }
 
 export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
-  const { token, track } = props;
+  const { token } = props;
 
+  const [devices, setDevices] = useState<any>([]);
+  const [deviceId, setDeviceId] = useState<string | null>(null);
   const [disabled, setDisabled] = useState(true);
   const [duration, setDuration] = useState(600);
   const [paused, setPaused] = useState(false);
   const [position, setPosition] = useState(40);
-  const [repeatState, setRepeatState] = useState(RepeatState.OFF);
-  const [shuffleState, setShuffleState] = useState(true);
+  const [repeat, setRepeat] = useState(RepeatState.OFF);
+  const [shuffle, setShuffle] = useState(true);
   const [currentTrack, setCurrentTrack] = useState<any>(null);
   const [volume, setVolume] = useState(0);
   const interval = useRef<NodeJS.Timeout | null>(null);
   const playerRef = useRef<any>(null);
 
-  const setRepeat = () => {
-    const next = ((repeatState as number) + 1) % 2;
-    console.log("Setting repeat state to", next, next as RepeatState);
-    fetch(`${config.api.spotify}/me/player/repeat?state=${next}`, {
-      method: 'PUT',
-    });
-  }
-
-  const setShuffle = () => {
-    console.log("Setting shuffle state to", !shuffleState);
-    fetch(`${config.api.spotify}/me/player/shuffle?state=${!shuffleState}`, {
-      method: 'PUT',
-    });
-  }
+  const player = playerRef.current;
 
   // TODO(aelsen): make timer more accurate
   const stopInterval = () => {
-    console.log("Stopping interval", interval.current);
     if (!interval.current) return;
     clearInterval(interval.current);
     interval.current = null;
@@ -60,7 +49,6 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
 
   const startInterval = () => {
     const player = playerRef.current;
-    console.log("Starting interval", player);
     if (!player || interval.current) return;
     interval.current = setInterval(() => {
       const intervalId = interval.current;
@@ -71,6 +59,61 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
       setPosition((prev) => prev + 1000);
     }, 1000);
   };
+
+  // TODO(aelsen)
+  const getAvailableDevices = async () => {
+    try {
+      const res = await fetch(`${config.api.spotify}/me/player/devices`, { credentials: "include" }).then((res) => res.json());
+      if (res.error) {
+        if (res.error.status === 401) {
+
+        }
+        return;
+      }
+      setDevices(res.devices);
+    } catch (e) {
+      console.log("Failed to fetch devices", e);
+    }
+  };
+
+  const transferPlayback = async (deviceId: string) => {
+    try {
+      const res = await fetch(`${config.api.spotify}/me/player`, { 
+        credentials: "include",
+        method: "PUT",
+        body: JSON.stringify({ device_ids: [deviceId]  })
+      }).then((res) => res.json());
+      if (res.error) {
+        if (res.error.status === 401) {
+          
+        }
+        return;
+      }
+    } catch (e) {
+      console.log("Failed to transfer playback", e);
+    }
+  };
+
+  const handleRepeat = async () => {
+    const next = ((repeat as number) + 1) % 3;
+    const state = RepeatState[next].toLowerCase();
+    await fetch(`${config.api.spotify}/me/player/repeat?state=${state}`, {
+      credentials: "include",
+      method: 'PUT',
+    });
+    await playerRef.current?.getCurrentState().then(({ repeat_mode }) => {
+      console.log("State after repeat:", repeat_mode);
+      setRepeat(repeat_mode);
+    });
+  }
+
+  const handleShuffle = () => {
+    fetch(`${config.api.spotify}/me/player/shuffle?state=${!shuffle}`, {
+      credentials: "include",
+      method: 'PUT',
+    });
+    setShuffle(!shuffle);
+  }
   
   const handleStateChange = (state: any) => {
     if (!state) {
@@ -96,10 +139,29 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     setPaused(paused);
     setDuration(duration);
     setPosition(position);
-    setRepeatState(repeat_mode);
-    setShuffleState(shuffle);
+    setRepeat(repeat_mode);
+    setShuffle(shuffle);
 
+    getAvailableDevices();
   };
+
+  const handleNextTrack = () => {
+    if (!player) return;
+    if (repeat === RepeatState.TRACK) {
+      player.seek(0);
+    } else {
+      player.nextTrack();
+    }
+  }
+
+  const handlePreviousTrack = () => {
+    if (!player) return;
+    if (repeat === RepeatState.TRACK || position < 3000) {
+      player.seek(0);
+    } else {
+      player.previousTrack();
+    }
+  }
 
   const handleVolumeChange = async (value: number) => {
     fetch(
@@ -128,11 +190,12 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
 
       player.addListener('ready', (device: any) => {
         console.log('Spotify Playback | Ready with Device ID', device);
+        setDeviceId(device.device_id);
         setDisabled(false);
       });
-
+      
       player.addListener('not_ready', (device: any) => {
-        console.log('Spotify Playback | Device ID has gone offline', device);
+        setDeviceId(null);
         setDisabled(true);
       });
 
@@ -157,8 +220,6 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     return stopInterval;
   }, []);
 
-  const player = playerRef.current;
-
   return (
     <PlaybackBox>
       <StyledBox sx={{ display: "flex", gridColumn: 1, gridRow: 1 }}>
@@ -170,21 +231,27 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
         duration={duration}
         paused={paused}
         position={position}
+        repeat={repeat}
+        shuffle={shuffle}
         onPlay={() => player?.resume()}
         onPause={() => player?.pause()}
-        onNextTrack={() => player?.nextTrack()}
-        onPreviousTrack={() => player?.previousTrack()}
+        onNextTrack={handleNextTrack}
+        onPreviousTrack={handlePreviousTrack}
         onSeek={(value) => player?.seek(value)}
-        onShuffle={setShuffle}
-        onRepeat={setRepeat}
+        onShuffle={handleShuffle}
+        onRepeat={handleRepeat}
         boxProps={{ sx: { gridColumn: 2, gridRow: 1 } }}
       />
 
       <DeviceMenu
         boxProps={{ sx: { justifySelf: "flex-end", gridColumn: 3, gridRow: 1 }}}
+        deviceId={deviceId}
+        devices={devices}
         disabled={disabled}
         volume={volume}
         onVolume={handleVolumeChange}
+        getAvailableDevices={getAvailableDevices}
+        transferPlayback={transferPlayback}
       />
 
     </PlaybackBox>
