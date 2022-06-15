@@ -6,7 +6,7 @@ export const PlaybackContainer = styled(StyledBox)(({ theme }) => ({
   // backgroundColor: "cyan",
   height: "80px",
   display: "flex",
-  alignItems: "center",
+  alignItems: "stretch",
   flexFlow: "column nowrap",
   justifyContent: "center",
 }));

@@ -5,7 +5,7 @@ import {
   UPDATE_CONNECTIONS,
   UPDATE_TOKENS,
 } from 'actions/auth';
-import { AuthState } from 'store/auth/types';
+import { AuthState } from 'store/types/auth';
 
 const initialState: AuthState = {
   isAuthenticated: false,

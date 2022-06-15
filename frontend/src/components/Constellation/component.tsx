@@ -4,7 +4,7 @@ import { Line } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { Album, Artist, Playlist, Track } from 'store/music/types';
+import { Album, Artist, Playlist, Track } from 'store/types/music';
 import { Star } from './Star';
 
 

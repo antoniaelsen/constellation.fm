@@ -11,7 +11,7 @@ import IconButton from '@mui/material/IconButton';
 
 import { Playlists } from 'components/Playlists';
 
-import { Constellation } from 'store/constellation/types';
+import { Constellation } from 'store/types/constellation';
 
 
 const drawerWidth = 240;

@@ -6,12 +6,23 @@ import { Request } from "express/types/Request";
 
 const scopes = [
   "playlist-modify-private",
-  "playlist-read-private",
   "playlist-modify-public",
   "playlist-read-collaborative",
-  "user-read-private",
+  "playlist-read-private",
   "streaming",
+  "user-library-modify",
+  "user-library-read",
+  "user-modify-playback-state",
+  "user-read-currently-playing",
+  "user-read-email",
+  "user-read-playback-position",
+  "user-read-playback-state",
+  "user-read-private",
+  "user-read-recently-played",
+  "user-top-read",
+  "ugc-image-upload"
 ];
+
 
 const scopesPlayback = [
   "streaming",

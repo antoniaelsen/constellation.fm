@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Playlist } from 'store/music/types';
+import { Playlist } from 'store/types/music';
 import { Constellation } from './component';
 
 export interface ConstellationHoCProps {

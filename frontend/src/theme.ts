@@ -15,6 +15,9 @@ let muiTheme = createTheme(adaptV4Theme({
     secondary: {
       main: orange['A400'],
     },
+    info: {
+      main: grey['500'],
+    },
     text: {
       primary: grey['300'],
     }

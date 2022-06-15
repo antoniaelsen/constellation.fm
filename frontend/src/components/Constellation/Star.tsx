@@ -5,16 +5,14 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
 import { styled } from "@mui/material/styles";
-import { Link, LinkProps, Typography } from "@mui/material";
 
 import { StyledBox } from 'components/StyledBox';
-import { Album, Artist, Playlist, Track } from 'store/music/types';
+import { Track } from 'store/types/music';
+import { SongInfo } from 'components/SongInfo';
 
-const IMG_WIDTH = 72;
 const STAR_RADIUS = 5;
 const STAR_HEIGHT_SEGS = 16;
 const STAR_WIDTH_SEGS = 16;
-
 
 
 export const StarTooltipCard = styled(StyledBox)(({ theme }) => ({
@@ -26,14 +24,6 @@ export const StarTooltipCard = styled(StyledBox)(({ theme }) => ({
     backgroundColor: `rgba(255, 0, 0, 0.75)`,
     
   }
-}));
-
-export const StarTooltipLink = styled((props: LinkProps) => {
-  return (
-    <Link color="textPrimary" noWrap={true} underline="hover" {...props} />
-  )
-})(({ theme }) => ({
-  display: "inline-block",
 }));
 
 interface StarTooltipProps {
@@ -48,9 +38,9 @@ interface StarTooltipProps {
  */
 export const StarTooltip = (props: StarTooltipProps) => {
   const { track, onClick } = props;
-  const { artists, album, id, name, url } = track;
+  const { id } = track;
   const [hovered, hover] = useState(false);
-  const showImage = true;
+  const hideImage = false;
 
   const handleClick = () => onClick(id);
   // console.log("Star |", track)
@@ -62,31 +52,7 @@ export const StarTooltip = (props: StarTooltipProps) => {
       onPointerOut={() => hover(false)}
     >
       <StarTooltipCard onClick={handleClick}>
-        {showImage && (
-          <StyledBox sx={{ display: "flex", mr: 2 }}>
-            <img
-              alt={`Album art for ${album.name}`}
-              src={album.image.url}
-              height={IMG_WIDTH}
-              width={IMG_WIDTH}
-            />
-          </StyledBox>
-        )}
-
-        <StyledBox sx={{ display: "flex", flexFlow: "column nowrap" }}>
-          <StarTooltipLink href={url}>{name}</StarTooltipLink>
-
-          <StyledBox sx={{ display: "flex" }}>
-            {artists.map(({ name, url }, i) => (
-              <>
-                {i > 0 && <Typography sx={{ display: "inline-block", mr: 1 }}>, </Typography>}
-                <StarTooltipLink href={url}>{name}</StarTooltipLink>
-              </>
-            ))}
-          </StyledBox>
-        
-          <StarTooltipLink href={album.url}>{album.name}</StarTooltipLink>
-        </StyledBox>
+        <SongInfo track={track} hideImage={hideImage} />
       </StarTooltipCard>
     </Html>
   );

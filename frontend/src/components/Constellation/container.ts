@@ -6,7 +6,7 @@ import { getPlaylist } from 'actions/rest/spotify';
 import { RootState } from 'store';
 import { ConstellationHoC as Component } from './HoC';
 import { Connection } from 'rest/constants';
-import { Playlist } from 'store/music/types';
+import { Playlist } from 'store/types/music';
 import schemas from 'store/entities';
 import { denormalize } from 'normalizr';
 

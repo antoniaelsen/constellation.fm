@@ -1,42 +1,113 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Menu, MenuItem } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { IconButton, Slider, Typography } from "@mui/material";
-import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import PauseCircleIcon from "@mui/icons-material/PauseCircle";
-import RepeatIcon from "@mui/icons-material/Repeat";
-import ShuffleIcon from "@mui/icons-material/Shuffle";
-import SkipNextIcon from "@mui/icons-material/SkipNext";
-import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
+import DevicesIcon from "@mui/icons-material/Devices";
 
-import { StyledBox } from 'components/StyledBox';
-import { Track } from "store/music/types";
+import config from "config";
+import { StyledBox } from "components/StyledBox";
+import { SongInfo } from "components/SongInfo";
+import { transformTrack } from "lib/spotify";
+import { DeviceMenu } from "./DeviceMenu";
 import { ConnectionPlaybackProps } from "../ConnectionPlayback";
+import { PlayControls, RepeatState } from "../PlayControls";
 
 
-export const PlaybackButton = styled(IconButton)(({ theme }) => ({
-  color: theme.palette.text.secondary,
-
-  padding: `${theme.spacing(0.75)} ${theme.spacing(1.5)}`,
-  "&:hover": {
-    backgroundColor: "transparent",
-    color: theme.palette.text.primary
-  }
+export const PlaybackBox = styled(StyledBox)(({ theme }) => ({
+  display: "grid", 
+  gridTemplateColumns: "1fr 2fr 1fr",
+  flex: 1,
+  padding: theme.spacing(2),
 }));
-
-// const PlaybackButton = () => {
-
-// }
-
 interface SpotifyPlaybackProps extends ConnectionPlaybackProps {
 }
 
 export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   const { token, track } = props;
 
-  const [player, setPlayer] = useState(undefined);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isActive, setIsActive] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState(track);
+  const [disabled, setDisabled] = useState(true);
+  const [duration, setDuration] = useState(600);
+  const [paused, setPaused] = useState(false);
+  const [position, setPosition] = useState(40);
+  const [repeatState, setRepeatState] = useState(RepeatState.OFF);
+  const [shuffleState, setShuffleState] = useState(true);
+  const [currentTrack, setCurrentTrack] = useState<any>(null);
+  const [volume, setVolume] = useState(0);
+  const interval = useRef<NodeJS.Timeout | null>(null);
+  const playerRef = useRef<any>(null);
+
+  const setRepeat = () => {
+    const next = ((repeatState as number) + 1) % 2;
+    console.log("Setting repeat state to", next, next as RepeatState);
+    fetch(`${config.api.spotify}/me/player/repeat?state=${next}`, {
+      method: 'PUT',
+    });
+  }
+
+  const setShuffle = () => {
+    console.log("Setting shuffle state to", !shuffleState);
+    fetch(`${config.api.spotify}/me/player/shuffle?state=${!shuffleState}`, {
+      method: 'PUT',
+    });
+  }
+
+  // TODO(aelsen): make timer more accurate
+  const stopInterval = () => {
+    console.log("Stopping interval", interval.current);
+    if (!interval.current) return;
+    clearInterval(interval.current);
+    interval.current = null;
+  };
+
+  const startInterval = () => {
+    const player = playerRef.current;
+    console.log("Starting interval", player);
+    if (!player || interval.current) return;
+    interval.current = setInterval(() => {
+      const intervalId = interval.current;
+      if (!player && intervalId !== null) {
+        stopInterval();
+        return;
+      }
+      setPosition((prev) => prev + 1000);
+    }, 1000);
+  };
+  
+  const handleStateChange = (state: any) => {
+    if (!state) {
+      return;
+    }
+
+    const { duration, position, paused, repeat_mode, shuffle, track_window } = state;
+    console.log('Spotify Playback | Player state changed:', state);
+
+    if (!paused) startInterval();
+    if (paused) stopInterval();
+
+    playerRef.current?.getVolume().then(volume => {
+      let percent = volume * 100;
+      setVolume(percent);
+    });
+
+    const track = track_window.current_track
+      ? transformTrack(track_window.current_track)
+      : null;
+    
+    setCurrentTrack(track);
+    setPaused(paused);
+    setDuration(duration);
+    setPosition(position);
+    setRepeatState(repeat_mode);
+    setShuffleState(shuffle);
+
+  };
+
+  const handleVolumeChange = async (value: number) => {
+    fetch(
+      `${config.api.spotify}/me/player/volume?volume_percent=${value}`,
+      { credentials: "include", method: "PUT" }
+    );
+    setVolume(value);
+  };
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -46,113 +117,76 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     document.body.appendChild(script);
 
     (window as any).onSpotifyWebPlaybackSDKReady = () => {
-
       const player = new (window as any).Spotify.Player({
-        name: 'Web Playback SDK',
+        name: "constellation.fm",
         getOAuthToken: (cb: any) => { cb(token); },
         volume: 0.5
       });
 
-      setPlayer(player);
+      playerRef.current = player;
+      player.activateElement();
 
-      player.addListener('ready', ({ device_id }: any) => {
-          console.log('Ready with Device ID', device_id);
+      player.addListener('ready', (device: any) => {
+        console.log('Spotify Playback | Ready with Device ID', device);
+        setDisabled(false);
       });
 
-      player.addListener('not_ready', ({ device_id }: any) => {
-          console.log('Device ID has gone offline', device_id);
+      player.addListener('not_ready', (device: any) => {
+        console.log('Spotify Playback | Device ID has gone offline', device);
+        setDisabled(true);
       });
 
-      player.addListener('player_state_changed', (state: any) => {
-
-        if (!state) {
-            return;
-        }
+      player.addListener('initialization_error', ({ message }) => { 
+        console.error(message);
+      });
     
-        setCurrentTrack(state.track_window.currentTrack);
-        setIsPaused(state.paused);
+      player.addListener('authentication_error', ({ message }) => {
+        console.error(message);
+      });
     
-    
-        player.getCurrentState().then((state: any) => { 
-            (!state)? setIsActive(false) : setIsActive(true) 
-        });
-      
+      player.addListener('account_error', ({ message }) => {
+        console.error(message);
       });
 
-
+      player.addListener('player_state_changed', handleStateChange);
       player.connect();
-
     };
   }, []);
 
+  useEffect(() => {
+    return stopInterval;
+  }, []);
+
+  const player = playerRef.current;
+
   return (
-    <StyledBox sx={{ display: "flex", flexFlow: "column nowrap", alignItems: "center", alignSelf: "stretch" }}>
-      <StyledBox sx={{ display: "flex" }}>
-        <PlaybackButton aria-label="previous track" size="small">
-          <ShuffleIcon fontSize="inherit" />
-        </PlaybackButton>
-
-        <PlaybackButton aria-label="previous track" size="large">
-          <SkipPreviousIcon fontSize="inherit" />
-        </PlaybackButton>
-
-        {isPaused && (
-          <PlaybackButton aria-label="play track" size="large">
-            <PlayCircleIcon fontSize="inherit" />
-          </PlaybackButton>
-        )}
-
-        {!isPaused && (
-          <PlaybackButton aria-label="pause track" size="large">
-            <PauseCircleIcon fontSize="inherit" />
-          </PlaybackButton>
-        )}
-
-        <PlaybackButton aria-label="next track" size="large">
-          <SkipNextIcon fontSize="inherit" />
-        </PlaybackButton>
-
-        <PlaybackButton aria-label="next track" size="small">
-          <RepeatIcon fontSize="inherit" />
-        </PlaybackButton>
+    <PlaybackBox>
+      <StyledBox sx={{ display: "flex", gridColumn: 1, gridRow: 1 }}>
+        {currentTrack && <SongInfo track={currentTrack} imageWidth={48}/>}
       </StyledBox>
+      
+      <PlayControls
+        disabled={disabled}
+        duration={duration}
+        paused={paused}
+        position={position}
+        onPlay={() => player?.resume()}
+        onPause={() => player?.pause()}
+        onNextTrack={() => player?.nextTrack()}
+        onPreviousTrack={() => player?.previousTrack()}
+        onSeek={(value) => player?.seek(value)}
+        onShuffle={setShuffle}
+        onRepeat={setRepeat}
+        boxProps={{ sx: { gridColumn: 2, gridRow: 1 } }}
+      />
 
-      <StyledBox sx={{ display: "flex", minWidth: "300px", width: "30%" }}>
-        <Typography variant="caption" sx={{ lineHeight: "1.75rem" }}>0:00</Typography>
+      <DeviceMenu
+        boxProps={{ sx: { justifySelf: "flex-end", gridColumn: 3, gridRow: 1 }}}
+        disabled={disabled}
+        volume={volume}
+        onVolume={handleVolumeChange}
+      />
 
-        <Slider
-          aria-label="track-time-indicator"
-          size="small"
-          value={40}
-          min={0}
-          step={1}
-          max={600}
-          onChange={(_, value) => {}}
-          sx={{ mx: 1 }}
-
-        />
-
-        <Typography variant="caption" sx={{ lineHeight: "1.75rem" }}>#:##</Typography>
-      </StyledBox>
-    </StyledBox>
+    </PlaybackBox>
   );
 }
-
-
-{/* <StyledBox>
-
-{track && (
-  <>
-    <StyledBox>
-      <img src={track.album.image.url} className="now-playing__cover" alt="" />
-    </StyledBox>
-
-    <div className="now-playing__side">
-        <div className="now-playing__name">{ track.name }</div>
-
-        <div className="now-playing__artist">{ track.artists[0].name }</div>
-    </div>
-  </>
-)}
-
-</StyledBox> */}

@@ -11,7 +11,7 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 import { PlaylistItem } from "components/Playlists/components/PlaylistItem";
 import { ListItem } from "components/Playlists/components/ListItem";
 import { ListItemText } from "components/Playlists/components/ListItemText";
-import type { Playlist } from "store/music/types"
+import type { Playlist } from "store/types/music"
 
 
 const useStyles = makeStyles((theme: Theme) =>

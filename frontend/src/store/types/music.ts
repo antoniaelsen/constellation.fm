@@ -1,17 +1,18 @@
 import { Connection } from "rest/constants";
 
+export interface Image {
+  url: string;
+  height?: number;
+  width?: number;
+}
+
 export interface User {
   id: string;
   connection: Connection;
   connectionId: string;
   displayName: string;
+  image?: Image;
   url: string;
-}
-
-export interface Image {
-  url: string;
-  height?: number;
-  width?: number;
 }
 
 export interface Album {
@@ -54,6 +55,7 @@ export interface Playlist {
   connectionId: string;
   collaborative: boolean;
   description?: string;
+  duration: number;
   editable?: boolean;
   image: Image;
   isPublic: boolean;
