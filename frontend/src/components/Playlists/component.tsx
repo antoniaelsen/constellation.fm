@@ -1,7 +1,4 @@
 import React, { useCallback, useState } from "react";
-import { Theme } from '@mui/material/styles';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
 import Collapse from "@mui/material/Collapse";
 import List from "@mui/material/List";
 import ListSubheader from '@mui/material/ListSubheader';
@@ -15,18 +12,6 @@ import type { Playlist } from "store/types/music"
 import { Skeleton } from "@mui/material";
 
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      padding: `0 ${theme.spacing(1)}`,
-      width: '100%',
-      // maxWidth: 360,
-      backgroundColor: theme.palette.background.paper,
-    },
-  }),
-);
-
-
 interface PlaylistsProps {
   loading: boolean;
   playlists: Playlist[];
@@ -34,7 +19,6 @@ interface PlaylistsProps {
 
 export const Playlists: React.SFC<PlaylistsProps> = (props) => {
   const { loading, playlists } = props;
-  const classes = useStyles();
   const [open, setOpen] = useState(true);
 
   const handleClick = useCallback(() => {
@@ -42,7 +26,13 @@ export const Playlists: React.SFC<PlaylistsProps> = (props) => {
   }, [open, setOpen]);
 
   return (
-    <List className={classes.root}
+    <List
+      sx={(theme) => ({
+        padding: `0 ${theme.spacing(1)}`,
+        width: '100%',
+        // maxWidth: 360,
+        backgroundColor: theme.palette.background.paper,
+      })}
       aria-labelledby="playlists-subheader"
       subheader={
         <ListSubheader component="div" id="playlists-subheader" disableGutters>

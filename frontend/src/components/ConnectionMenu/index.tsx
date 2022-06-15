@@ -1,12 +1,13 @@
 import React from 'react';
-import { Theme } from '@mui/material/styles';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
 import { Button } from "@mui/material";
+import { StyledBox } from 'components/StyledBox';
+interface ConnectionMenuProps {
+  open: boolean;
+}
 
-const useStyles = makeStyles(({ spacing }: Theme) =>
-  createStyles({
-    container: {
+export const ConnectionMenu = (props: ConnectionMenuProps) => {
+  return(
+    <StyledBox sx={({ spacing }) => ({
       backgroundColor: "white",
       position: "fixed",
       right: spacing(2),
@@ -14,19 +15,7 @@ const useStyles = makeStyles(({ spacing }: Theme) =>
       display: "flex",
       flexFlow: "column nowrap",
       zIndex: 100,
-    }
-  })
-);
-
-interface ConnectionMenuProps {
-  open: boolean;
-}
-
-export const ConnectionMenu = (props: ConnectionMenuProps) => {
-  const classes = useStyles();
-
-  return(
-    <div className={classes.container}>
+    })}>
       <Button href={`${process.env.REACT_APP_BACKEND_URL}/auth/spotify?returnTo=${
           window.location.href
         }`}>
@@ -37,6 +26,6 @@ export const ConnectionMenu = (props: ConnectionMenuProps) => {
         }`}>
         Apple Music
       </Button> */}
-    </div>
+    </StyledBox>
   );
 }

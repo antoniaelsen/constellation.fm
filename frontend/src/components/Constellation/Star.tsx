@@ -3,12 +3,11 @@ import { Html } from '@react-three/drei';
 import { useFrame, } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { useTheme } from "@mui/material/styles";
+import { ThemeProvider, useTheme } from "@mui/material/styles";
 
 import { StyledBox } from 'components/StyledBox';
 import { Track } from 'store/types/music';
 import { SongInfo } from 'components/SongInfo';
-import { ThemeProvider } from '@mui/styles';
 
 const STAR_RADIUS = 5;
 const STAR_HEIGHT_SEGS = 16;

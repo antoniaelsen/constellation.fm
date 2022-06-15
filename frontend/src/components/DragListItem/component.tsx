@@ -5,29 +5,11 @@ import React, {useRef} from 'react';
 // import {DnDTypes} from 'lib/dndTypes';
 
 import { Theme } from '@mui/material/styles';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 // import ListItemIcon from '@mui/material/ListItemIcon';
 
 import {Constellation} from 'store/types/constellation';
-
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      '&:hover': {
-        backgroundColor: '#111',
-      },
-      borderRadius: theme.shape.borderRadius,
-    },
-    text: {
-      margin: `calc(${theme.spacing(1)} / 2) ${theme.spacing(1)}`
-    }
-  }),
-);
-
 interface DragItem {
   id: number;
   index: number;
@@ -49,7 +31,6 @@ export const DragListItem: React.SFC<OwnProps> = (props) => {
     // move,
     // update
   } = props;
-  const classes = useStyles();
   const ref = useRef<HTMLDivElement>(null);
   const labelId = `checkbox-list-label-${id}`;
 
@@ -93,14 +74,19 @@ export const DragListItem: React.SFC<OwnProps> = (props) => {
   // This component is both a drop target and drag item 
   // drop(preview(ref));
   return (
-    <ListItem className={classes.root} key={id} role={undefined} dense disableGutters={true}>
+    <ListItem sx={(theme) => ({
+        '&:hover': {
+          backgroundColor: '#111',
+        },
+        borderRadius: theme.shape.borderRadius,
+      })} key={id} role={undefined} dense disableGutters={true}>
       {/* <ListItemIcon ref={drag}>
         <IconButton edge="end" aria-label="collaborative icon">
           // Collaborative icon
         </IconButton>
       </ListItemIcon> */}
       <ListItemText
-        className={classes.text}
+        sx={(theme) => ({ margin: `calc(${theme.spacing(1)} / 2) ${theme.spacing(1)}` })}
         id={labelId}
         primary={displayName}
       />

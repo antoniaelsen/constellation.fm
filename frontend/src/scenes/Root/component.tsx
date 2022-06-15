@@ -4,10 +4,6 @@ import { ReactReduxContext } from 'react-redux'
 import { useContextBridge } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 
-import { Theme } from '@mui/material/styles';
-import createStyles from '@mui/styles/createStyles';
-import makeStyles from '@mui/styles/makeStyles';
-
 import { Nav } from 'components/Nav';
 import { ConnectionMenu } from 'components/ConnectionMenu';
 import { Space } from 'components/Space';
@@ -20,29 +16,6 @@ import { StyledBox } from 'components/StyledBox';
 import { theme } from 'theme';
 import { HtmlContainerContext } from './HtmlContainerContext';
 
-const drawerWidth = 360;
-
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    canvasMain: {
-      backgroundColor: 'red',
-      height: '100%',
-      width: '100%',
-    },
-    drawer: {
-      width: drawerWidth,
-      flexShrink: 0,
-    },
-    content: {
-      flexGrow: 1,
-    },
-    heading: {
-      fontSize: theme.typography.pxToRem(24),
-    },
-  })
-);
-
 interface RootProps {
   connections: Connection[];
   getUser: () => void;
@@ -53,7 +26,6 @@ let connectionsOld: any = null;
 export const Root = (props: RootProps) => {
   const ContextBridge = useContextBridge(ReactReduxContext);
 
-  const classes = useStyles();
   const ref = useRef(null);
   const params: any = useParams();
   const playlistId = params.playlistId;
@@ -84,7 +56,7 @@ export const Root = (props: RootProps) => {
 
       <StyledBox sx={{ display: "flex", flex: 1, transform: "rotate(0deg)" }}>
         <Nav />
-        <main className={classes.content} ref={ref}>
+        <StyledBox sx={{ flexGrow: 1 }} ref={ref}>
           <Canvas camera={{ fov: 75, near: 0.1, far: 100000, position: [0, 0, 5] }}>
             <ContextBridge>
               <HtmlContainerContext.Provider value={{ containerRef: ref }}>
@@ -94,7 +66,7 @@ export const Root = (props: RootProps) => {
               </HtmlContainerContext.Provider>
             </ContextBridge>
           </Canvas>
-        </main>
+        </StyledBox>
       </StyledBox>
   
       <Playback /> 

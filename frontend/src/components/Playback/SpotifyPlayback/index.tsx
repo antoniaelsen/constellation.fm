@@ -22,6 +22,7 @@ interface SpotifyPlaybackProps extends ConnectionPlaybackProps {
 
 export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   const { token } = props;
+  console.log("SpotifyPlayback | ");
 
   const [devices, setDevices] = useState<any>([]);
   const [deviceId, setDeviceId] = useState<string | null>(null);
