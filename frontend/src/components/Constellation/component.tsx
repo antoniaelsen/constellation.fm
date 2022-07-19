@@ -1,12 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 import WebCola from 'react-cola';
 import { Line } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
 import { Playlist, Track } from 'store/types/music';
-import { Star } from './Star';
-import { useTheme } from '@mui/material/styles';
+import { Star } from '../Star';
 
 
 const GRAPH_WIDTH = 500;
@@ -30,7 +29,6 @@ interface Node {
 interface TrackNode extends Node {
   track: Track;
 }
-
 
 export interface ConstellationProps {
   constellation: any;

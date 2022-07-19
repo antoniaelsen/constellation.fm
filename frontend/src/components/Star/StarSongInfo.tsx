@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography } from "@mui/material";
+import { Typography } from '@mui/material';
 
 import { StyledBox } from 'components/StyledBox';
 import { StyledLink } from 'components/StyledLink';
@@ -7,14 +7,15 @@ import { Track } from 'store/types/music';
 
 const IMG_WIDTH = 72;
 
-interface SongInfoProps {
+interface StarSongInfoProps {
   imageWidth?: number;
   hideAlbum?: boolean;
   hideImage?: boolean;
   track: Track;
 };
 
-export const SongInfo = (props: SongInfoProps) => {
+
+export const StarSongInfo = (props: StarSongInfoProps) => {
   const { imageWidth = IMG_WIDTH, hideAlbum, hideImage, track } = props;
   const { artists, album, name, url } = track;
 
@@ -24,6 +25,7 @@ export const SongInfo = (props: SongInfoProps) => {
         <StyledBox sx={{ display: "flex", mr: 2 }}>
           <img
             alt={`Album art for ${album.name}`}
+            style={{ borderRadius: imageWidth / 2 }}
             src={album.image.url}
             height={imageWidth}
             width={imageWidth}

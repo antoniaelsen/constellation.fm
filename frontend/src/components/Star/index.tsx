@@ -3,12 +3,15 @@ import { Html } from '@react-three/drei';
 import { useFrame, } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { ThemeProvider, useTheme } from "@mui/material/styles";
+import { alpha, ThemeProvider, useTheme } from "@mui/material/styles";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import { IconButton } from '@mui/material';
 
 import { StyledBox } from 'components/StyledBox';
 import { Track } from 'store/types/music';
-import { SongInfo } from 'components/SongInfo';
+import { StarSongInfo } from './StarSongInfo';
 
+const TRANSPARENT_CARDS = true;
 const STAR_RADIUS = 5;
 const STAR_HEIGHT_SEGS = 16;
 const STAR_WIDTH_SEGS = 16;
@@ -17,13 +20,19 @@ const STAR_WIDTH_SEGS = 16;
 export const StarTooltipCard = (({ children, onClick }) => {
   return (
     <StyledBox onClick={onClick} sx={(theme) => ({
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      border: `1px solid rgba(255, 255, 255, 0.2)`,
+      ...(TRANSPARENT_CARDS ?  {} : {
+        backgroundColor: alpha(theme.palette.background.paper, 0.75),
+        border: `1px solid rgba(255, 255, 255, 0.2)`,
+      }),
       // borderRadius: theme.shape.borderRadius,
-      display: "flex", 
+      display: "flex",
+      alignItems: "center",
       padding: theme.spacing(1),
       "&:hover": {
-        backgroundColor: `rgba(255, 255, 255, 0.15)`,
+        ...(TRANSPARENT_CARDS ?  {} : {
+          border: `1px solid rgba(255, 255, 255, 0.3)`,
+          backgroundColor: alpha(theme.palette.background.paper, 0.95),
+        })
       }
     })}
     >
@@ -47,7 +56,6 @@ export const StarTooltip = (props: StarTooltipProps) => {
   const { track, onClick } = props;
   const { id } = track;
   const [hovered, hover] = useState(false);
-  const hideImage = false;
 
   const handleClick = () => onClick(id);
   return (
@@ -59,7 +67,10 @@ export const StarTooltip = (props: StarTooltipProps) => {
     >
       <ThemeProvider theme={theme}>
         <StarTooltipCard onClick={handleClick}>
-          <SongInfo track={track} hideImage={hideImage} />
+          {/* <IconButton>
+            <PlayCircleIcon />
+          </IconButton> */}
+          <StarSongInfo track={track} hideAlbum={false} imageWidth={48}/>
         </StarTooltipCard>
       </ThemeProvider>
     </Html>
