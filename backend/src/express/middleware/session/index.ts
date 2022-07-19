@@ -1,8 +1,9 @@
 import { CookieOptions } from "express";
 import session from "express-session";
+import { PrismaSessionStore } from '@quixo3/prisma-session-store';
 import passport from "passport";
 
-const createSessionMiddleware = ({ config, logger: mainLogger }) => {
+const createSessionMiddleware = ({ client, config, logger: mainLogger }) => {
   const logger = mainLogger.child({ labels: ['session'] });
 
   const cookieParams:CookieOptions = {
@@ -19,7 +20,15 @@ const createSessionMiddleware = ({ config, logger: mainLogger }) => {
     cookie: cookieParams,
     secret: process.env.SESSION_SECRET,
     resave: true,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: new PrismaSessionStore(
+      client,
+      {
+        checkPeriod: 2 * 60 * 1000,  //ms
+        dbRecordIdIsSessionId: true,
+        dbRecordIdFunction: undefined,
+      }
+    )
   });
 
   const passportInit = passport.initialize();

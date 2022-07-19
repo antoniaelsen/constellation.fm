@@ -12,6 +12,7 @@ const createAuth0AuthMiddleware = ({
     config,
     logger: mainLogger,
     path,
+    client,
     addConnection,
     connectAndRedirect,
     redirectToReturnTo,
@@ -34,18 +35,55 @@ const createAuth0AuthMiddleware = ({
     callbackURL: `https://${config.backendDomain}${path}/callback`,
   };
 
-  const verifyCallback = (req, accessToken: string, refreshToken: string, extraParams, profile, done) =>  {
-    const { displayName, emails, id, name, user_id } = profile;
-    const user = {
-      displayName,
-      emails,
-      id,
-      name,
-      user_id
+  const verifyCallback = async (req, accessToken: string, refreshToken: string, extraParams, profile, done) =>  {
+    const { displayName, emails, id, name, picture } = profile;
+    logger.info(`Verifying user [${id}] - ${JSON.stringify(profile)}`);
+  
+    let existing = await client.user.findFirst({ where: { auth0Id: id } });  
+    if (!existing) {
+      try {
+        existing = await client.user.create({
+          data: {
+            auth0Id: id,
+            firstName: name.givenName,
+            lastName: name.familyName,
+            email: emails[0].value,
+          }
+        });
+        logger.info(`Created user [${id}]`);
+      } catch (e: any) {
+        logger.warn(`Failed to create user: ${e}`);
+        return done(e);
+      }
+    } else {
+      logger.info(`Found existing user [${id}] "${existing.firstName} ${existing.lastName}`);
     }
-    logger.info(`Verifying user [${user.id}]`);
+  
+    const user = {
+      id,
+      displayName,
+      name,
+      picture,
+      connections: [],
+      email: emails[0].value,
+    }
 
-    // TODO(aelsen): verify
+    try {
+      const connections = await client.connection.findMany({ where: { userId: existing.id } });
+      user.connections = connections.reduce((acc, { connection, accessToken, refreshToken, expiresAt, }) => ({
+        ...acc,
+        [connection]: {
+          accessToken,
+          refreshToken,
+          expiresAt
+        }
+      }), {});
+    } catch (e: any) {
+      logger.warn(e)
+    }
+
+    logger.info(`Returning user with connections ${JSON.stringify(user, null, 2)}`)
+
     return done(null, user);
   };
 

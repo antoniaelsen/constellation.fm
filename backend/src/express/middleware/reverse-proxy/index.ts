@@ -13,7 +13,7 @@ const createReverseProxy = (service: string, url: string, { config, logger: main
   const logger = mainLogger.child({ labels: [`proxy-${service}`] });
 
   const getToken = (req: Request) => {
-    const connections = req.user?._connections;
+    const connections = req.user?.connections;
     if (!connections) return null;
 
     return connections[service]?.accessToken;

@@ -36,6 +36,7 @@ const createSpotifyAuthMiddleware = ({
   config,
   logger: mainLogger,
   path,
+  client,
   addConnection,
   connectAndRedirect,
   redirectToReturnTo,
@@ -77,18 +78,49 @@ const createSpotifyAuthMiddleware = ({
     return next();
   };
 
-  const verifyCallback = (req, accessToken, refreshToken, expires_in, profile, done) =>  {
+  const verifyCallback = async (req, accessToken, refreshToken, expires_in, profile, done) =>  {
     const target = req.session.target;
-    logger.info(`Got user [${req.user?.id}] ${profile.id} tokens for scope "${target}" `);
+    logger.info(`Got user [${req.user?.id}] "${profile.id}" tokens for scope [${target}]`);
 
-    // TODO(aelsen): verify?
+    const id = req.user.id;
+    const expiresAt = new Date(Date.now() + expires_in).toISOString();
     const account = {
       service: target,
       tokens: {
         accessToken,
-        refreshToken
+        refreshToken,
+        expiresAt,
       }
     };
+  
+    const existingUser = await client.user.findFirst({ where: { auth0Id: id } });
+    if (!existingUser) {
+      const msg = `Failed to create connection: no user [${id}]`;
+      logger.warn(msg);
+      return done(msg);
+    }
+
+    const existingToken = await client.connection.findFirst({ where: { userId: existingUser.id, connection: target } });
+    if (!existingToken) {
+      try {
+        await client.connection.create({
+          data: {
+            accessToken,
+            refreshToken,
+            expiresAt,
+            connection: target,
+            userId: existingUser.id,
+          }
+        });
+        logger.info(`Created connection entry for user [${id}] service [${target}]`);
+      } catch (e: any) {
+        logger.warn(`Failed to create connection: ${e}`);
+        return done(e);
+      }
+    } else {
+      logger.info(`Found existing connection entry for user [${id}] service [${target}]`);
+    }
+
     return done(null, account);
   };
 
@@ -121,7 +153,7 @@ const createSpotifyAuthMiddleware = ({
 
   router.get(
     "/playback",
-    setScopeTarget("spotify-playback"),
+    setScopeTarget("spotifyplayback"),
     authenticatePlayback
   );
 

@@ -11,10 +11,10 @@ interface Middleware {
   session: MiddlewareFunc[],
 }
 
-const createMiddleware = ({ config, logger }): Middleware => {
-  const { mw: session } = createSessionMiddleware({ config, logger });
+const createMiddleware = ({ client, config, logger }): Middleware => {
+  const { mw: session } = createSessionMiddleware({ client, config, logger });
   const { mw: util } = createUtilMiddleware({ config, logger });
-  const { mw: auth } = createAuthMiddleware({ config, logger, path: "/auth" });
+  const { mw: auth } = createAuthMiddleware({ client, config, logger, path: "/auth" });
   const { mw: reverseProxy } = createReverseProxyMiddleware({ config, logger, path: "/api" });
 
   return {

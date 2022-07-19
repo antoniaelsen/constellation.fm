@@ -1,22 +1,23 @@
 import { Request as ExpressRequest } from "express";
 
-export type ConnectionTokens = {
+export type ConnectionData = {
   accessToken: string;
   refreshToken: string;
+  expiresAt: Date;
 };
 
-export type ConnectionTokensMap = {
-  [key: string]: ConnectionTokens
+export type ConnectionsMap = {
+  [key: string]: ConnectionData
 };
 
 export type Account = {
   service: string;
-  tokens: ConnectionTokens;
+  data: ConnectionData;
 };
 
 export interface Request extends ExpressRequest {
   user?: {
-    _connections?: ConnectionTokensMap,
+    connections?: ConnectionsMap,
     id?: string;
   },
   account?: Account;

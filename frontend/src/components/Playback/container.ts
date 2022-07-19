@@ -9,7 +9,7 @@ const connectionTokensSelector = (state: RootState) => {
   const { connections, tokens } = state.auth;
   const playbackConnectionTokens = connections.reduce((acc, connection) => {
     const tokenKeys = Object.keys(tokens);
-    const playbackKey = `${connection}-playback`;
+    const playbackKey = `${connection}playback`;
     if (!tokenKeys.includes(playbackKey)) return acc;
     return {
       ...acc,

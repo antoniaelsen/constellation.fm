@@ -11,6 +11,8 @@
     "watch": "tsc && concurrently \"npm run watch:compile\" \"npm run start\""
   },
   "dependencies": {
+    "@prisma/client": "^4.0.0",
+    "@quixo3/prisma-session-store": "^3.1.8",
     "axios": "^0.21.1",
     "cookie-parser": "^1.4.5",
     "cookie-session": "^1.4.0",
@@ -26,6 +28,7 @@
     "passport-apple-music": "^1.0.1",
     "passport-auth0": "^1.4.0",
     "passport-spotify": "^2.0.0",
+    "prisma": "^4.0.0",
     "querystring": "~0.2.0",
     "spotify-web-api-node": "^4.0.0",
     "winston": "^3.3.3"

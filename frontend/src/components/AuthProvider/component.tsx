@@ -5,7 +5,7 @@ import { Connection } from "rest/constants";
 
 const COOKIE_KEY_AUTH_STATE = "cfm-auth";
 const COOKIE_KEY_TOKEN_PREFIX = `${COOKIE_KEY_AUTH_STATE}-token`;
-const COOKIE_KEY_TOKENS = ["spotify-playback"];
+const COOKIE_KEY_TOKENS = ["spotifyplayback"];
 
 type Tokens = {
   [key: string]: string | null;
