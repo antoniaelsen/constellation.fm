@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { styled } from "@mui/material/styles";
 
 import config from "config";
@@ -8,7 +8,6 @@ import { transformTrack } from "lib/spotify";
 import { DeviceMenu } from "./DeviceMenu";
 import { ConnectionPlaybackProps } from "../ConnectionPlayback";
 import { PlayControls, RepeatState } from "../PlayControls";
-import _ from "lodash";
 
 
 export const PlaybackBox = styled(StyledBox)(({ theme }) => ({
@@ -60,7 +59,7 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   };
 
   // TODO(aelsen)
-  const getAvailableDevices = async () => {
+  const getAvailableDevices = useCallback(async () => {
     try {
       const res = await fetch(`${config.api.spotify}/me/player/devices`, { credentials: "include" }).then((res) => res.json());
       if (res.error) {
@@ -73,7 +72,7 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     } catch (e) {
       console.log("Failed to fetch devices", e);
     }
-  };
+  }, []);
 
   const transferPlayback = async (deviceId: string) => {
     try {

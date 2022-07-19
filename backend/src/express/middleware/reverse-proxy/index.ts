@@ -21,10 +21,10 @@ const createReverseProxy = (service: string, url: string, { config, logger: main
 
   const proxyReqOptDecorator = (proxyReqOpts: any, req: Request) => {
     const token = getToken(req);
+    logger.debug(`[${req.sessionID}] [${(req.user as any)?.id}] Proxying request ${req.path}`);
     if (!token) {
       logger.error(`[${req.sessionID}] [${(req.user as any)?.id}] Failed to apply token to proxied request`);
     }
-    logger.info(`[${req.sessionID}] [${(req.user as any)?.id}] Proxying request ${req.path}`);
     proxyReqOpts.headers['Authorization'] = `Bearer ${token}`;
     return proxyReqOpts;
   };

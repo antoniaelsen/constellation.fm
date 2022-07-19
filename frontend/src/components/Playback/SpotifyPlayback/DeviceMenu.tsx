@@ -97,7 +97,7 @@ const DeviceMenuInner = forwardRef((props: DeviceMenuInnerProps, ref) => {
       <VolumeSlider disabled={disabled} value={volume} onVolume={onVolume}/>
     </StyledBox>
   );
-})
+});
 
 
 interface DeviceMenuProps {
@@ -131,7 +131,7 @@ export const DeviceMenu = (props: DeviceMenuProps) => {
 
   useEffect(() => {
     getAvailableDevices();
-  }, []);
+  }, [getAvailableDevices]);
 
   const otherDevice = devices.find((device) => device.is_active && device.id !== deviceId);
   

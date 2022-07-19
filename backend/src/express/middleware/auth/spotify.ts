@@ -80,7 +80,7 @@ const createSpotifyAuthMiddleware = ({
 
   const verifyCallback = async (req, accessToken, refreshToken, expires_in, profile, done) =>  {
     const target = req.session.target;
-    logger.info(`Got user [${req.user?.id}] "${profile.id}" tokens for scope [${target}]`);
+    logger.info(`Verifying user scope [${target}][${req.user?.id}] "${profile.id}"`);
 
     const id = req.user.id;
     const expiresAt = new Date(Date.now() + expires_in).toISOString();
@@ -118,7 +118,15 @@ const createSpotifyAuthMiddleware = ({
         return done(e);
       }
     } else {
-      logger.info(`Found existing connection entry for user [${id}] service [${target}]`);
+      logger.info(`Found existing connection entry for user [${id}] service [${target}], updating...`);
+      await client.connection.update({
+        data: {
+          accessToken,
+          refreshToken,
+          expiresAt
+        },
+        where: { id: existingToken.id }
+      })
     }
 
     return done(null, account);

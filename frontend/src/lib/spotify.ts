@@ -22,7 +22,7 @@ const transformUser = (input: any): User => {
 };
 
 const transformArtist = (input: any): Artist => {
-  const { external_urls, id, images, name } = input;
+  const { external_urls, id, name } = input;
   const url = external_urls?.spotify;
   return {
     connection: Connection.SPOTIFY,
@@ -48,7 +48,7 @@ const transformAlbum = (input: any): Album => {
 };
 
 const transformTrack = (input: any): Track => {
-  const { artists, album, external_urls, id, images, name, track_number: trackNumber } = input;
+  const { artists, album, external_urls, id, name, track_number: trackNumber } = input;
   const url = external_urls?.spotify;
 
   return {

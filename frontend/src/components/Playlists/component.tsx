@@ -48,6 +48,7 @@ export const Playlists: React.SFC<PlaylistsProps> = (props) => {
         <List component="div" disablePadding>
           {(loading && playlists.length === 0) && Array.from(new Array(100)).map((e, i) => (
             <ListItem
+              key={i}
               dense={true}
               disablePadding={true}
             >

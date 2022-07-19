@@ -30,11 +30,11 @@ export const reducers: {[key: string]: MusicReducer} = {
     };
   },
   [CREATE_PLAYLIST_SUCCESS]: (prevState, action) => {
-    const playlist = action.payload;
+    // const playlist = action.payload;
     return prevState;
   },
   [CREATE_PLAYLIST_SUCCESS]: (prevState, action) => {
-    const playlist = action.payload;
+    // const playlist = action.payload;
     return prevState;
   },
   [GET_PLAYLIST_SUCCESS]: (prevState, action) => {

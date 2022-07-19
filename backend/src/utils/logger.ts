@@ -10,6 +10,9 @@ winston.addColors({
 const format = winston.format.combine(
   winston.format.colorize({ all: true }),
   winston.format.timestamp(),
+  winston.format.label({
+    label:'[LOGGER]'
+  }),
   winston.format.printf((meta) => {
     const { level, message, labels, timestamp } = meta;
     const padding = level.length <= 7 ? 7: 17;

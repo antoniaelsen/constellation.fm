@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 
-import { BrowserRouter, Route, Redirect, Switch, useLocation } from 'react-router-dom';
-import { Theme } from '@mui/material/styles';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { Login } from 'scenes/Login';
 import { Root } from 'scenes/Root';
 

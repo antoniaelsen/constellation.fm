@@ -4,8 +4,8 @@ import { useFrame, } from '@react-three/fiber';
 import * as THREE from 'three';
 
 import { alpha, ThemeProvider, useTheme } from "@mui/material/styles";
-import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import { IconButton } from '@mui/material';
+// import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+// import { IconButton } from '@mui/material';
 
 import { StyledBox } from 'components/StyledBox';
 import { Track } from 'store/types/music';

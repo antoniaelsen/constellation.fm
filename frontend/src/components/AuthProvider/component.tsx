@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect } from "react";
 import cookies from "js-cookie";
 import config from "config";
 import { Connection } from "rest/constants";
@@ -63,7 +63,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
     updateConnections([]);
     clearTokens();
     clearCookies();
-  }, []);
+  }, [clearTokens, updateConnections, setAuthentication]);
   
   const getAuthState = useCallback(() => {
     const authStateStr = cookies.get(COOKIE_KEY_AUTH_STATE);
@@ -73,7 +73,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
     const authState = JSON.parse(authStateStr);
     setAuthentication(authState.isLoggedIn);
     updateConnections(authState.connections);
-  }, []);
+  }, [setAuthentication, updateConnections]);
 
   const getTokens = useCallback(async () => {
     try {
@@ -88,7 +88,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
     } catch (e) {
       clearAuthState();
     }
-  }, [setAuthentication, clearAuthState, updateTokens]);
+  }, [clearAuthState, updateTokens]);
 
   const login = useCallback(() => {
     const redirectUri = `${config.api.backend}/auth/auth0?returnTo=${

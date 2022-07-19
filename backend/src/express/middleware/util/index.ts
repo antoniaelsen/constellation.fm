@@ -11,8 +11,7 @@ const createUtilMiddleware = ({ config, logger }): { mw: MiddlewareFunc[] } => {
     const prefix = [session, user].join(' ');
     
     const str = `${prefix} [${req.method}] "${req.path}"${req.xhr ? ' XHR' : ''} from origin ${req.get('Origin')} "${req.path}"`;
-    const log = (req.method === "OPTIONS") ? childLogger.debug : childLogger.info;
-    log(str);
+    childLogger.debug(str);
 
     next();
   };

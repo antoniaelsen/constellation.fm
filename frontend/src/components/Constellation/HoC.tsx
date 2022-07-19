@@ -21,7 +21,7 @@ export const ConstellationHoC = (props: ConstellationHoCProps) => {
   useEffect(() => {
     if (!connectionId) return;
     getPlaylist(connectionId);
-  }, [connectionId]);
+  }, [connectionId, getPlaylist]);
 
 
   if (!playlist) return (<></>);

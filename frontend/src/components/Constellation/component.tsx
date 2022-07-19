@@ -39,7 +39,7 @@ export interface ConstellationProps {
 
 export const Constellation = (props: ConstellationProps) => {
   // HOC
-  const { constellation, id, playlist, selectTrack } = props;
+  const { playlist, selectTrack } = props;
 
   const nodes = playlist?.tracks?.map(({ track }) => ({ id: track.id, track }));
   const links = nodes && nodes.length > 1 ? [

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import { Connection } from "rest/constants";
 import { ConnectionPlaybackProps } from "./ConnectionPlayback";
