@@ -71,6 +71,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
       return;
     }
     const authState = JSON.parse(authStateStr);
+    console.log("AuthProvider | authState:", authState);
     setAuthentication(authState.isLoggedIn);
     updateConnections(authState.connections);
   }, [setAuthentication, updateConnections]);

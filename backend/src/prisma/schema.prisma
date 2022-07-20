@@ -57,7 +57,7 @@ model Connection {
   userId          String
   user            User      @relation(fields: [userId], references: [id])
 
-  @@unique([userId, service])
+  @@id([userId, service])
 }
 
 model Constellation {

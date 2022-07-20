@@ -23,15 +23,15 @@ const createSelectPlaylistById = () => createSelector(
   (entities, playlists, id) => {
     const normalized = playlists[id]
     if (!playlists || playlists.length === 0) return null;
-    console.time("Denormalizing playlists");
+    // console.time("Denormalizing playlists");
     const de = denormalize(normalized, schemas.playlist, entities);
-    console.timeEnd("Denormalizing playlists");
+    // console.timeEnd("Denormalizing playlists");
     return de;
   }, 
   {
     memoizeOptions: {
       resultEqualityCheck: (a, b) => {
-        console.log("Comparing", isEqual(a, b), a, b)
+        // console.log("Comparing", isEqual(a, b), a, b)
         return isEqual(a, b)
       }
     }
@@ -41,12 +41,12 @@ const createSelectPlaylistById = () => createSelector(
 const makeMapStateToProps = () => {
   const selectPlaylistById = createSelectPlaylistById();
   const empty = {};
-  let temp = null;
+  // let temp = null;
 
   return (state: RootState, props: ContainerProps) =>  {
     const playlist = selectPlaylistById(state, props);
-    console.log("Constellation Container | Map state to props - plist", temp === playlist, playlist);
-    temp = playlist;
+    // console.log("Constellation Container | Map state to props - plist", temp === playlist, playlist);
+    // temp = playlist;
     return {
       constellation: empty,
       playlist

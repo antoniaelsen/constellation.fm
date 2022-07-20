@@ -21,6 +21,13 @@ import { StyledBox } from "components/StyledBox";
 import { VolumeSlider } from "../VolumeSlider";
 
 
+export interface Device {
+  id: string;
+  is_active: boolean;
+  name: string;
+  type: string;
+}
+
 const getDeviceIcon = (type) => {
   const deviceIcons = {
     Computer: ComputerIcon,
@@ -30,11 +37,10 @@ const getDeviceIcon = (type) => {
   return deviceIcons[type] || DevicesOtherIcon;
 }
 
-
 interface DeviceMenuInnerProps {
   anchorEl: null | HTMLElement;
   deviceId?: string | null;
-  devices: any[];
+  devices: Device[];
   disabled?: boolean;
   open: boolean;
   volume: number;
@@ -125,6 +131,7 @@ export const DeviceMenu = (props: DeviceMenuProps) => {
   };
 
   const handleDeviceClick = (id: string) => {
+    console.log("DeviceMenu | Transferring Playback to", id);
     transferPlayback(id);
     handleDeviceMenuClose();
   }
@@ -134,6 +141,7 @@ export const DeviceMenu = (props: DeviceMenuProps) => {
   }, [getAvailableDevices]);
 
   const otherDevice = devices.find((device) => device.is_active && device.id !== deviceId);
+  // console.log("DeviceMenu | devices", !!otherDevice, deviceId, otherDevice)
   
   return (
     <Tooltip arrow open={!!otherDevice} placement="left" title={`Listening on ${otherDevice?.name}`}>

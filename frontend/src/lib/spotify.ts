@@ -15,7 +15,7 @@ const transformUser = (input: any): User => {
   return {
     service: Service.SPOTIFY,
     serviceId: id,
-    id: `${Service.SPOTIFY}-${id}`,
+    id: `${Service.SPOTIFY}-user-${id}`,
     displayName,
     url
   };
@@ -27,7 +27,7 @@ const transformArtist = (input: any): Artist => {
   return {
     service: Service.SPOTIFY,
     serviceId: id,
-    id: `${Service.SPOTIFY}-${id}`,
+    id: `${Service.SPOTIFY}-artist-${id}`,
     name,
     url
   };
@@ -40,7 +40,7 @@ const transformAlbum = (input: any): Album => {
   return {
     service: Service.SPOTIFY,
     serviceId: id,
-    id: `${Service.SPOTIFY}-${id}`,
+    id: `${Service.SPOTIFY}-album-${id}`,
     image,
     name, 
     url
@@ -56,7 +56,7 @@ const transformTrack = (input: any): Track => {
     artists: artists.map(transformArtist),
     service: Service.SPOTIFY,
     serviceId: id,
-    id: `${Service.SPOTIFY}-${id}`,
+    id: `${Service.SPOTIFY}-track-${id}`,
     name,
     trackNumber,
     url
@@ -72,7 +72,7 @@ const transformPlaylistSimplified = (input: any, i: number): Playlist => {
     service: Service.SPOTIFY,
     serviceId: id,
     duration: 0,
-    id: `${Service.SPOTIFY}-${id}`,
+    id: `${Service.SPOTIFY}-playlist-${id}`,
     order: i,
     owner: transformUser(owner),
     tracks: [],
@@ -94,7 +94,7 @@ const transformPlaylistFull = (input: any): Playlist => {
     service: Service.SPOTIFY,
     serviceId: id,
     duration: 0,
-    id: `${Service.SPOTIFY}-${id}`,
+    id: `${Service.SPOTIFY}-playlist-${id}`,
     owner: transformUser(owner),
     tracks: tracks.items.map(transformPlaylistTrack),
     collaborative,
@@ -106,12 +106,13 @@ const transformPlaylistFull = (input: any): Playlist => {
   };
 };
 
-const transformPlaylistTrack = (input: any): PlaylistTrack => {
+const transformPlaylistTrack = (input: any, i: number): PlaylistTrack => {
   const { added_at, added_by, track } = input;
 
   return {
     addedAt: added_at,
     addedBy: transformUser(added_by),
+    order: i,
     track: transformTrack(track),
   };
 };

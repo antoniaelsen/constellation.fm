@@ -46,6 +46,7 @@ export interface Track {
 export interface PlaylistTrack {
   addedAt: string;
   addedBy: User;
+  order: number;
   track: Track;
 }
 

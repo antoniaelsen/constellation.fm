@@ -113,7 +113,7 @@ export const PlayControls = (props: PlayControlsProps) => {
       </StyledBox>
 
       <StyledBox sx={{ display: "flex", minWidth: "300px", width: "100%" }}>
-        <Typography variant="caption" sx={{ lineHeight: "1.75rem" }}>{msToClock(position)}</Typography>
+        <Typography variant="caption" sx={{ lineHeight: "1.75rem", width: "1.5rem" }}>{msToClock(position)}</Typography>
 
         <Slider
           aria-label="track-time-slider"
@@ -127,7 +127,7 @@ export const PlayControls = (props: PlayControlsProps) => {
           sx={{ mx: 2 }}
         />
 
-        <Typography variant="caption" sx={{ lineHeight: "1.75rem" }}>{msToClock(duration)}</Typography>
+        <Typography variant="caption" sx={{ lineHeight: "1.75rem", width: "1.5rem" }}>{msToClock(duration)}</Typography>
       </StyledBox>
     </StyledBox>
   );

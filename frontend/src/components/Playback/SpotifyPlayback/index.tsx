@@ -5,9 +5,224 @@ import config from "config";
 import { StyledBox } from "components/StyledBox";
 import { SongInfo } from "components/SongInfo";
 import { transformTrack } from "lib/spotify";
-import { DeviceMenu } from "./DeviceMenu";
+import { Device, DeviceMenu } from "./DeviceMenu";
 import { ServicePlaybackProps } from "../ServicePlayback";
 import { PlayControls, RepeatState } from "../PlayControls";
+import { SPOTIFY_URL } from "lib/constants";
+import { useInterval } from "lib/useInterval";
+
+const POLL_PERIOD = 1000; // ms
+
+function mod(n, m) {
+  return ((n % m) + m) % m;
+}
+
+interface Context {
+  href: string;
+  type: string;
+  uri: string;
+  length: number | null;
+  position: number | null;
+  trackId: string | null;
+  next?: { uri: string, position: number | null } | null;
+  prev?: { uri: string, position: number | null } | null;
+}
+
+const params = (args) => {
+  const filtered = {};
+  Object.entries(args).forEach(([key, value]) => {
+    if (value === undefined) return;
+    filtered[key] = value;
+  });
+
+  const str = new URLSearchParams(filtered).toString();
+  return str.length > 0 ? "?" + str : str;
+}
+
+const getDevices = async () => {
+  try {
+    const res = await fetch(`${config.api.spotify}/me/player/devices`, {
+      credentials: "include"
+    }).then((res) => res.json());
+    if (res.error) {
+      if (res.error.status === 401) {
+
+      }
+      return [];
+    }
+    console.log("Spotify Playback | Got available devices", res.devices);
+    return res.devices;
+  } catch (e) {
+    console.log("Failed to fetch devices", e);
+    return [];
+  }
+};
+
+const getContextItem = async (href: string) => {
+  const url = href.replace(SPOTIFY_URL, config.api.spotify);
+  try {
+    const res = await fetch(url, {
+      credentials: "include"
+    }).then((res) => res.json());
+    if (res.error) {
+      if (res.error.status === 401) {
+
+      }
+      return [];
+    }
+    console.log("Spotify Playback | Got context item", res);
+    return res;
+  } catch (e) {
+    console.log("Failed to fetch context item", e);
+    return null;
+  }
+};
+
+
+const getCurrentContext = async (ctx, currentTrack) => {
+  const { href, type, uri } = ctx;
+  const current: any = await getContextItem(href);
+  if (!current || !currentTrack) return null;
+  
+  const items = current.tracks.items;
+  const length = items.length;
+  let position = currentTrack
+    ? items.findIndex((item) => {
+      if (type === "album") return item.id === currentTrack.id;
+      return item.track.id === currentTrack.id;
+    })
+    : -1;
+  let res = {
+    href,
+    type,
+    uri,
+    trackId: null,
+    next: null,
+    prev: null,
+    position: position !== -1 ? position : null,
+    length,
+  };
+  
+  console.log("Spotify Playback | Creating context", res, position, currentTrack, items);
+  if (position === -1) {
+    return res;
+  }
+
+  const nextIndex = mod((position + 1), length);
+  const prevIndex = mod((position - 1), length);
+  console.log("Spotify Playback | Creating context next, prev", nextIndex, prevIndex, length);
+
+  const nextUri = items[nextIndex].id;
+  const prevUri = items[prevIndex].id;
+
+  return {
+    ...res,
+    trackId: items[position].id,
+    next: { uri: nextUri, position: nextIndex},
+    prev: { uri: prevUri, position: prevIndex},
+    position,
+    length,
+  }
+}
+
+const getPlayerState = async () => {
+  try {
+    const res: any = await fetch(`${config.api.spotify}/me/player`, { 
+      credentials: "include",
+      method: "GET"
+    }).then((res) => res.status === 200 ? res.json() : null);
+
+    if (!res) return;
+    if (res.error) {
+      if (res?.error?.status === 401) {
+        
+      }
+      return null;
+    }
+    return res;
+  } catch (e) {
+    console.log("Failed to get state", e);
+    return null;
+  }
+};
+
+const setPlayerPlay = async (
+    position: number,
+    contextUri?: string,
+    offset?: { uri?: string; position?: number },
+    deviceId?: string) => {
+  const payload: any = {
+    position_ms: position,
+  };
+  
+  if (contextUri) payload.context_uri = contextUri;
+  if (offset) payload.offset = offset;
+  console.log("Spotify Playback | Playing", payload)
+
+  fetch(
+    `${config.api.spotify}/me/player/play${params({ device_id: deviceId })}`, {
+      credentials: "include",
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    }
+  );
+}
+
+const setPlayerPause = async (deviceId?: string) => {
+  fetch(
+    `${config.api.spotify}/me/player/pause${params({ device_id: deviceId })}`, {
+      credentials: "include",
+      method: 'PUT'
+    }
+  );
+}
+
+const setPlayerPosition = async (position: number, deviceId?: string) => fetch(
+  `${config.api.spotify}/me/player/seek${params({ position_ms: position, device_id: deviceId })}`, {
+    credentials: "include",
+    method: 'PUT',
+  }
+);
+
+const setPlayerRepeat = async (state: RepeatState, deviceId?: string) => fetch(
+  `${config.api.spotify}/me/player/repeat${params({ state, device_id: deviceId  })}`, {
+    credentials: "include",
+    method: 'PUT',
+  }
+);
+
+const setPlayerShuffle = async (shuffle: boolean, deviceId?: string) => fetch(
+  `${config.api.spotify}/me/player/shuffle${params({ shuffle, device_id: deviceId  })}`, {
+    credentials: "include",
+    method: 'PUT',
+  }
+);
+
+const setPlayerVolume = async (value: number, deviceId?: string) => fetch(
+  `${config.api.spotify}/me/player/volume${params({ volume_percent: value, device_id: deviceId  })}`, {
+    credentials: "include",
+    method: "PUT"
+  }
+);
+
+const setPlayerDevice = async (deviceId: string) => {
+  try {
+    const res = await fetch(`${config.api.spotify}/me/player`, { 
+      credentials: "include",
+      method: "PUT",
+      body: JSON.stringify({ device_ids: [deviceId] })
+    }).then((res) => res.status === 200 ? res.json() : null);
+    if (!res) return;
+    if (res.error) {
+      if (res.error.status === 401) {
+        
+      }
+      return;
+    }
+  } catch (e) {
+    console.log("Failed to transfer playback", e);
+  }
+}
 
 
 export const PlaybackBox = styled(StyledBox)(({ theme }) => ({
@@ -16,162 +231,291 @@ export const PlaybackBox = styled(StyledBox)(({ theme }) => ({
   flex: 1,
   padding: theme.spacing(2),
 }));
+
 interface SpotifyPlaybackProps extends ServicePlaybackProps {
 }
 
+interface PlayerState {
+  currentTrack: any;
+  context: Context | null;
+  disabled: boolean;
+  duration: number;
+  local: boolean;
+  paused: boolean;
+  position: number;
+  repeat: RepeatState;
+  shuffle: boolean;
+  volume: number;
+}
+
+const initialState = {
+  currentTrack: null,
+  disabled: true,
+  duration: 600,
+  local: true,
+  paused: true,
+  position: 0,
+  repeat: RepeatState.OFF,
+  shuffle: false,
+  volume: 50,
+  context: null,
+};
+
 export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   const { token } = props;
-  console.log("SpotifyPlayback | ");
 
-  const [devices, setDevices] = useState<any>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
   const [deviceId, setDeviceId] = useState<string | null>(null);
-  const [disabled, setDisabled] = useState(true);
-  const [duration, setDuration] = useState(600);
-  const [paused, setPaused] = useState(false);
-  const [position, setPosition] = useState(0);
-  const [repeat, setRepeat] = useState(RepeatState.OFF);
-  const [shuffle, setShuffle] = useState(true);
-  const [currentTrack, setCurrentTrack] = useState<any>(null);
-  const [volume, setVolume] = useState(0);
-  const interval = useRef<NodeJS.Timeout | null>(null);
+  const [playerState, setPlayerState] = useState<PlayerState>(initialState);
+  const contextRef = useRef<Context | null>(null);
   const playerRef = useRef<any>(null);
+  const { startInterval, stopInterval } = useInterval();
 
   const player = playerRef.current;
+  const {
+    context,
+    currentTrack,
+    disabled,
+    duration,
+    local,
+    paused,
+    position,
+    repeat,
+    shuffle,
+    volume
+  } = playerState;
 
-  // TODO(aelsen): make timer more accurate
-  const stopInterval = () => {
-    if (!interval.current) return;
-    clearInterval(interval.current);
-    interval.current = null;
-  };
+  // console.log("Spotify Playback | local playback:", local, context);
 
-  const startInterval = () => {
-    const player = playerRef.current;
-    if (!player || interval.current) return;
-    interval.current = setInterval(() => {
-      const intervalId = interval.current;
-      if (!player && intervalId !== null) {
-        stopInterval();
-        return;
-      }
-      setPosition((prev) => prev + 1000);
-    }, 1000);
-  };
+  const updatePlayerPositionByInterval = () => {
+    if (!player) {
+      stopInterval("seek");
+      return;
+    }
+    setPlayerState((prev) => ({ ...prev, position: prev.position + 1000 }));
+  }
 
   // TODO(aelsen)
   const getAvailableDevices = useCallback(async () => {
-    try {
-      const res = await fetch(`${config.api.spotify}/me/player/devices`, { credentials: "include" }).then((res) => res.json());
-      if (res.error) {
-        if (res.error.status === 401) {
-
-        }
-        return;
-      }
-      setDevices(res.devices);
-    } catch (e) {
-      console.log("Failed to fetch devices", e);
-    }
-  }, []);
+    const devices = await getDevices();
+    const local = !!devices.find(({ id }) => id === deviceId)?.is_active;
+    setPlayerState((prev) => ({ ...prev, local }));
+    setDevices(devices);
+  }, [deviceId]);
 
   const transferPlayback = async (deviceId: string) => {
-    try {
-      const res = await fetch(`${config.api.spotify}/me/player`, { 
-        credentials: "include",
-        method: "PUT",
-        body: JSON.stringify({ device_ids: [deviceId]  })
-      }).then((res) => res.json());
-      if (res.error) {
-        if (res.error.status === 401) {
-          
-        }
-        return;
-      }
-    } catch (e) {
-      console.log("Failed to transfer playback", e);
-    }
+    console.log(`Spotify Playback | transfer playback to`, deviceId);
+    setPlayerDevice(deviceId);
   };
 
   const handleRepeat = async () => {
-    const next = ((repeat as number) + 1) % 3;
+    const next = ((playerState.repeat as number) + 1) % 3;
     const state = RepeatState[next].toLowerCase();
-    await fetch(`${config.api.spotify}/me/player/repeat?state=${state}`, {
-      credentials: "include",
-      method: 'PUT',
-    });
-    await playerRef.current?.getCurrentState().then(({ repeat_mode }) => {
-      console.log("State after repeat:", repeat_mode);
-      setRepeat(repeat_mode);
-    });
+    console.log(`Spotify Playback | repeat from ${repeat} to ${state}`);
+    await setPlayerRepeat(state as unknown as RepeatState);
+   setPlayerState((prev) => ({ ...prev, repeat: next }));
   }
 
-  const handleShuffle = () => {
-    fetch(`${config.api.spotify}/me/player/shuffle?state=${!shuffle}`, {
-      credentials: "include",
-      method: 'PUT',
-    });
-    setShuffle(!shuffle);
+  const handleShuffle = async () => {
+    console.log(`Spotify Playback | shuffle from ${shuffle} to ${!shuffle}`);
+    await setPlayerShuffle(!shuffle);
+    setPlayerState((prev) => ({ ...prev, shuffle: !shuffle }));
   }
+
+  const handleSeek = (position) => {
+    console.log(`Spotify Playback | seek to ${position} ms`);
+    if (local) 
+      player?.seek(position);
+    else
+      setPlayerPosition(position);
+  }
+
+  const handlePlay = (play: boolean) => {
+    if (play) {
+      if (local)
+        player?.resume();
+      else
+        setPlayerPlay(position);
+
+    } else {
+      if (local)
+        player?.pause();
+      else
+        setPlayerPause() ;
+    }
+  }
+
+  const handleNextTrack = () => {
+    console.log("Spotify Playback | next track", repeat ? "(repeat)" : "", "from context", context);
+    const restart = repeat === RepeatState.TRACK;
+
+    if (local) {
+      if (!player) return;
+      if (restart)
+        player.seek(0);
+      else
+        player.nextTrack();
+
+    } else {
+      if (restart) {
+        setPlayerPosition(0);
+      } else {
+        if (!context || !context.next) return;
+        const { uri, next } = context;
+        const { uri: nextUri, position } = next;
+        const offset: any = {};
+        if (position !== null && position !== undefined) {
+          offset.position = position;
+        } else {
+          offset.uri = nextUri;
+        }
+        setPlayerPlay(0, uri, offset);
+      }
+    }
+    setPlayerState((prev) => ({ ...prev, position: 0 }));
+    // getState();
+  }
+
+  const handlePreviousTrack = () => {
+    const restart = repeat === RepeatState.TRACK || position < 3000;
+    console.log("Spotify Playback | prev track", restart ? "(restart)" : "");
+
+    if (local) {
+      if (!player) return;
+      if (restart)
+        player.seek(0);
+      else
+        player.previousTrack();
+
+      } else {
+        if (restart) {
+          setPlayerPosition(0);
+        } else {
+          if (!context || !context.prev) return;
+          const { uri, prev } = context;
+          const { uri: prevUri, position } = prev;
+          const offset: any = {};
+          if (position !== null && position !== undefined) {
+            offset.position = position;
+          } else {
+            offset.uri = prevUri;
+          }
+          setPlayerPlay(0, uri, offset);
+        }
+      }
+    setPlayerState((prev) => ({ ...prev, position: 0 }));
+    // getState();
+  }
+
+  const handleVolumeChange = async (volume: number) => {
+    await setPlayerVolume(volume);
+    setPlayerState((prev) => ({ ...prev, volume }));
+  };
+
+  const handleState = useCallback(async (state: any) => {
+    const context = contextRef.current;
+    console.log('Spotify Playback | Player state fetched:', state, "current context:", context);
+    const {
+      context: ctx,
+      device,
+      is_playing,
+      item,
+      progress_ms: position,
+      repeat_state,
+      shuffle_state: shuffle
+    } = state;
+    const { volume_percent: volume } = device;
+    const duration = item?.duration_ms || 0;
+    
+    const paused = !is_playing;
+    
+    let currentContext = context;
+    if (currentContext?.trackId !== item?.id) {
+      currentContext = ctx?.uri ? (await getCurrentContext(ctx, item)) : null;
+    }
+
+    if (!paused) startInterval(updatePlayerPositionByInterval, 1000, "seek");
+    if (paused) stopInterval("seek");
+    
+    const currentTrack = item
+      ? transformTrack(item)
+      : null;
+    const repeat = RepeatState[repeat_state.toUpperCase()] as unknown as RepeatState;
+
+
+    contextRef.current = currentContext;
+    setPlayerState((prev) => ({
+      ...prev,
+      context: currentContext,
+      currentTrack,
+      duration,
+      paused,
+      position,
+      repeat,
+      shuffle,
+      volume
+    }));
+  }, [getAvailableDevices, startInterval, stopInterval]);
   
-  const handleStateChange = (state: any) => {
+  const handleStateChange = async (state: any) => {
+    const context = contextRef.current;
+    const { context: ctx, duration, position, paused, repeat_mode: repeat, shuffle, track_window } = state;
+    console.log('Spotify Playback | Player state changed:', state);
     if (!state) {
       return;
     }
 
-    const { duration, position, paused, repeat_mode, shuffle, track_window } = state;
-    console.log('Spotify Playback | Player state changed:', state);
+    if (!paused) startInterval(updatePlayerPositionByInterval, 1000, "seek");
+    if (paused) stopInterval("seek");
 
-    if (!paused) startInterval();
-    if (paused) stopInterval();
-
-    playerRef.current?.getVolume().then(volume => {
-      let percent = volume * 100;
-      setVolume(percent);
-    });
-
-    const track = track_window.current_track
+    const volume = (await playerRef.current?.getVolume() || 0) * 100;
+    const currentTrack = track_window.current_track
       ? transformTrack(track_window.current_track)
       : null;
-    
-    setCurrentTrack(track);
-    setPaused(paused);
-    setDuration(duration);
-    setPosition(position);
-    setRepeat(repeat_mode);
-    setShuffle(shuffle);
 
+
+    let currentContext = context;
+    if (currentContext?.trackId !== currentTrack?.id) {
+      currentContext = ctx?.uri
+      ? {
+          href: ctx.href,
+          type: ctx.type,
+          uri: ctx.uri,
+          trackId: currentTrack?.id || null,
+          position: null,
+          length: null,
+          next: { uri: track_window.next_tracks[0].uri, position: null },
+          prev: { uri: track_window.prev_tracks[0].uri, position: null },
+        }
+      : null;
+    }
+
+    console.log('Spotify Playback | Player event setting context to:', currentContext);
+    
+    contextRef.current = currentContext; 
+    setPlayerState((prev) => ({
+      ...prev,
+      context: currentContext,
+      currentTrack,
+      duration,
+      paused,
+      position,
+      repeat,
+      shuffle,
+      volume
+    }));
+  
     getAvailableDevices();
   };
 
-  const handleNextTrack = () => {
-    if (!player) return;
-    if (repeat === RepeatState.TRACK) {
-      player.seek(0);
-    } else {
-      player.nextTrack();
-    }
-    setPosition(0);
-  }
+  const getState = useCallback(async () => {
+    const state = await getPlayerState();
+    if (!state) return;
 
-  const handlePreviousTrack = () => {
-    if (!player) return;
-    if (repeat === RepeatState.TRACK || position < 3000) {
-      player.seek(0);
-    } else {
-      player.previousTrack();
-    }
-    setPosition(0);
-  }
+    handleState(state);
+  }, [handleState]);
 
-  const handleVolumeChange = async (value: number) => {
-    fetch(
-      `${config.api.spotify}/me/player/volume?volume_percent=${value}`,
-      { credentials: "include", method: "PUT" }
-    );
-    setVolume(value);
-  };
-
-  useEffect(() => {
+  const initPlayer = () => {
     const script = document.createElement("script");
     script.src = "https://sdk.scdn.co/spotify-player.js";
     script.async = true;
@@ -181,7 +525,10 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     (window as any).onSpotifyWebPlaybackSDKReady = () => {
       const player = new (window as any).Spotify.Player({
         name: "constellation.fm",
-        getOAuthToken: (cb: any) => { cb(token); },
+        getOAuthToken: (cb: any) => {
+          console.log("Spotify Playback | Initializing client with token", token);
+          cb(token);
+        },
         volume: 0.5
       });
 
@@ -191,12 +538,13 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
       player.addListener('ready', (device: any) => {
         console.log('Spotify Playback | Ready with Device ID', device);
         setDeviceId(device.device_id);
-        setDisabled(false);
+        setPlayerState((prev) => ({ ...prev, disabled: false }));
+        getState();
       });
       
       player.addListener('not_ready', (device: any) => {
         setDeviceId(null);
-        setDisabled(true);
+        setPlayerState((prev) => ({ ...prev, disabled: true }));
       });
 
       player.addListener('initialization_error', ({ message }) => { 
@@ -214,11 +562,25 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
       player.addListener('player_state_changed', handleStateChange);
       player.connect();
     };
-  }, []);
+  }
 
-  useEffect(() => {
+  const handleDismount = () => {
     return stopInterval;
-  }, []);
+  }
+
+  const handlePlaybackSubscription = () => {
+    if (!local) {
+      startInterval(getState, POLL_PERIOD, "state");
+      return;
+    }
+    console.log("Spotify Playback | Stopping subscription to playback state");
+    stopInterval("state");
+  }
+
+
+  useEffect(initPlayer, []);
+  useEffect(handleDismount, []);
+  useEffect(handlePlaybackSubscription, [local, getState, startInterval, stopInterval]);
 
   return (
     <PlaybackBox>
@@ -233,11 +595,11 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
         position={position}
         repeat={repeat}
         shuffle={shuffle}
-        onPlay={() => player?.resume()}
-        onPause={() => player?.pause()}
+        onPlay={() => handlePlay(true)}
+        onPause={() => handlePlay(false)}
         onNextTrack={handleNextTrack}
         onPreviousTrack={handlePreviousTrack}
-        onSeek={(value) => player?.seek(value)}
+        onSeek={handleSeek}
         onShuffle={handleShuffle}
         onRepeat={handleRepeat}
         boxProps={{ sx: { gridColumn: 2, gridRow: 1 } }}

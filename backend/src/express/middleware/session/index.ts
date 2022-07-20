@@ -35,12 +35,12 @@ const createSessionMiddleware = ({ client, config, logger: mainLogger }) => {
   const passportSession = passport.session();
 
   passport.serializeUser((user, done) => {
-    logger.info(`Serializing user ${JSON.stringify(user, null, 2)}`);
+    // logger.info(`Serializing user ${JSON.stringify(user, null, 2)}`);
     done(null, user);
   });
   
   passport.deserializeUser((user, done) => {
-    logger.info(`Deserializing user ${JSON.stringify(user, null, 2)}`);
+    // logger.info(`Deserializing user ${JSON.stringify(user, null, 2)}`);
     done(null, user as any);
   });
 

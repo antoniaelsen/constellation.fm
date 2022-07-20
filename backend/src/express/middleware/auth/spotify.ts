@@ -100,6 +100,7 @@ const createSpotifyAuthMiddleware = ({
       return done(msg);
     }
 
+    // TODO(aelsen): make generic
     const existingToken = await client.connection.findFirst({ where: { userId: existingUser.id, service: target } });
     if (!existingToken) {
       try {
@@ -118,14 +119,14 @@ const createSpotifyAuthMiddleware = ({
         return done(e);
       }
     } else {
-      logger.info(`Found existing connection entry for user [${id}] service [${target}], updating...`);
+      logger.info(`Found existing connection entry for user [${existingUser.id}] service [${target}], updating...`);
       await client.connection.update({
         data: {
           accessToken,
           refreshToken,
           expiresAt
         },
-        where: { id: existingToken.id }
+        where: { userId_service: { userId: existingUser.id, service: target } }
       })
     }
 

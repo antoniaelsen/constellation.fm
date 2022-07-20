@@ -33,14 +33,13 @@ export const Root = (props: RootProps) => {
 
   const fetchSpotify = () => {
     if (connections !== connectionsOld) {
-      console.log("Root | Services changed");
+      console.log("Root | Services changed", connections);
       connectionsOld = connections;
     }
 
     if (!connections.includes(Service.SPOTIFY)) return;
   
-    // console.log("Root | Fetching spotify...");
-    // console.time("Root | spotify")
+    console.log("Root | Fetching spotify...");
     getUser();
     getUserPlaylists();
   }
