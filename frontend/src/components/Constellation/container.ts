@@ -65,8 +65,8 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, props: ContainerProps
     getPlaylist: (id: string) => dispatch((getPlaylist as any)(id)),
     // updatePlaylist,
 
-    selectTrack: (id: string) => {
-      console.log("Mock selectTrack", id);
+    playTrack: (id: string) => {
+      console.log("Constellation HOC | Play track", id);
     }
   }
 };

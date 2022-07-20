@@ -33,7 +33,7 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
       return;
     }
 
-    logger.info(`Adding connection to user [${user.id}] for service [${account.service}] ${JSON.stringify(account)}`)
+    logger.info(`Adding connection to user [${user.id}] for service [${account.service}] ${JSON.stringify(account, null, 2)}`)
 
     user.connections = {
       ...user.connections,
@@ -42,7 +42,7 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
   
     req.logIn(user, (error) => {
       if (!error) {
-        logger.info(`[${req.sessionID}] [${user.id}] Added connection [${account.service}]`);
+        logger.info(`[${req.sessionID}] [${user.id}] Successfully updated user to add connection [${account.service}]`);
         return;
       }
       logger.error(`[${req.sessionID}] [${user.id}] Failed add connection [${account.service}] to user [${user.id}]`);
@@ -63,22 +63,27 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
 
     if (!connections) return;
     
-    COOKIE_KEY_FRONTEND_ATS.forEach((connection) => {
-      const token = connections[connection]?.accessToken;
+    COOKIE_KEY_FRONTEND_ATS.forEach((service) => {
+      const token = connections[service]?.accessToken;
       if (!token) return;
-      logger.info(`[${req.sessionID}] [${req.user?.id}] Set connection access token cookie for [${connection }]`);
-      res.cookie(`cfm-auth-token-${connection}`, token, { ...cookieParams, httpOnly: false });
+      logger.info(`[${req.sessionID}] [${req.user?.id}] Set connection access token cookie for [${service}]`);
+      res.cookie(`cfm-auth-token-${service}`, token, { ...cookieParams, httpOnly: false });
     });
   };
 
   const setAuthStateCookie = (req: Request, res: Response) => {
-    logger.info(`[${req.sessionID}] [${req.user?.id}] Set auth state cookie`);
+    logger.info(`[${req.sessionID}] [${req.user?.id}] Set auth state cookie ${JSON.stringify(req.user, null, 2)}`);
     const authState = {
       connections: Object.keys(req.user?.connections || {}),
       isLoggedIn: !!req.user,
     };
-  
+    
     res.cookie("cfm-auth", JSON.stringify(authState), { ...cookieParams, httpOnly: false });
+
+    if (!req?.user?.connections) return;
+    Object.entries(req.user.connections).forEach(([service, data]) => {
+      logger.info(`[${req.sessionID}] [${req.user?.id}] - ${service} ${data.accessToken}`);
+    });
   };
 
   const saveReturnTo = (req: Request, res: Response, next: NextFunction) => {

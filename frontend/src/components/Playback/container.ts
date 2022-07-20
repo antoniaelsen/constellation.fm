@@ -7,13 +7,13 @@ import { Playback as Component } from './component';
 
 const connectionTokensSelector = (state: RootState) => {
   const { connections, tokens } = state.auth;
-  const playbackConnectionTokens = connections.reduce((acc, connection) => {
+  const playbackConnectionTokens = connections.reduce((acc, service) => {
     const tokenKeys = Object.keys(tokens);
-    const playbackKey = `${connection}playback`;
+    const playbackKey = `${service}playback`;
     if (!tokenKeys.includes(playbackKey)) return acc;
     return {
       ...acc,
-      [connection]: tokens[playbackKey]
+      [service]: tokens[playbackKey]
     };
   }, {});
   return playbackConnectionTokens;

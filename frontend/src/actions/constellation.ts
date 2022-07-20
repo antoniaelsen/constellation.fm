@@ -1,4 +1,4 @@
-import { Constellation } from "store/types/constellation";
+import { Constellation } from "types/constellation";
 
 export const CREATE_CONSTELLATION = 'CREATE_CONSTELLATION';
 export const DESTROY_CONSTELLATION = 'DESTROY_CONSTELLATION';

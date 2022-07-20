@@ -80,13 +80,13 @@ const createSpotifyAuthMiddleware = ({
 
   const verifyCallback = async (req, accessToken, refreshToken, expires_in, profile, done) =>  {
     const target = req.session.target;
-    logger.info(`Verifying user scope [${target}][${req.user?.id}] "${profile.id}"`);
+    logger.info(`Verifying user scope [${target}][${req.user?.id}] "${profile.id}" - ${accessToken}`);
 
     const id = req.user.id;
     const expiresAt = new Date(Date.now() + expires_in).toISOString();
     const account = {
       service: target,
-      tokens: {
+      data: {
         accessToken,
         refreshToken,
         expiresAt,
@@ -100,7 +100,7 @@ const createSpotifyAuthMiddleware = ({
       return done(msg);
     }
 
-    const existingToken = await client.connection.findFirst({ where: { userId: existingUser.id, connection: target } });
+    const existingToken = await client.connection.findFirst({ where: { userId: existingUser.id, service: target } });
     if (!existingToken) {
       try {
         await client.connection.create({
@@ -108,7 +108,7 @@ const createSpotifyAuthMiddleware = ({
             accessToken,
             refreshToken,
             expiresAt,
-            connection: target,
+            service: target,
             userId: existingUser.id,
           }
         });

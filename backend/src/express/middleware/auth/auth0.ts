@@ -70,9 +70,9 @@ const createAuth0AuthMiddleware = ({
 
     try {
       const connections = await client.connection.findMany({ where: { userId: existing.id } });
-      user.connections = connections.reduce((acc, { connection, accessToken, refreshToken, expiresAt, }) => ({
+      user.connections = connections.reduce((acc, { service, accessToken, refreshToken, expiresAt, }) => ({
         ...acc,
-        [connection]: {
+        [service]: {
           accessToken,
           refreshToken,
           expiresAt

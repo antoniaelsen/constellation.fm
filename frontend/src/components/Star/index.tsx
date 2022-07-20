@@ -4,11 +4,11 @@ import { useFrame, } from '@react-three/fiber';
 import * as THREE from 'three';
 
 import { alpha, ThemeProvider, useTheme } from "@mui/material/styles";
-// import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-// import { IconButton } from '@mui/material';
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import { IconButton } from '@mui/material';
 
 import { StyledBox } from 'components/StyledBox';
-import { Track } from 'store/types/music';
+import { Track } from 'types/music';
 import { StarSongInfo } from './StarSongInfo';
 
 const TRANSPARENT_CARDS = true;
@@ -17,9 +17,9 @@ const STAR_HEIGHT_SEGS = 16;
 const STAR_WIDTH_SEGS = 16;
 
 
-export const StarTooltipCard = (({ children, onClick }) => {
+export const StarTooltipCard = (({ children, ...etc }) => {
   return (
-    <StyledBox onClick={onClick} sx={(theme) => ({
+    <StyledBox {...etc} sx={(theme) => ({
       ...(TRANSPARENT_CARDS ?  {} : {
         backgroundColor: alpha(theme.palette.background.paper, 0.75),
         border: `1px solid rgba(255, 255, 255, 0.2)`,
@@ -55,22 +55,27 @@ export const StarTooltip = (props: StarTooltipProps) => {
   const theme = useTheme();
   const { track, onClick } = props;
   const { id } = track;
-  const [hovered, hover] = useState(false);
+  const [hover, setHover] = useState(false);
+
 
   const handleClick = () => onClick(id);
   return (
     <Html
       as='div'
       distanceFactor={STAR_RADIUS * 50}
-      onPointerOver={() => hover(true)}
-      onPointerOut={() => hover(false)}
     >
       <ThemeProvider theme={theme}>
-        <StarTooltipCard onClick={handleClick}>
-          {/* <IconButton>
+        <StarTooltipCard
+          onMouseEnter={() => setHover(true)}
+          onMouseLeave={() => setHover(false)}
+        >
+          <IconButton
+            onClick={handleClick}
+            sx={{ position: "absolute", zIndex: 100, top: "-0.25rem", left: "-1rem", display: hover ? "inline-flex" : "none" }}
+          >
             <PlayCircleIcon />
-          </IconButton> */}
-          <StarSongInfo track={track} hideAlbum={false} imageWidth={48}/>
+          </IconButton>
+          <StarSongInfo track={track} hideAlbum={false} hideImage={true} imageWidth={48}/>
         </StarTooltipCard>
       </ThemeProvider>
     </Html>

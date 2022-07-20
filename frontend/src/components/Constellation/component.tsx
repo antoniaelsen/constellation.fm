@@ -4,7 +4,7 @@ import { Line } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { Playlist, Track } from 'store/types/music';
+import { Playlist, Track } from 'types/music';
 import { Star } from '../Star';
 
 
@@ -34,12 +34,12 @@ export interface ConstellationProps {
   constellation: any;
   id: string;
   playlist: Playlist | null;
-  selectTrack(id: string): void;
+  playTrack(id: string): void;
 }
 
 export const Constellation = (props: ConstellationProps) => {
   // HOC
-  const { playlist, selectTrack } = props;
+  const { playlist, playTrack } = props;
 
   const nodes = playlist?.tracks?.map(({ track }) => ({ id: track.id, track }));
   const links = nodes && nodes.length > 1 ? [
@@ -99,7 +99,7 @@ export const Constellation = (props: ConstellationProps) => {
                     <Star
                       key={id}
                       track={track}
-                      onTooltipClick={selectTrack}
+                      onTooltipClick={playTrack}
                       position={[
                         x - GRAPH_WIDTH / 2,
                         y - GRAPH_HEIGHT / 2,

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Playlist } from 'store/types/music';
+import { Playlist } from 'types/music';
 import { Constellation } from './component';
 
 export interface ConstellationHoCProps {
@@ -7,27 +7,27 @@ export interface ConstellationHoCProps {
   id: string;
   playlist: Playlist | null;
   getPlaylist: (id: string) => void;
-  selectTrack: (id: string) => void;
+  playTrack: (id: string) => void;
 }
 
 // TODO(aelsen): create constellation if DNE
 
 export const ConstellationHoC = (props: ConstellationHoCProps) => {
   // HOC
-  const { constellation, id, playlist, getPlaylist, selectTrack } = props;
-  const connectionId = playlist?.connectionId;
+  const { constellation, id, playlist, getPlaylist, playTrack } = props;
+  const serviceId = playlist?.serviceId;
   console.log("ConstellationHoC |", id, constellation, playlist);
 
   useEffect(() => {
-    if (!connectionId) return;
-    getPlaylist(connectionId);
-  }, [connectionId, getPlaylist]);
+    if (!serviceId) return;
+    getPlaylist(serviceId);
+  }, [serviceId, getPlaylist]);
 
 
   if (!playlist) return (<></>);
 
   // return (<></>)
   return (
-    <Constellation id={id} constellation={constellation} playlist={playlist} selectTrack={selectTrack}/>
+    <Constellation id={id} constellation={constellation} playlist={playlist} playTrack={playTrack}/>
   );
 };

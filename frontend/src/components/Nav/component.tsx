@@ -5,7 +5,7 @@ import Divider from '@mui/material/Divider';
 
 import { Playlists } from 'components/Playlists';
 
-import { Constellation } from 'store/types/constellation';
+import { Constellation } from 'types/constellation';
 import { StyledBox } from 'components/StyledBox';
 
 

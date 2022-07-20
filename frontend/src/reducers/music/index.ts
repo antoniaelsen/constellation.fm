@@ -1,6 +1,6 @@
 import { AnyAction } from 'redux';
 
-import { MusicState } from 'store/types/music';
+import { MusicState } from 'types/music';
 import { reducers as musicReducers } from "./spotify"
 
 export const initialState: MusicState = {

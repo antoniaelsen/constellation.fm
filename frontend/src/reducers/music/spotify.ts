@@ -10,9 +10,11 @@ import {
   GET_USER_PLAYLISTS_LIMIT_FAILURE,
   GET_USER_PLAYLISTS_REQUEST,
   GET_USER_PLAYLISTS_FAILURE,
+  PLAY_TRACK_SUCCESS,
+  PLAY_TRACK_FAILURE,
 } from 'actions/rest/spotify';
-import { MusicState } from 'store/types/music';
 import schemas from 'store/entities';
+import { MusicState } from 'types/music';
 import { transformPlaylistFull, transformPlaylistSimplified, transformUser } from 'lib/spotify';
 
 
@@ -96,4 +98,12 @@ export const reducers: {[key: string]: MusicReducer} = {
       loadingPlaylists: offset > total
     };
   },
+
+  [PLAY_TRACK_SUCCESS]: (prevState, action) => {
+    return prevState;
+  },
+
+  [PLAY_TRACK_FAILURE]: (prevState, action) => {
+    return prevState;
+  }
 }

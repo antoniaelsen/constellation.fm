@@ -5,7 +5,7 @@ import { denormalize } from 'normalizr';
 
 import { RootState } from 'store';
 import schemas from 'store/entities';
-import { Playlist } from 'store/types/music';
+import { Playlist } from 'types/music';
 import { Playlists as Component } from './component';
 
 const playlistSelector = (state: RootState) => {

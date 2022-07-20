@@ -3,7 +3,7 @@ import { Typography } from "@mui/material";
 
 import { StyledBox } from 'components/StyledBox';
 import { StyledLink } from 'components/StyledLink';
-import { Track } from 'store/types/music';
+import { Track } from 'types/music';
 
 const IMG_WIDTH = 72;
 

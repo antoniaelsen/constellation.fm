@@ -6,7 +6,7 @@ import { StyledBox } from "components/StyledBox";
 import { SongInfo } from "components/SongInfo";
 import { transformTrack } from "lib/spotify";
 import { DeviceMenu } from "./DeviceMenu";
-import { ConnectionPlaybackProps } from "../ConnectionPlayback";
+import { ServicePlaybackProps } from "../ServicePlayback";
 import { PlayControls, RepeatState } from "../PlayControls";
 
 
@@ -16,7 +16,7 @@ export const PlaybackBox = styled(StyledBox)(({ theme }) => ({
   flex: 1,
   padding: theme.spacing(2),
 }));
-interface SpotifyPlaybackProps extends ConnectionPlaybackProps {
+interface SpotifyPlaybackProps extends ServicePlaybackProps {
 }
 
 export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
@@ -28,7 +28,7 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   const [disabled, setDisabled] = useState(true);
   const [duration, setDuration] = useState(600);
   const [paused, setPaused] = useState(false);
-  const [position, setPosition] = useState(40);
+  const [position, setPosition] = useState(0);
   const [repeat, setRepeat] = useState(RepeatState.OFF);
   const [shuffle, setShuffle] = useState(true);
   const [currentTrack, setCurrentTrack] = useState<any>(null);
@@ -150,6 +150,7 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     } else {
       player.nextTrack();
     }
+    setPosition(0);
   }
 
   const handlePreviousTrack = () => {
@@ -159,6 +160,7 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     } else {
       player.previousTrack();
     }
+    setPosition(0);
   }
 
   const handleVolumeChange = async (value: number) => {

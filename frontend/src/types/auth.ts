@@ -1,6 +1,6 @@
-import { Connection } from "rest/constants";
+import { Service } from "lib/constants";
 export interface AuthState {
   isAuthenticated: boolean;
-  connections: Connection[];
+  connections: Service[];
   tokens: { [key: string]: string | null };
 }

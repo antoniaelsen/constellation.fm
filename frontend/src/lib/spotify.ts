@@ -1,4 +1,4 @@
-import { Connection } from 'rest/constants';
+import { Service } from 'lib/constants';
 
 import {
   Album,
@@ -7,15 +7,15 @@ import {
   PlaylistTrack,
   Track,
   User
-} from 'store/types/music';
+} from 'types/music';
 
 const transformUser = (input: any): User => {
   const { display_name: displayName, external_urls, id } = input;
   const url = external_urls.spotify;
   return {
-    connection: Connection.SPOTIFY,
-    connectionId: id,
-    id: `${Connection.SPOTIFY}-${id}`,
+    service: Service.SPOTIFY,
+    serviceId: id,
+    id: `${Service.SPOTIFY}-${id}`,
     displayName,
     url
   };
@@ -25,9 +25,9 @@ const transformArtist = (input: any): Artist => {
   const { external_urls, id, name } = input;
   const url = external_urls?.spotify;
   return {
-    connection: Connection.SPOTIFY,
-    connectionId: id,
-    id: `${Connection.SPOTIFY}-${id}`,
+    service: Service.SPOTIFY,
+    serviceId: id,
+    id: `${Service.SPOTIFY}-${id}`,
     name,
     url
   };
@@ -38,9 +38,9 @@ const transformAlbum = (input: any): Album => {
   const image = images?.[0];
   const url = external_urls?.spotify;
   return {
-    connection: Connection.SPOTIFY,
-    connectionId: id,
-    id: `${Connection.SPOTIFY}-${id}`,
+    service: Service.SPOTIFY,
+    serviceId: id,
+    id: `${Service.SPOTIFY}-${id}`,
     image,
     name, 
     url
@@ -54,9 +54,9 @@ const transformTrack = (input: any): Track => {
   return {
     album: transformAlbum(album),
     artists: artists.map(transformArtist),
-    connection: Connection.SPOTIFY,
-    connectionId: id,
-    id: `${Connection.SPOTIFY}-${id}`,
+    service: Service.SPOTIFY,
+    serviceId: id,
+    id: `${Service.SPOTIFY}-${id}`,
     name,
     trackNumber,
     url
@@ -69,10 +69,10 @@ const transformPlaylistSimplified = (input: any, i: number): Playlist => {
   const url = external_urls.spotify;
 
   return {
-    connection: Connection.SPOTIFY,
-    connectionId: id,
+    service: Service.SPOTIFY,
+    serviceId: id,
     duration: 0,
-    id: `${Connection.SPOTIFY}-${id}`,
+    id: `${Service.SPOTIFY}-${id}`,
     order: i,
     owner: transformUser(owner),
     tracks: [],
@@ -91,10 +91,10 @@ const transformPlaylistFull = (input: any): Playlist => {
   const url = external_urls.spotify;
 
   return {
-    connection: Connection.SPOTIFY,
-    connectionId: id,
+    service: Service.SPOTIFY,
+    serviceId: id,
     duration: 0,
-    id: `${Connection.SPOTIFY}-${id}`,
+    id: `${Service.SPOTIFY}-${id}`,
     owner: transformUser(owner),
     tracks: tracks.items.map(transformPlaylistTrack),
     collaborative,

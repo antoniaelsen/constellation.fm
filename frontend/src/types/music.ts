@@ -1,4 +1,4 @@
-import { Connection } from "rest/constants";
+import { Service } from "lib/constants";
 
 export interface Image {
   url: string;
@@ -8,16 +8,16 @@ export interface Image {
 
 export interface User {
   id: string;
-  connection: Connection;
-  connectionId: string;
+  service: Service;
+  serviceId: string;
   displayName: string;
   image?: Image;
   url: string;
 }
 
 export interface Album {
-  connection: Connection;
-  connectionId: string;
+  service: Service;
+  serviceId: string;
   id: string;
   image: Image;
   name: string;
@@ -25,16 +25,16 @@ export interface Album {
 }
 
 export interface Artist {
-  connection: Connection;
-  connectionId: string;
+  service: Service;
+  serviceId: string;
   id: string;
   name: string;
   url: string;
 }
 
 export interface Track {
-  connection: Connection;
-  connectionId: string;
+  service: Service;
+  serviceId: string;
   id: string;
   album: Album;
   artists: Artist[];
@@ -51,8 +51,8 @@ export interface PlaylistTrack {
 
 export interface Playlist {
   id: string;
-  connection: Connection;
-  connectionId: string;
+  service: Service;
+  serviceId: string;
   collaborative: boolean;
   description?: string;
   duration: number;
