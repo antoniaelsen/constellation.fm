@@ -1,7 +1,7 @@
 import { RSAA } from "redux-api-middleware";
 import config from "config";
 import { fetchOffsets, } from "./utils"
-import { Service } from "lib/constants";
+import { Service, SPOTIFY_URL } from "lib/constants";
 
 export const CREATE_PLAYLIST_REQUEST = "CREATE_PLAYLIST_REQUEST";
 export const CREATE_PLAYLIST_SUCCESS = "CREATE_PLAYLIST_SUCCESS";
@@ -43,7 +43,7 @@ export const PLAY_TRACK_REQUEST = "PLAY_TRACK_REQUEST"
 export const PLAY_TRACK_SUCCESS = "PLAY_TRACK_SUCCESS"
 export const PLAY_TRACK_FAILURE = "PLAY_TRACK_FAILURE"
 
-const SPOTIFY_URL = "https://api.spotify.com/v1";
+
 
 const nextUrl = (json) => {
   const nextSpotify = json.next;
