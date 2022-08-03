@@ -67,7 +67,7 @@ model Constellation {
   service         Service
 
   name            String
-  description     String?    
+  description     String?
   collaborative   Boolean   @default(false)
   public          Boolean   @default(false)
   createdAt       DateTime  @default(now())

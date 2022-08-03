@@ -22,12 +22,12 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
   const addConnection = (req: Request, res: Response) => {
     const user = req.user;
     const account = req.account;
-    
+
     if (!user) {
       logger.error(`[${req.sessionID}] Error connecting account -- no user in session`);
       return;
     }
-    
+
     if (!account) {
       logger.error(`[${req.sessionID}] Error connecting account -- no account in session`);
       return;
@@ -39,7 +39,7 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
       ...user.connections,
       [account.service]: account.data,
     }
-  
+
     req.logIn(user, (error) => {
       if (!error) {
         logger.info(`[${req.sessionID}] [${user.id}] Successfully updated user to add connection [${account.service}]`);
@@ -62,7 +62,7 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
     const connections = req.user?.connections;
 
     if (!connections) return;
-    
+
     COOKIE_KEY_FRONTEND_ATS.forEach((service) => {
       const token = connections[service]?.accessToken;
       if (!token) return;
@@ -77,7 +77,7 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
       connections: Object.keys(req.user?.connections || {}),
       isLoggedIn: !!req.user,
     };
-    
+
     res.cookie("cfm-auth", JSON.stringify(authState), { ...cookieParams, httpOnly: false });
 
     if (!req?.user?.connections) return;
@@ -92,7 +92,7 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
     }
     return next();
   };
- 
+
   const redirectToReturnTo = (req: Request, res: Response) => {
     const defaultUrl = `https://${config.frontendDomain}/`;
     const returnTo = (req as any).session.returnTo || defaultUrl;
@@ -101,7 +101,7 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
     return res.redirect(returnTo);
   };
 
-  const auth0Auth = createAuth0AuthMiddleware({
+  const { router: auth0Router } = createAuth0AuthMiddleware({
     client,
     config,
     logger,
@@ -120,7 +120,7 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
   //   saveReturnTo,
   //   path: `${path}/apple`
   // });
-  const spotifyAuth = createSpotifyAuthMiddleware({
+  const { router: spotifyRouter, reauthorize: spotifyReauthorize } = createSpotifyAuthMiddleware({
     client,
     config,
     logger,
@@ -133,8 +133,8 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
 
   const router = Router();
 
-  router.use("/auth0", auth0Auth);
-  router.use("/spotify", spotifyAuth);
+  router.use("/auth0", auth0Router);
+  router.use("/spotify", spotifyRouter);
   router.get('/', (req: Request, res: Response) => {
     if (!req.user) {
       res.status(401);
@@ -145,8 +145,10 @@ const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
     setAccessTokenCookies(req, res);
     res.send();
   });
-  
-  return { mw: [router] };
+
+  return { mw: [router], services: [
+    { service: "spotify", url: "https://api.spotify.com/v1", reauthorize: spotifyReauthorize }
+  ] };
 };
 
 export default createAuthMiddleware;

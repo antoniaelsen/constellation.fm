@@ -25,7 +25,7 @@ const format = winston.format.combine(
     } | ${message}`;
   })
 );
- 
+
 
 export const logger = winston.createLogger({
   format: winston.format.combine(format),
@@ -33,5 +33,5 @@ export const logger = winston.createLogger({
   transports: [
     new winston.transports.Console(),
     new winston.transports.File({ filename: 'output.log' })
-  ], 
+  ],
 });

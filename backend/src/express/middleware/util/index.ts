@@ -9,7 +9,7 @@ const createUtilMiddleware = ({ config, logger }): { mw: MiddlewareFunc[] } => {
     const session = req.sessionID ? `[${req.sessionID}]` : '[no session]';
     const user = req.user ? `[${req.user?.id}]` : '[no user]';
     const prefix = [session, user].join(' ');
-    
+
     const str = `${prefix} [${req.method}] "${req.path}"${req.xhr ? ' XHR' : ''} from origin ${req.get('Origin')} "${req.path}"`;
     childLogger.debug(str);
 
@@ -23,7 +23,7 @@ const createUtilMiddleware = ({ config, logger }): { mw: MiddlewareFunc[] } => {
 
   return {
     mw: [
-      logMiddleware, 
+      logMiddleware,
       cors(corsOptions),
       // TODO: rate limit?
     ]

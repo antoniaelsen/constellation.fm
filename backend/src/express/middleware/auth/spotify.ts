@@ -18,7 +18,7 @@ const scopesSpotify = [
   "streaming",
   "user-library-modify",
   "user-library-read",
-  "user-tmodify-playback-state",
+  "user-modify-playback-state",
   "user-read-currently-playing",
   "user-read-email",
   "user-read-playback-position",
@@ -80,7 +80,7 @@ const createSpotifyAuthMiddleware = ({
     connectAndRedirect(req, res);
   };
 
-  const updateUser = async ({target, id, accessToken, refreshToken, expiresAt, done}) => {
+  const updateUser = async ({ target, id, accessToken, refreshToken, expiresAt, done }) => {
     const existingUser = await client.user.findFirst({ where: { auth0Id: id } });
     if (!existingUser) {
       const msg = `Failed to create connection: no user [${id}]`;
@@ -96,7 +96,7 @@ const createSpotifyAuthMiddleware = ({
         expiresAt,
       }
     };
-  
+
 
     // TODO(aelsen): make generic
     const existingToken = await client.connection.findFirst({ where: { userId: existingUser.id, service: target } });
@@ -134,33 +134,40 @@ const createSpotifyAuthMiddleware = ({
   const reauthorize = async (req: Request, res: Response) => {
     logger.info(`Reauthorizing...`);
 
-    Promise.all([SERVICE_NAME, `${SERVICE_NAME}playback`].map(async (target) => {
+    await Promise.all([SERVICE_NAME, `${SERVICE_NAME}playback`].map(async (target) => {
       const refreshToken = getRefreshToken(req, target);
       if (!refreshToken) {
         logger.info(`Failed to get request token, not reauthorizing`);
         return null;
       }
-  
+
       const options = {
         headers: {
           'Authorization': 'Basic ' + (new Buffer(clientID + ':' + clientSecret).toString('base64')),
           'Content-Type': 'application/x-www-form-urlencoded'
         }
       };
-  
+
       const data = qs.stringify({
         grant_type: 'refresh_token',
         refresh_token: refreshToken
       });
-  
-      const tokenRes = await axios.post('https://accounts.spotify.com/api/token', data, options);
+
+      let tokenRes;
+      try {
+        tokenRes = await axios.post('https://accounts.spotify.com/api/token', data, options);
+      } catch (e) {
+        logger.error(`reauthenticate - failed  ${JSON.stringify(e, null, 2)}`);
+        return false;
+      }
+
       logger.info(`reauthenticate - got res ${tokenRes.status} ${JSON.stringify(tokenRes.data, null, 2)}`);
       if (tokenRes.status === 200) {
         const id = req.user?.id;
         if (!id) {
           logger.warn("No id..")
         }
-        const {access_token: accessToken, refresh_token, expires_in} = tokenRes.data;
+        const { access_token: accessToken, refresh_token, expires_in} = tokenRes.data;
         // store access token
         const expiresAt = new Date(Date.now() + expires_in).toISOString();
         updateUser({
@@ -178,6 +185,7 @@ const createSpotifyAuthMiddleware = ({
     }));
 
     logger.info(`Return to original req? ${req.path} ${req.params}`)
+    return true;
   };
 
   const setScopeTarget = (target: string) => (req: Request, res: Response, next: NextFunction) => {
@@ -194,7 +202,7 @@ const createSpotifyAuthMiddleware = ({
 
     const id = req.user.id;
     const expiresAt = new Date(Date.now() + expires_in).toISOString();
-    
+
     return updateUser({
       target,
       id,
@@ -239,17 +247,17 @@ const createSpotifyAuthMiddleware = ({
   );
 
   router.get(
-    "/callback", 
-    authenticate, 
+    "/callback",
+    authenticate,
     connect
   );
 
   router.get(
-    "/reauthorize", 
-    reauthorize, 
+    "/reauthorize",
+    reauthorize,
   );
 
-  return router;
+  return { router, reauthorize };
 };
 
 export default createSpotifyAuthMiddleware;

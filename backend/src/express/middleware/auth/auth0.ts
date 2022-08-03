@@ -38,8 +38,8 @@ const createAuth0AuthMiddleware = ({
   const verifyCallback = async (req, accessToken: string, refreshToken: string, extraParams, profile, done) =>  {
     const { displayName, emails, id, name, picture } = profile;
     logger.info(`Verifying user [${id}]`);
-  
-    let existing = await client.user.findFirst({ where: { auth0Id: id } });  
+
+    let existing = await client.user.findFirst({ where: { auth0Id: id } });
     if (!existing) {
       try {
         existing = await client.user.create({
@@ -58,7 +58,7 @@ const createAuth0AuthMiddleware = ({
     } else {
       logger.info(`Found existing user [${id}] in database "${existing.firstName} ${existing.lastName}"`);
     }
-  
+
     const user = {
       id,
       displayName,
@@ -103,7 +103,7 @@ const createAuth0AuthMiddleware = ({
   router.get("/", saveReturnTo, authenticate);
   router.get("/callback", authenticate, redirectToReturnTo);
 
-  return router;
+  return { router };
 };
 
 export default createAuth0AuthMiddleware;

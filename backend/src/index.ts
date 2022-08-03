@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 
 import createMiddleware from './express/middleware';
 import config from "./config"
-import { logger, logger as mainLogger } from "./utils/logger"; 
+import { logger, logger as mainLogger } from "./utils/logger";
 
 const createServer = () => {
   const logger = mainLogger.child({ labels: ['express'] });
@@ -22,7 +22,7 @@ const createServer = () => {
 
   middleware.session.forEach((mw) => app.use(mw));
   middleware.util.forEach((mw) => app.use(mw));
-  
+
   app.use('/auth', middleware.auth);
   app.use('/api', middleware.reverseProxy);
 
