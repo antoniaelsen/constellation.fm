@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import WebCola from 'react-cola';
 import { Line } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { Playlist, Track } from 'types/music';
+import { Playlist, Track, TrackContext } from 'types/music';
 import { Star } from '../Star';
 
 
@@ -32,6 +32,7 @@ interface TrackNode extends Node {
 
 export interface ConstellationProps {
   constellation: any;
+  context: TrackContext | null;
   id: string;
   playlist: Playlist | null;
   playTrack(id: string): void;
@@ -39,14 +40,31 @@ export interface ConstellationProps {
 
 export const Constellation = (props: ConstellationProps) => {
   // HOC
-  const { playlist, playTrack } = props;
+  const { context, playlist, playTrack } = props;
 
-  const nodes = playlist?.tracks?.map(({ track }) => ({ id: track.id, track }));
-  const links = nodes && nodes.length > 1 ? [
-    ...nodes.slice(0, -1).map((node, i) => ({ source: i, target: i + 1 })),
-    { source: 0, target: nodes.length - 1, length: COLA_LINK_DISTANCE * 3 }
-  ] : undefined;
-
+  const { nodes, links } = useMemo(() => {
+      console.log("Constellation | Regenerating nodes and links");
+      const nodes = playlist?.tracks?.map(({ track }) => ({ id: track.id, track }))
+      const links = nodes && nodes.length > 1 ? [
+        ...nodes.slice(0, -1).map((node, i) => ({ source: i, target: i + 1 })),
+        { source: 0, target: nodes.length - 1, length: COLA_LINK_DISTANCE * 3 }
+      ] : undefined;
+      return { nodes, links };
+    },
+    [playlist]
+  );
+  
+  const onHandleLayout = useCallback(
+    (cola, nodes, links, constraints, groups) => cola
+      .nodes(nodes)
+      .links(links)
+      .groups(groups)
+      .constraints(constraints)
+      .linkDistance((link) => link.length || COLA_LINK_DISTANCE)
+      .avoidOverlaps(COLA_AVOID_OVERLAPS)
+      .handleDisconnected(COLA_HANDLE_DISCONNECTED),
+    []
+  );
 
   const { camera } = useThree();
   useEffect(() => {
@@ -58,15 +76,7 @@ export const Constellation = (props: ConstellationProps) => {
     <>
       <axesHelper args={[20]} />
       <WebCola
-        onHandleLayout={
-          (cola, nodes, links, constraints, groups) => cola
-            .nodes(nodes)
-            .links(links)
-            .groups(groups)
-            .constraints(constraints)
-            .linkDistance((link) => link.length || COLA_LINK_DISTANCE)
-            .avoidOverlaps(COLA_AVOID_OVERLAPS)
-            .handleDisconnected(COLA_HANDLE_DISCONNECTED)}
+        onHandleLayout={onHandleLayout}
         renderLayout={(layout: any) => {
           return (
             <>
@@ -95,9 +105,11 @@ export const Constellation = (props: ConstellationProps) => {
               )}
               {layout.nodes().map(
                 ({ x, y, z, id, track }: TrackNode, i: number) => {
+                  const playing = context?.id === track.id;
                   return (
                     <Star
                       key={id}
+                      playing={playing}
                       track={track}
                       onTooltipClick={playTrack}
                       position={[

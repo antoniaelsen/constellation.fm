@@ -72,7 +72,6 @@ export const DeviceMenu = (props: DeviceMenuProps) => {
   }, [getAvailableDevices]);
 
   const otherDevice = devices.find((device) => device.is_active && device.id !== deviceId);
-  console.log("DeviceMenu | devices", !!otherDevice, otherDevice?.name, otherDevice)
   
   return (
     <StyledBox {...boxProps} sx={{ display: "flex", alignItems: "center", ...boxProps?.sx }}>

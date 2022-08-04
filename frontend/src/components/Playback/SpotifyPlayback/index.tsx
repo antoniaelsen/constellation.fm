@@ -8,8 +8,9 @@ import { transformTrack } from "lib/spotify";
 import { Device, DeviceMenu } from "./DeviceMenu";
 import { ServicePlaybackProps } from "../ServicePlayback";
 import { PlayControls, RepeatState } from "../PlayControls";
-import { SPOTIFY_URL } from "lib/constants";
+import { Service, SPOTIFY_URL } from "lib/constants";
 import { useInterval } from "lib/useInterval";
+import { setPlayingTrack } from "actions";
 
 const POLL_PERIOD = 1000; // ms
 
@@ -81,7 +82,7 @@ const getContextItem = async (href: string) => {
 const getCurrentContext = async (ctx, currentTrack) => {
   const { href, type, uri } = ctx;
   const current: any = await getContextItem(href);
-  if (!current || !currentTrack) return null;
+  if (!current?.tracks?.items || !currentTrack) return null;
   
   const items = current.tracks.items;
   const length = items.length;
@@ -222,6 +223,32 @@ const setPlayerDevice = async (deviceId: string) => {
 }
 
 
+// TODO(aelsen): type track and context from spotify api
+
+const createTrackContext = (track: any, context: any) => {
+  let ctx: any = null;
+  if (context) {
+    const ctxId = context.uri.split(":").pop();
+    const ctxType = context.type;
+    ctx = {
+      id: `${Service.SPOTIFY}-${ctxType}-${ctxId}`,
+      serviceId: ctxId,
+      type: ctxType,
+      position: context.position,
+    }
+  }
+
+  return track
+    ? {
+      service: Service.SPOTIFY,
+      serviceId: track.serviceId,
+      id: track.id,
+      context: ctx
+    }
+    : null;
+}
+
+
 export const PlaybackBox = styled(StyledBox)(({ theme }) => ({
   display: "grid", 
   gridTemplateColumns: "1fr 2fr 1fr",
@@ -259,7 +286,7 @@ const initialState = {
 };
 
 export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
-  const { token } = props;
+  const { token, setPlayingTrack } = props;
 
   const [devices, setDevices] = useState<Device[]>([]);
   const [deviceId, setDeviceId] = useState<string | null>(null);
@@ -413,9 +440,10 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
 
   const handleState = useCallback(async (state: any) => {
     const currentContext = contextRef.current;
-    console.log('Spotify Playback | Player state fetched:', state, "current context:", currentContext);
+    // console.log('Spotify Playback | handleState (fetched) -', state, "current context:", currentContext);
     const {
       context: ctx,
+      currentTrack,
       device,
       is_playing,
       item,
@@ -433,23 +461,29 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
       newContext = ctx?.uri ? (await getCurrentContext(ctx, item)) : null;
     }
     
-    if (!paused) {
-      console.log('Spotify Playback | handleState - starting interval');
-      startInterval(updatePlayerPositionByInterval, 1000, "seek");
-    }
+    if (!paused) startInterval(updatePlayerPositionByInterval, 1000, "seek");
     if (paused) stopInterval("seek");
     
-    const currentTrack = item
+    const newTrack = item
     ? transformTrack(item)
     : null;
     const repeat = RepeatState[repeat_state.toUpperCase()] as unknown as RepeatState;
     
     contextRef.current = newContext;
-    console.log('Spotify Playback | handle State - setting position to', position);
+
+    const trackChanged = newTrack?.id !== currentTrack?.id;
+    const posChanged = currentContext?.position !== newContext?.position;
+    if (trackChanged && posChanged) {
+      const trackContext = createTrackContext(newTrack, newContext);
+      console.log('Spotify Playback | handleState (fetch) - track changed', trackContext);
+      setPlayingTrack(trackContext);
+    }
+  
+    console.log('Spotify Playback | handleState (fetch) - track', newTrack, "context:", newContext);
     setPlayerState((prev) => ({
       ...prev,
       context: newContext,
-      currentTrack,
+      currentTrack: newTrack,
       duration,
       paused,
       position,
@@ -460,33 +494,30 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   }, [getAvailableDevices, startInterval, stopInterval]);
   
   const handleStateChange = async (state: any) => {
-    console.log('Spotify Playback | handleStateChanged (event):', state);
+    // console.log('Spotify Playback | handleStateChanged (event):', state);
     if (!state) {
       return;
     }
     const currentContext = contextRef.current;
-    const { context: ctx, duration, position, paused, repeat_mode: repeat, shuffle, track_window } = state;
+    const { context: ctx, currentTrack, duration, position, paused, repeat_mode: repeat, shuffle, track_window } = state;
 
-    if (!paused) {
-      console.log('Spotify Playback | handleStateChanged (event) - starting interval');
-      startInterval(updatePlayerPositionByInterval, 1000, "seek");
-    }
+    if (!paused) startInterval(updatePlayerPositionByInterval, 1000, "seek");
     if (paused) stopInterval("seek");
 
     const volume = (await playerRef.current?.getVolume() || 0) * 100;
-    const currentTrack = track_window.current_track
+    const newTrack = track_window.current_track
       ? transformTrack(track_window.current_track)
       : null;
 
 
     let newContext = currentContext;
-    if (newContext?.trackId !== currentTrack?.id) {
+    if (newContext?.trackId !== newTrack?.id) {
       newContext = ctx?.uri
       ? {
           href: ctx.href,
           type: ctx.type,
           uri: ctx.uri,
-          trackId: currentTrack?.id || null,
+          trackId: newTrack?.id || null,
           position: null,
           length: null,
           next: { uri: track_window.next_tracks[0].uri, position: null },
@@ -497,11 +528,20 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
 
     
     contextRef.current = newContext; 
-    console.log('Spotify Playback | handle player state changed event - setting position to', position);
+    console.log('Spotify Playback | handleStateChanged (event) - track', newTrack, "context:", newContext);
+    
+    const trackChanged = newTrack?.id !== currentTrack?.id;
+    const posChanged = currentContext?.position !== newContext?.position;
+    if (trackChanged && posChanged) {
+      const trackContext = createTrackContext(newTrack, newContext);
+      console.log('Spotify Playback | handleStateChanged (event) - track changed', trackContext);
+      setPlayingTrack(trackContext);
+    }
+
     setPlayerState((prev) => ({
       ...prev,
       context: newContext,
-      currentTrack,
+      currentTrack: newTrack,
       duration,
       paused,
       position,

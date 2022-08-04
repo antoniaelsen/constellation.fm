@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
-import { Playlist } from 'types/music';
+import { Playlist, TrackContext } from 'types/music';
 import { Constellation } from './component';
 
 export interface ConstellationHoCProps {
   constellation: any;
+  context: TrackContext | null;
   id: string;
   playlist: Playlist | null;
   getPlaylist: (id: string) => void;
@@ -14,7 +15,7 @@ export interface ConstellationHoCProps {
 
 export const ConstellationHoC = (props: ConstellationHoCProps) => {
   // HOC
-  const { constellation, id, playlist, getPlaylist, playTrack } = props;
+  const { constellation, context, id, playlist, getPlaylist, playTrack } = props;
   const serviceId = playlist?.serviceId;
   console.log("ConstellationHoC |", id, constellation, playlist);
 
@@ -28,6 +29,6 @@ export const ConstellationHoC = (props: ConstellationHoCProps) => {
 
   // return (<></>)
   return (
-    <Constellation id={id} constellation={constellation} playlist={playlist} playTrack={playTrack}/>
+    <Constellation id={id} context={context} constellation={constellation} playlist={playlist} playTrack={playTrack}/>
   );
 };

@@ -67,10 +67,23 @@ export interface Playlist {
   url: string;
 }
 
+export interface TrackContext {
+  service: Service;
+  serviceId: string;
+  id: string;
+  context: {
+    id: string;
+    type: string;
+    serviceId: string;
+    position?: number;
+  } | null;
+}
+
 export interface MusicState {
   currentUser: User | null,
   entities: any,
   loadingPlaylists: boolean,
   playlists: Playlist[],
   users: User[],
+  context: TrackContext | null,
 }

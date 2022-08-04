@@ -15,7 +15,7 @@ export const useInterval = () => {
     const inMap = key && key in intervals.current;
 
     if (!(key && !inMap)) return;
-    console.log("useInterval | Stopping", key ? key : "all");
+    // console.log("useInterval | Stopping", key ? key : "all");
     
     if (key) {
       _stopInterval(key);
@@ -33,7 +33,7 @@ export const useInterval = () => {
       return;
     }
 
-    console.log("useInterval | Starting", key, period, cb);
+    // console.log("useInterval | Starting", key, period, cb);
     intervals.current[key] = setInterval(cb, period);
   }, [stopInterval]);
 

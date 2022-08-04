@@ -45,10 +45,12 @@ const makeMapStateToProps = () => {
 
   return (state: RootState, props: ContainerProps) =>  {
     const playlist = selectPlaylistById(state, props);
+    const context = state.music.context;
     // console.log("Constellation Container | Map state to props - plist", temp === playlist, playlist);
     // temp = playlist;
     return {
       constellation: empty,
+      context,
       playlist
     };
   }

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Html } from '@react-three/drei';
-import { useFrame, } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
+import { a, useSpring } from '@react-spring/three';
 import * as THREE from 'three';
 
 import { alpha, ThemeProvider, useTheme } from "@mui/material/styles";
@@ -10,6 +11,7 @@ import { IconButton } from '@mui/material';
 import { StyledBox } from 'components/StyledBox';
 import { Track } from 'types/music';
 import { StarSongInfo } from './StarSongInfo';
+import styled from '@emotion/styled';
 
 const TRANSPARENT_CARDS = true;
 const STAR_RADIUS = 5;
@@ -84,29 +86,43 @@ export const StarTooltip = (props: StarTooltipProps) => {
 
 type StarProps = JSX.IntrinsicElements['group'] &  {
   track: Track;
+  playing?: boolean;
   position: THREE.Vector3 | number[];
   onTooltipClick(id: string): void;
 }
 
+
 export const Star = (props: StarProps) => {
   const theme = useTheme();
-  const { track, position, onTooltipClick } = props;
+  const { track, playing, position, onTooltipClick } = props;
   const ref = useRef<THREE.Mesh>(null!);
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
   useFrame(() => (ref.current.rotation.x += 0.01));
+
+  const { backgroundColor } = useSpring({
+    backgroundColor: playing
+      ? theme.palette.primary.main
+      : clicked
+        ? 'green'
+        : theme.palette.secondary.main
+  });
+  const { scale } = useSpring({ scale: (playing ? 1.5 : 1) * (hovered ? 1.25 : 1) })
+
   return (
     <group position={position}>
-      <mesh
+      <a.mesh
         ref={ref}
-        scale={hovered ? 1.5 : 1}
+        scale={scale}
         onClick={() => click(!clicked)}
         onPointerOver={() => hover(true)}
         onPointerOut={() => hover(false)}
       >
         <sphereGeometry args={[STAR_RADIUS, STAR_WIDTH_SEGS, STAR_HEIGHT_SEGS]} />
-        <meshStandardMaterial color={clicked ? 'green' : theme.palette.primary.main} opacity={0.5} />
-      </mesh>
+        {/*
+          // @ts-ignore */}
+        <a.meshStandardMaterial color={backgroundColor} opacity={0.5} />
+      </a.mesh>
       <StarTooltip track={track} onClick={onTooltipClick}/>
     </group>
   )
