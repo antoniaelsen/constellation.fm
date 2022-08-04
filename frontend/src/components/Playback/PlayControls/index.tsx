@@ -82,7 +82,7 @@ export const PlayControls = (props: PlayControlsProps) => {
 
   return (
     <StyledBox {...boxProps} sx={{ display: "flex", flexFlow: "column nowrap", alignItems: "center", alignSelf: "stretch", ...boxProps?.sx }}>
-      <StyledBox sx={{ display: "flex" }}>
+      <StyledBox sx={{ display: "flex", alignItems: "center" }}>
         <IconButton aria-label="shuffle" size="small" color={shuffle ? "primary" : "info"} disabled={disabled} onClick={onShuffle}>
           <ShuffleIcon fontSize="inherit" />
         </IconButton>

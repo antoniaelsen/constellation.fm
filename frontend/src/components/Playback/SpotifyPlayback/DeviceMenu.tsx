@@ -76,17 +76,17 @@ export const DeviceMenu = (props: DeviceMenuProps) => {
   
   return (
     <StyledBox {...boxProps} sx={{ display: "flex", alignItems: "center", ...boxProps?.sx }}>
-      <Tooltip arrow open={!!otherDevice} placement="left" title={`Listening on ${otherDevice?.name}`}>
-        <IconButton
-          sx={{ minWidth: "32px" }}
-          aria-label="Connect to device"
-          color="info"
-          disabled={disabled}
-          onClick={handleDeviceButtonClick}
-        >
+      <IconButton
+        sx={{ minWidth: "32px" }}
+        aria-label="Connect to device"
+        color="info"
+        disabled={disabled}
+        onClick={handleDeviceButtonClick}
+      >
+        <Tooltip arrow open={!!otherDevice} placement="left" title={`Listening on ${otherDevice?.name}`}>
           <SpeakerGroupIcon/>
-        </IconButton>
-      </Tooltip>
+        </Tooltip>
+      </IconButton>
       <Popover
         id="spotify-playback-device-menu"
         open={open}
