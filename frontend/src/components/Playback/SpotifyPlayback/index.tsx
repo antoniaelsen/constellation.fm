@@ -70,7 +70,6 @@ const getContextItem = async (href: string) => {
       }
       return [];
     }
-    console.log("Spotify Playback | Got context item", res);
     return res;
   } catch (e) {
     console.log("Failed to fetch context item", e);
@@ -103,14 +102,12 @@ const getCurrentContext = async (ctx, currentTrack) => {
     length,
   };
   
-  console.log("Spotify Playback | Creating context", res, position, currentTrack, items);
   if (position === -1) {
     return res;
   }
 
   const nextIndex = mod((position + 1), length);
   const prevIndex = mod((position - 1), length);
-  console.log("Spotify Playback | Creating context next, prev", nextIndex, prevIndex, length);
 
   const nextUri = items[nextIndex].id;
   const prevUri = items[prevIndex].id;
@@ -324,6 +321,8 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
 
   const handleSeek = (position) => {
     console.log(`Spotify Playback | seek to ${position} ms`);
+    stopInterval("seek");
+
     if (local) 
       player?.seek(position);
     else
@@ -338,6 +337,8 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
         setPlayerPlay(position);
 
     } else {
+      stopInterval("seek");
+
       if (local)
         player?.pause();
       else
@@ -349,6 +350,7 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     console.log("Spotify Playback | next track", repeat ? "(repeat)" : "", "from context", context);
     const restart = repeat === RepeatState.TRACK;
 
+    stopInterval("seek");
     if (local) {
       if (!player) return;
       if (restart)
@@ -372,14 +374,13 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
         setPlayerPlay(0, uri, offset);
       }
     }
-    setPlayerState((prev) => ({ ...prev, position: 0 }));
-    // getState();
   }
 
   const handlePreviousTrack = () => {
     const restart = repeat === RepeatState.TRACK || position < 3000;
     console.log("Spotify Playback | prev track", restart ? "(restart)" : "");
 
+    stopInterval("seek");
     if (local) {
       if (!player) return;
       if (restart)
@@ -403,8 +404,6 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
           setPlayerPlay(0, uri, offset);
         }
       }
-    setPlayerState((prev) => ({ ...prev, position: 0 }));
-    // getState();
   }
 
   const handleVolumeChange = async (volume: number) => {
@@ -413,8 +412,8 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   };
 
   const handleState = useCallback(async (state: any) => {
-    const context = contextRef.current;
-    console.log('Spotify Playback | Player state fetched:', state, "current context:", context);
+    const currentContext = contextRef.current;
+    console.log('Spotify Playback | Player state fetched:', state, "current context:", currentContext);
     const {
       context: ctx,
       device,
@@ -429,24 +428,27 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     
     const paused = !is_playing;
     
-    let currentContext = context;
-    if (currentContext?.trackId !== item?.id) {
-      currentContext = ctx?.uri ? (await getCurrentContext(ctx, item)) : null;
+    let newContext = currentContext;
+    if (newContext?.trackId !== item?.id) {
+      newContext = ctx?.uri ? (await getCurrentContext(ctx, item)) : null;
     }
-
-    if (!paused) startInterval(updatePlayerPositionByInterval, 1000, "seek");
+    
+    if (!paused) {
+      console.log('Spotify Playback | handleState - starting interval');
+      startInterval(updatePlayerPositionByInterval, 1000, "seek");
+    }
     if (paused) stopInterval("seek");
     
     const currentTrack = item
-      ? transformTrack(item)
-      : null;
+    ? transformTrack(item)
+    : null;
     const repeat = RepeatState[repeat_state.toUpperCase()] as unknown as RepeatState;
-
-
-    contextRef.current = currentContext;
+    
+    contextRef.current = newContext;
+    console.log('Spotify Playback | handle State - setting position to', position);
     setPlayerState((prev) => ({
       ...prev,
-      context: currentContext,
+      context: newContext,
       currentTrack,
       duration,
       paused,
@@ -458,14 +460,17 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   }, [getAvailableDevices, startInterval, stopInterval]);
   
   const handleStateChange = async (state: any) => {
-    const context = contextRef.current;
-    const { context: ctx, duration, position, paused, repeat_mode: repeat, shuffle, track_window } = state;
-    console.log('Spotify Playback | Player state changed:', state);
+    console.log('Spotify Playback | handleStateChanged (event):', state);
     if (!state) {
       return;
     }
+    const currentContext = contextRef.current;
+    const { context: ctx, duration, position, paused, repeat_mode: repeat, shuffle, track_window } = state;
 
-    if (!paused) startInterval(updatePlayerPositionByInterval, 1000, "seek");
+    if (!paused) {
+      console.log('Spotify Playback | handleStateChanged (event) - starting interval');
+      startInterval(updatePlayerPositionByInterval, 1000, "seek");
+    }
     if (paused) stopInterval("seek");
 
     const volume = (await playerRef.current?.getVolume() || 0) * 100;
@@ -474,9 +479,9 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
       : null;
 
 
-    let currentContext = context;
-    if (currentContext?.trackId !== currentTrack?.id) {
-      currentContext = ctx?.uri
+    let newContext = currentContext;
+    if (newContext?.trackId !== currentTrack?.id) {
+      newContext = ctx?.uri
       ? {
           href: ctx.href,
           type: ctx.type,
@@ -485,17 +490,17 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
           position: null,
           length: null,
           next: { uri: track_window.next_tracks[0].uri, position: null },
-          prev: { uri: track_window.prev_tracks[0].uri, position: null },
+          prev: { uri: track_window.previous_tracks[0].uri, position: null },
         }
       : null;
     }
 
-    console.log('Spotify Playback | Player event setting context to:', currentContext);
     
-    contextRef.current = currentContext; 
+    contextRef.current = newContext; 
+    console.log('Spotify Playback | handle player state changed event - setting position to', position);
     setPlayerState((prev) => ({
       ...prev,
-      context: currentContext,
+      context: newContext,
       currentTrack,
       duration,
       paused,
@@ -573,7 +578,6 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
       startInterval(getState, POLL_PERIOD, "state");
       return;
     }
-    console.log("Spotify Playback | Stopping subscription to playback state");
     stopInterval("state");
   }
 

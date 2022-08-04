@@ -36,9 +36,9 @@ export const SongInfo = (props: SongInfoProps) => {
 
         <StyledBox sx={{ display: "flex" }}>
           {artists.map(({ name, url }, i) => (
-            <React.Fragment key={url}>
+            <React.Fragment key={name}>
               {i > 0 && <Typography sx={{ display: "inline-block", mr: 1 }} variant="caption">, </Typography>}
-              <StyledLink key={url} href={url} variant="caption">{name}</StyledLink>
+              <StyledLink href={url} variant="caption">{name}</StyledLink>
             </React.Fragment>
           ))}
         </StyledBox>
