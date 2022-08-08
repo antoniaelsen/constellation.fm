@@ -23,7 +23,6 @@ export const Playlists: React.SFC<PlaylistsProps> = (props) => {
   const { context, loading, playlists } = props;
   const [open, setOpen] = useState(true);
   const { playlistId } = (useParams() as any); // TODO(aelsen): wont work once views are by constellations
-  console.log("Loc:", playlistId);
 
   const handleClick = useCallback(() => {
     setOpen(!open);

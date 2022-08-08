@@ -27,7 +27,6 @@ const parseAccessTokens = () => {
     tokens[service] = token;
     cookies.remove(key);
   });
-  console.log("AuthProvider | Got ATs:", tokens);
   return tokens;
 };
 
@@ -71,7 +70,6 @@ export const AuthProvider = (props: AuthProviderProps) => {
       return;
     }
     const authState = JSON.parse(authStateStr);
-    console.log("AuthProvider | authState:", authState);
     setAuthentication(authState.isLoggedIn);
     updateConnections(authState.connections);
   }, [setAuthentication, updateConnections]);

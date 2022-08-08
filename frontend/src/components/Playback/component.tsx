@@ -31,7 +31,6 @@ interface PlaybackProps {
 export const Playback = (props: PlaybackProps) => {
   const { connectionTokens, setPlayingContext } = props;
 
-  // const connection = Service.SPOTIFY; // TODO(aelsen)
   const service = Service.SPOTIFY; // TODO(aelsen)
   const token = connectionTokens[service!];
   const track = null;

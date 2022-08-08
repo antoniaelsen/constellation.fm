@@ -3,6 +3,7 @@ import { useParams } from 'react-router';
 import { ReactReduxContext } from 'react-redux'
 import { useContextBridge } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
+import { ThemeProvider } from '@mui/material/styles';
 
 import { Nav } from 'components/Nav';
 import { ServiceMenu } from 'components/ServiceMenu';
@@ -11,7 +12,6 @@ import { Playback } from 'components/Playback';
 import { Service } from "lib/constants";
 
 
-import { ThemeProvider } from '@mui/material/styles'; // TODO(aelsen): move to providers
 import { StyledBox } from 'components/StyledBox';
 import { theme } from 'theme';
 import { HtmlContainerContext } from './HtmlContainerContext';
@@ -33,20 +33,16 @@ export const Root = (props: RootProps) => {
 
   const fetchSpotify = () => {
     if (connections !== connectionsOld) {
-      console.log("Root | Services changed", connections);
       connectionsOld = connections;
     }
 
     if (!connections.includes(Service.SPOTIFY)) return;
   
-    console.log("Root | Fetching spotify...");
     getUser();
     getUserPlaylists();
   }
 
   useEffect(fetchSpotify, [connections, getUser, getUserPlaylists]);
-  // console.log("Root | playlistId", playlistId, params);
-  
 
   return (
     <StyledBox sx={{ display: "flex", flexFlow: "column", flex: 1 }}>

@@ -98,7 +98,6 @@ const createSpotifyAuthMiddleware = ({
     };
 
 
-    // TODO(aelsen): make generic
     const existingToken = await client.connection.findFirst({ where: { userId: existingUser.id, service: target } });
     if (!existingToken) {
       try {

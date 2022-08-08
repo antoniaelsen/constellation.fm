@@ -11,13 +11,10 @@ export interface ConstellationHoCProps {
   playTrack: (id: string) => void;
 }
 
-// TODO(aelsen): create constellation if DNE
-
 export const ConstellationHoC = (props: ConstellationHoCProps) => {
   // HOC
   const { constellation, context, id, playlist, getPlaylist, playTrack } = props;
   const serviceId = playlist?.serviceId;
-  console.log("ConstellationHoC |", id, constellation, playlist);
 
   useEffect(() => {
     if (!serviceId) return;

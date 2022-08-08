@@ -9,7 +9,6 @@ interface Props {
 
 export const Login: React.FC<Props> = (props) => {
   const { login } = useAuth();
-  console.log("Login | Rendering");
 
   return (
     <StyledBox sx={{

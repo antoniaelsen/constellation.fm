@@ -77,7 +77,6 @@ export const DeviceMenu = (props: DeviceMenuProps) => {
   };
 
   const handleDeviceClick = (id: string) => {
-    console.log("DeviceMenu | Transferring Playback to", id);
     transferPlayback(id);
     handleDeviceMenuClose();
   }

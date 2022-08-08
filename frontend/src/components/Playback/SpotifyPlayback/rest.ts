@@ -28,7 +28,6 @@ export const getDevices = async () => {
       }
       return [];
     }
-    console.log("Spotify Playback | Got available devices", res.devices);
     return res.devices;
   } catch (e) {
     console.log("Failed to fetch devices", e);
@@ -86,9 +85,7 @@ export const createTrackContextFromApi = async (state: SpotifyApi.CurrentPlaybac
           
           name = item.name;
           length = tracks.length;
-          // console.log("Creating context next and prev from playlist / album, tracks:", length, tracks);
         position = tracks.findIndex((child) => child.id === current_track!.id);
-        // console.log("- found current track", current_track, "at", position);
 
         if (position === -1) {
           position = null;
@@ -112,9 +109,6 @@ export const createTrackContextFromApi = async (state: SpotifyApi.CurrentPlaybac
             position: mod((position as number) - (CONTEXT_TRACK_WINDOW - (i + 1)) - 1, length)
           }));
         }
-        // console.log("- found prev tracks", prev);
-        // console.log("- found next tracks", next);
-        
       }
     }
   }
@@ -220,7 +214,6 @@ export const setPlayerPlayContext = async (
   
   if (contextUri) payload.context_uri = contextUri;
   if (offset) payload.offset = offset;
-  console.log("Spotify Playback | Playing", payload)
 
   fetch(
     `${config.api.spotify}/me/player/play${params({ device_id: deviceId })}`, {

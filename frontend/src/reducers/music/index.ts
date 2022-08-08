@@ -19,7 +19,6 @@ type MusicReducer = (state: MusicState, data: any) => MusicState;
 const generalReducers: {[key: string]: MusicReducer} = {
   [SET_PLAYING_CONTEXT]: (prevState, action) => {
     const context = action.payload;
-    console.log("Music Reducer | Set playing track", context)
     return {
       ...prevState,
       context

@@ -11,7 +11,6 @@ import { StyledBox } from 'components/StyledBox';
 const PrivateRoute = (props) => {
   const { children, ...etc } = props;
   const { isAuthenticated } = useAuth();
-  console.log("Private Route | isAuthenticated?", isAuthenticated);
   return (
     <Route {...etc} render={() => {
       return isAuthenticated

@@ -72,8 +72,6 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     volume
   } = playerState;
 
-  console.log("Spotify Playback | local playback:", local, "context:", contextRef.current);
-
   const updatePlayerPositionByInterval = () => {
     if (!player) {
       stopInterval("seek");
@@ -136,7 +134,6 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   const handleNextTrack = () => {
     const context = contextRef.current;
     const restart = repeat === RepeatState.TRACK;
-    // console.log("Spotify Playback | next track", restart ? "(restart)" : "- context:", context);
 
     if (restart) {
       if (local) {
@@ -180,7 +177,6 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   const handlePreviousTrack = async () => {
     const context = contextRef.current;
     const restart = repeat === RepeatState.TRACK || position > 5000;
-    // console.log("Spotify Playback | prev track - restart:", restart, "(position:", position > 3000, "): position:", position, context);
 
     if (restart) {
       if (local) {
@@ -250,14 +246,6 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     ? transformContextTrack((item as SpotifyApi.TrackObjectFull))
     : null;
     
-    console.log('Spotify Playback | handleState (fetched):',
-      state,
-      "current context:", context,
-      "new context", ctx,
-      "current track:", context?.current,
-      "new track:", newTrack
-    );
-    
     // Check if context has changed
     const contextChanged = ctx?.uri !== context?.uri;
     const trackChanged = newTrack?.uri !== context?.current?.uri;
@@ -282,7 +270,6 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   }, [getAvailableDevices, startInterval, stopInterval]);
   
   const handlePlayerStateChanged = async (state: SpotifyPlaybackState) => {
-    // console.log('Spotify Playback | handlePlayerStateChanged (event):', state);
     if (!state) {
       setPlayerState((prev) => ({ ...prev, local: false }));
       return;
@@ -342,10 +329,7 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     (window as any).onSpotifyWebPlaybackSDKReady = () => {
       const player = new (window as any).Spotify.Player({
         name: "constellation.fm",
-        getOAuthToken: (cb: any) => {
-          console.log("Spotify Playback | Initializing client with token", token);
-          cb(token);
-        },
+        getOAuthToken: (cb: any) => { cb(token); },
         volume: 0.5
       });
 
