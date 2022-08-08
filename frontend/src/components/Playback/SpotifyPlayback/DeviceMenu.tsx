@@ -9,7 +9,10 @@ import {
   ListItemText,
   ListSubheader,
   Popover,
-  Tooltip
+  styled,
+  Tooltip,
+  TooltipProps,
+  tooltipClasses
 } from "@mui/material";
 import ComputerIcon from "@mui/icons-material/Computer";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
@@ -36,6 +39,18 @@ const getDeviceIcon = (type) => {
   };
   return deviceIcons[type] || DevicesOtherIcon;
 }
+
+const GreenTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.success.main,
+    color: theme.palette.common.black,
+  },
+  [`& .${tooltipClasses.arrow}`]: {
+    color: theme.palette.success.main,
+  },
+}));
 
 interface DeviceMenuProps {
   deviceId?: string | null;
@@ -82,9 +97,9 @@ export const DeviceMenu = (props: DeviceMenuProps) => {
         disabled={disabled}
         onClick={handleDeviceButtonClick}
       >
-        <Tooltip arrow open={!!otherDevice} placement="left" title={`Listening on ${otherDevice?.name}`}>
+        <GreenTooltip arrow open={!!otherDevice} placement="left" title={`Listening on ${otherDevice?.name}`}>
           <SpeakerGroupIcon/>
-        </Tooltip>
+        </GreenTooltip>
       </IconButton>
       <Popover
         id="spotify-playback-device-menu"
