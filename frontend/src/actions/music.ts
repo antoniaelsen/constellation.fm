@@ -1,7 +1,7 @@
 import { Service } from "lib/constants";
-import { Track, TrackContext } from "types/music";
+import { Track, Context } from "types/music";
 
-export const SET_PLAYING_TRACK = 'SET_PLAYING_TRACK';
+export const SET_PLAYING_CONTEXT = 'SET_PLAYING_CONTEXT';
 export const SET_PLAYBACK_SERVICE = "SET_PLAYBACK_SERVICE";
 
 export const setPlaybackService = (service: Service) => ({
@@ -9,7 +9,7 @@ export const setPlaybackService = (service: Service) => ({
   payload: service
 });
 
-export const setPlayingTrack = (trackContext: TrackContext | null) => ({
-  type: SET_PLAYING_TRACK,
+export const setPlayingContext = (trackContext: Context | null) => ({
+  type: SET_PLAYING_CONTEXT,
   payload: trackContext,
 });

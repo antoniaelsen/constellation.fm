@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { Playlist, TrackContext } from 'types/music';
+import { Playlist, Context } from 'types/music';
 import { Constellation } from './component';
 
 export interface ConstellationHoCProps {
   constellation: any;
-  context: TrackContext | null;
+  context: Context | null;
   id: string;
   playlist: Playlist | null;
   getPlaylist: (id: string) => void;

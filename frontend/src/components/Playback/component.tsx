@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Service } from "lib/constants";
-import { TrackContext } from "types/music";
+import { Context } from "types/music";
 import { ServicePlaybackProps } from "./ServicePlayback";
 import { NoPlayback } from "./NoPlayback";
 import { PlaybackBox } from "./PlaybackBox";
@@ -25,11 +25,11 @@ const connectionComponents: { [key: string]: React.FC<ServicePlaybackProps> } = 
 
 interface PlaybackProps {
   connectionTokens: { [key: string]: string | null };
-  setPlayingTrack: (trackContext: TrackContext | null) => void;
+  setPlayingContext: (trackContext: Context | null) => void;
 }
 
 export const Playback = (props: PlaybackProps) => {
-  const { connectionTokens, setPlayingTrack } = props;
+  const { connectionTokens, setPlayingContext } = props;
 
   // const connection = Service.SPOTIFY; // TODO(aelsen)
   const service = Service.SPOTIFY; // TODO(aelsen)
@@ -41,7 +41,7 @@ export const Playback = (props: PlaybackProps) => {
   return (
     <>
       <PlaybackBox>
-        <ServicePlayback token={token!} track={track!} setPlayingTrack={setPlayingTrack} />
+        <ServicePlayback token={token!} track={track!} setPlayingContext={setPlayingContext} />
       </PlaybackBox>
     </>
   );

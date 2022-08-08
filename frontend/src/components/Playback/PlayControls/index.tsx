@@ -10,13 +10,9 @@ import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 
 import { StyledBox } from 'components/StyledBox';
+import { RepeatState } from "types/music";
 
 
-export enum RepeatState {
-  OFF = 0,
-  CONTEXT = 1,
-  TRACK = 2,
-};
 
 const msToClock = (input: number) => {
   const ms = input % 1000;

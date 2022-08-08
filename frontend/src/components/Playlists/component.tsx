@@ -9,12 +9,12 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 import { PlaylistItem } from "components/Playlists/components/PlaylistItem";
 import { ListItem } from "components/Playlists/components/ListItem";
 import { ListItemText } from "components/Playlists/components/ListItemText";
-import type { Playlist, TrackContext } from "types/music"
+import type { Playlist, Context } from "types/music"
 import { Skeleton } from "@mui/material";
 
 
 interface PlaylistsProps {
-  context: TrackContext | null;
+  context: Context | null;
   loading: boolean;
   playlists: Playlist[];
 }
@@ -60,7 +60,7 @@ export const Playlists: React.SFC<PlaylistsProps> = (props) => {
           ))}
 
           {playlists.map(({ id, collaborative, editable, name, }: any, i: number) => {
-            const playing = context?.context?.id === id;
+            const playing = context?.id === id;
             const selected = playlistId === id;
             return (
               <PlaylistItem

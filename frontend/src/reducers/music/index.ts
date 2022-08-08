@@ -1,4 +1,4 @@
-import { SET_PLAYING_TRACK } from 'actions';
+import { SET_PLAYING_CONTEXT } from 'actions';
 import { AnyAction } from 'redux';
 
 import { MusicState } from 'types/music';
@@ -17,7 +17,7 @@ type MusicReducer = (state: MusicState, data: any) => MusicState;
 
 
 const generalReducers: {[key: string]: MusicReducer} = {
-  [SET_PLAYING_TRACK]: (prevState, action) => {
+  [SET_PLAYING_CONTEXT]: (prevState, action) => {
     const context = action.payload;
     console.log("Music Reducer | Set playing track", context)
     return {

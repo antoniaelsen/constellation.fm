@@ -3,15 +3,17 @@ import { Typography } from "@mui/material";
 
 import { StyledBox } from 'components/StyledBox';
 import { StyledLink } from 'components/StyledLink';
-import { Track } from 'types/music';
+import { TrackSimple } from 'types/music';
 
 const IMG_WIDTH = 72;
 
-interface SongInfoProps {
+
+
+export interface SongInfoProps {
   imageWidth?: number;
   hideAlbum?: boolean;
   hideImage?: boolean;
-  track: Track;
+  track: TrackSimple;
 };
 
 export const SongInfo = (props: SongInfoProps) => {

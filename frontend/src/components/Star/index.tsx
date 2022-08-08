@@ -107,7 +107,10 @@ export const Star = (props: StarProps) => {
         ? 'green'
         : theme.palette.secondary.main
   });
-  const { scale } = useSpring({ scale: (playing ? 1.5 : 1) * (hovered ? 1.25 : 1) })
+  const { scale } = useSpring({
+    scale: (playing ? 1.5 : 1) * (hovered ? 1.25 : 1),
+    config: { duration: 2500 }
+  })
 
   return (
     <group position={position}>

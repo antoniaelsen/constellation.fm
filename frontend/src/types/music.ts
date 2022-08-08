@@ -1,5 +1,12 @@
 import { Service } from "lib/constants";
 
+export enum RepeatState {
+  OFF = 0,
+  CONTEXT = 1,
+  TRACK = 2,
+};
+
+
 export interface Image {
   url: string;
   height?: number;
@@ -43,11 +50,26 @@ export interface Track {
   url: string;
 }
 
+export type Item = {
+  name: string;
+  uri?: string;
+  url?: string;
+}
+
+export interface TrackSimple extends Item {
+  album: Item & {
+    image: {
+      url: string;
+    }
+  };
+  artists: Item[];
+}
+
 export interface PlaylistTrack {
   addedAt: string;
   addedBy: User;
   order: number;
-  track: Track;
+  track: Track | null;
 }
 
 export interface Playlist {
@@ -66,17 +88,27 @@ export interface Playlist {
   tracks: PlaylistTrack[];
   url: string;
 }
+export interface ContextTrack extends TrackSimple {
+  id: string;  // Service Id
+  position: number | null;
+  uri: string; 
+}
 
-export interface TrackContext {
+export interface Context { // A playlist, album, queue
   service: Service;
-  serviceId: string;
-  id: string;
-  context: {
-    id: string;
-    type: string;
-    serviceId: string;
-    position?: number;
-  } | null;
+  serviceId: string | null;
+  id: string | null;
+  
+  name: string | null;
+  uri: string | null;
+  url: string | null;
+  type: string;
+
+  length: number;
+
+  current: ContextTrack;
+  next: ContextTrack[];
+  prev: ContextTrack[];
 }
 
 export interface MusicState {
@@ -85,5 +117,5 @@ export interface MusicState {
   loadingPlaylists: boolean,
   playlists: Playlist[],
   users: User[],
-  context: TrackContext | null,
+  context: Context | null,
 }

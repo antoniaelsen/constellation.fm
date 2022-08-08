@@ -4,7 +4,7 @@ import { Line } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { Playlist, Track, TrackContext } from 'types/music';
+import { Playlist, Track, Context } from 'types/music';
 import { Star } from '../Star';
 
 
@@ -32,7 +32,7 @@ interface TrackNode extends Node {
 
 export interface ConstellationProps {
   constellation: any;
-  context: TrackContext | null;
+  context: Context | null;
   id: string;
   playlist: Playlist | null;
   playTrack(id: string): void;
@@ -43,8 +43,9 @@ export const Constellation = (props: ConstellationProps) => {
   const { context, playlist, playTrack } = props;
 
   const { nodes, links } = useMemo(() => {
-      console.log("Constellation | Regenerating nodes and links");
-      const nodes = playlist?.tracks?.map(({ track }) => ({ id: track.id, track }))
+      if (!playlist) return { nodes: [], links: [] };
+      const tracks = playlist.tracks?.filter(({ track }) => !!track);
+      const nodes = tracks.map(({ track }) => ({ id: track?.id, track }))
       const links = nodes && nodes.length > 1 ? [
         ...nodes.slice(0, -1).map((node, i) => ({ source: i, target: i + 1 })),
         { source: 0, target: nodes.length - 1, length: COLA_LINK_DISTANCE * 3 }
@@ -97,6 +98,7 @@ export const Constellation = (props: ConstellationProps) => {
                   return (
                     <Line
                       key={i}
+                      alphaWrite={undefined}
                       points={[pointA, pointB]}
                       color="cyan"
                     />
@@ -105,7 +107,7 @@ export const Constellation = (props: ConstellationProps) => {
               )}
               {layout.nodes().map(
                 ({ x, y, z, id, track }: TrackNode, i: number) => {
-                  const playing = context?.id === track.id;
+                  const playing = context?.current?.id === track.id;
                   return (
                     <Star
                       key={id}

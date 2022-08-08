@@ -1,9 +1,9 @@
 import { Dispatch, AnyAction } from 'redux';
 import { connect} from 'react-redux';
 
-import { setPlayingTrack } from 'actions';
+import { setPlayingContext } from 'actions';
 import { RootState } from 'store';
-import { TrackContext } from 'types/music';
+import { Context } from 'types/music';
 import { Playback as Component } from './component';
 
 
@@ -33,7 +33,7 @@ const mapStateToProps = (state: RootState) =>  {
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, props: ContainerProps) => {
   return {
-    setPlayingTrack: (trackContext: TrackContext | null) => dispatch(setPlayingTrack(trackContext))
+    setPlayingContext: (trackContext: Context | null) => dispatch(setPlayingContext(trackContext))
   }
 };
 

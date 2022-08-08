@@ -3,25 +3,44 @@ import { Service } from 'lib/constants';
 import {
   Album,
   Artist,
+  ContextTrack,
   Playlist,
   PlaylistTrack,
   Track,
   User
 } from 'types/music';
 
-const transformUser = (input: any): User => {
+
+const transformContextTrack = (payload: Spotify.Track | SpotifyApi.TrackObjectFull): ContextTrack => {
+  const { id, name, uri, artists, album } = payload;
+  return {
+    id: `${Service.SPOTIFY}-track-${id}`,
+    name,
+    uri,
+    artists,
+    position: null,
+    album: {
+      name: album.name,
+      image: {
+        url: album.images[0]?.url
+      }
+    }
+  };
+}
+
+const transformUser = (input: SpotifyApi.UserObjectPublic): User => {
   const { display_name: displayName, external_urls, id } = input;
   const url = external_urls.spotify;
   return {
     service: Service.SPOTIFY,
     serviceId: id,
     id: `${Service.SPOTIFY}-user-${id}`,
-    displayName,
+    displayName: displayName || "",
     url
   };
 };
 
-const transformArtist = (input: any): Artist => {
+const transformArtist = (input: SpotifyApi.ArtistObjectSimplified): Artist => {
   const { external_urls, id, name } = input;
   const url = external_urls?.spotify;
   return {
@@ -33,7 +52,7 @@ const transformArtist = (input: any): Artist => {
   };
 };
 
-const transformAlbum = (input: any): Album => {
+const transformAlbum = (input: SpotifyApi.AlbumObjectSimplified): Album => {
   const { external_urls, id, images, name } = input;
   const image = images?.[0];
   const url = external_urls?.spotify;
@@ -47,7 +66,7 @@ const transformAlbum = (input: any): Album => {
   };
 };
 
-const transformTrack = (input: any): Track => {
+const transformTrack = (input: SpotifyApi.TrackObjectFull): Track => {
   const { artists, album, external_urls, id, name, track_number: trackNumber } = input;
   const url = external_urls?.spotify;
 
@@ -63,9 +82,9 @@ const transformTrack = (input: any): Track => {
   };
 };
 
-const transformPlaylistSimplified = (input: any, i: number): Playlist => {
+const transformPlaylistSimplified = (input: SpotifyApi.PlaylistObjectSimplified, i: number): Playlist => {
   const { collaborative, description, external_urls, id, images, name, owner, public: isPublic } = input;
-  const image = { url: images[0] };
+  const image = { url: images[0]?.url };  // TODO(aelsen)
   const url = external_urls.spotify;
 
   return {
@@ -77,15 +96,15 @@ const transformPlaylistSimplified = (input: any, i: number): Playlist => {
     owner: transformUser(owner),
     tracks: [],
     collaborative,
-    description,
+    description: description || "",
     name,
     image,
-    isPublic,
+    isPublic: !!isPublic,
     url
   };
 };
 
-const transformPlaylistFull = (input: any): Playlist => {
+const transformPlaylistFull = (input: SpotifyApi.PlaylistObjectFull): Playlist => {
   const { collaborative, description, external_urls, id, images, name, owner, public: isPublic, tracks } = input;
   const image = images[0];
   const url = external_urls.spotify;
@@ -98,22 +117,22 @@ const transformPlaylistFull = (input: any): Playlist => {
     owner: transformUser(owner),
     tracks: tracks.items.map(transformPlaylistTrack),
     collaborative,
-    description,
+    description: description || "",
     name,
     image,
-    isPublic,
+    isPublic: !!isPublic,
     url
   };
 };
 
-const transformPlaylistTrack = (input: any, i: number): PlaylistTrack => {
+const transformPlaylistTrack = (input: SpotifyApi.PlaylistTrackObject, i: number): PlaylistTrack => {
   const { added_at, added_by, track } = input;
 
   return {
     addedAt: added_at,
     addedBy: transformUser(added_by),
     order: i,
-    track: transformTrack(track),
+    track: track ? transformTrack(track) : null,
   };
 };
 
@@ -121,6 +140,7 @@ const transformPlaylistTrack = (input: any, i: number): PlaylistTrack => {
 export {
   transformAlbum,
   transformArtist,
+  transformContextTrack,
   transformTrack,
   transformPlaylistFull,
   transformPlaylistSimplified,
