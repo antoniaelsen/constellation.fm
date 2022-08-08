@@ -6,11 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed issue where constellation spotify web player would be initialized multiple times, and thus show in the devices menu multiple times
+- Disabled highlighting of text in Space (on canvas)
+
 ## [0.1.0] - 2022-08-07
 
 ### Added
 - Added automatic access token refresh on token expiry (401) for spotify
 - Added spotify typing to frontend
+- Added indicators for currently playing playlist, currently selected playlist
 - Added CHANGELOG
 
 ### Changed

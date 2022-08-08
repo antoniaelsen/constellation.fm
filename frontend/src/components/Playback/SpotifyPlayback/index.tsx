@@ -27,7 +27,7 @@ import { SpotifyPlaybackState } from "./types";
 import { mod } from "lib";
 
 
-const POLL_PERIOD = 5000; // ms
+const POLL_PERIOD = 1000; // ms
 
 
 export const PlaybackBox = styled(StyledBox)(({ theme }) => ({
@@ -334,6 +334,7 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
   }, [handleState]);
 
   const initPlayer = () => {
+    if (!token) return;
     const script = document.createElement("script");
     script.src = "https://sdk.scdn.co/spotify-player.js";
     script.async = true;

@@ -20,7 +20,7 @@ export const StarSongInfo = (props: StarSongInfoProps) => {
   const { artists, album, name, url } = track;
 
   return (
-    <StyledBox sx={{ display: "flex", alignItems: "center" }}>
+    <StyledBox sx={{ display: "flex", alignItems: "center", userSelect: "none" }}>
       {!hideImage && (
         <StyledBox sx={{ display: "flex", mr: 2 }}>
           <img

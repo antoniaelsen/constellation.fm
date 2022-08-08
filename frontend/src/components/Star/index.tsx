@@ -28,7 +28,7 @@ export const StarTooltipCard = (({ children, ...etc }) => {
       // borderRadius: theme.shape.borderRadius,
       display: "flex",
       alignItems: "center",
-      padding: theme.spacing(1),
+      padding: `${theme.spacing(1)} ${theme.spacing(1)} ${theme.spacing(1)} ${theme.spacing(5)}`,
       "&:hover": {
         ...(TRANSPARENT_CARDS ?  {} : {
           border: `1px solid rgba(255, 255, 255, 0.3)`,
@@ -63,6 +63,9 @@ export const StarTooltip = (props: StarTooltipProps) => {
   return (
     <Html
       as='div'
+      style={{
+        left: "0.5rem"
+      }}
       distanceFactor={STAR_RADIUS * 50}
     >
       <ThemeProvider theme={theme}>
@@ -72,7 +75,7 @@ export const StarTooltip = (props: StarTooltipProps) => {
         >
           <IconButton
             onClick={handleClick}
-            sx={{ position: "absolute", zIndex: 100, top: "-0.25rem", left: "-1rem", display: hover ? "inline-flex" : "none" }}
+            sx={{ position: "absolute", zIndex: 100, top: "1.4rem", left: "0rem", display: hover ? "inline-flex" : "none" }}
           >
             <PlayCircleIcon />
           </IconButton>
