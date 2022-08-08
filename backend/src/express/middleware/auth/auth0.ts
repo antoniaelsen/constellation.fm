@@ -37,9 +37,9 @@ const createAuth0AuthMiddleware = ({
 
   const verifyCallback = async (req, accessToken: string, refreshToken: string, extraParams, profile, done) =>  {
     const { displayName, emails, id, name, picture } = profile;
-    logger.info(`Verifying user [${id}] - ${JSON.stringify(profile)}`);
-  
-    let existing = await client.user.findFirst({ where: { auth0Id: id } });  
+    logger.info(`Verifying user [${id}]`);
+
+    let existing = await client.user.findFirst({ where: { auth0Id: id } });
     if (!existing) {
       try {
         existing = await client.user.create({
@@ -56,9 +56,9 @@ const createAuth0AuthMiddleware = ({
         return done(e);
       }
     } else {
-      logger.info(`Found existing user [${id}] "${existing.firstName} ${existing.lastName}`);
+      logger.info(`Found existing user [${id}] in database "${existing.firstName} ${existing.lastName}"`);
     }
-  
+
     const user = {
       id,
       displayName,
@@ -70,9 +70,9 @@ const createAuth0AuthMiddleware = ({
 
     try {
       const connections = await client.connection.findMany({ where: { userId: existing.id } });
-      user.connections = connections.reduce((acc, { connection, accessToken, refreshToken, expiresAt, }) => ({
+      user.connections = connections.reduce((acc, { service, accessToken, refreshToken, expiresAt, }) => ({
         ...acc,
-        [connection]: {
+        [service]: {
           accessToken,
           refreshToken,
           expiresAt
@@ -103,7 +103,7 @@ const createAuth0AuthMiddleware = ({
   router.get("/", saveReturnTo, authenticate);
   router.get("/callback", authenticate, redirectToReturnTo);
 
-  return router;
+  return { router };
 };
 
 export default createAuth0AuthMiddleware;

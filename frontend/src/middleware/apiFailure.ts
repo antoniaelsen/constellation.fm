@@ -5,11 +5,11 @@ const apiFailureMiddleware = (store: any) => (next: Dispatch<AnyAction>) => (act
   const result = next(action);
   const { meta, payload } = result;
 
-  if (!meta?.connection || !payload) return result;
+  if (!meta?.service || !payload) return result;
   if (payload.status !== 401) return result;
   
-  const { connection } = meta;
-  next(updateTokens({ [connection]: null }));
+  const { service } = meta;
+  next(updateTokens({ [service]: null }));
 
   return result;
 };

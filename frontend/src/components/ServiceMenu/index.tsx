@@ -1,11 +1,12 @@
 import React from 'react';
 import { Button } from "@mui/material";
 import { StyledBox } from 'components/StyledBox';
-interface ConnectionMenuProps {
+
+interface ServiceMenuProps {
   open: boolean;
 }
 
-export const ConnectionMenu = (props: ConnectionMenuProps) => {
+export const ServiceMenu = (props: ServiceMenuProps) => {
   return(
     <StyledBox sx={({ spacing }) => ({
       backgroundColor: "white",

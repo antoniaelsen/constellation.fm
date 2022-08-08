@@ -61,7 +61,7 @@ const createAppleAuthMiddleware = ({
   router.get("/", saveReturnTo, authenticate);
   router.get("/callback", authenticate, connectAndRedirect);
 
-  return router;
+  return { router };
 };
 
 export default createAppleAuthMiddleware;

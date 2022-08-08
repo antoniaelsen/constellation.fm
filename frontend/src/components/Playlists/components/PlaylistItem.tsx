@@ -4,7 +4,9 @@ import { useHistory } from 'react-router';
 import { styled } from '@mui/material/styles';
 import MuiListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import Typography from '@mui/material/Typography';
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 
 import { ListItem } from "components/Playlists/components/ListItem";
 import { ListItemText } from "components/Playlists/components/ListItemText";
@@ -24,6 +26,8 @@ export interface PlaylistProps {
   editable: boolean;
   id: string;
   name: string;
+  playing?: boolean;
+  selected?: boolean;
 }
 
 export const PlaylistItem: React.SFC<PlaylistProps> = (props) => {
@@ -32,6 +36,8 @@ export const PlaylistItem: React.SFC<PlaylistProps> = (props) => {
     editable,
     id,
     name,
+    selected,
+    playing,
   } = props;
   const history = useHistory();
 
@@ -45,14 +51,23 @@ export const PlaylistItem: React.SFC<PlaylistProps> = (props) => {
       disablePadding={true}
     >
       <ListItemButton onClick={handleClick}>
+
         <ListItemText
-          primary={name}
+          disableTypography={true}
+          primary={(
+            <Typography variant="body2" sx={{ fontWeight: selected ? 600 : 400 }}>{name}</Typography>
+          )}
           sx={{
             opacity: editable ? "inherit" : 0.5
           }}
         />
-        {collaborative && (
-           <ListItemIcon sx={{ minWidth: "auto" }}>
+        {playing && (
+          <ListItemIcon sx={{ minWidth: "auto" }}>
+            <VolumeUpIcon fontSize="small" color="primary"/>
+          </ListItemIcon>
+        )}
+        {!playing && collaborative && (
+          <ListItemIcon sx={{ minWidth: "auto" }}>
             <GroupOutlinedIcon fontSize="small"/>
           </ListItemIcon>
         )}

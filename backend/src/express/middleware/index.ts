@@ -14,8 +14,8 @@ interface Middleware {
 const createMiddleware = ({ client, config, logger }): Middleware => {
   const { mw: session } = createSessionMiddleware({ client, config, logger });
   const { mw: util } = createUtilMiddleware({ config, logger });
-  const { mw: auth } = createAuthMiddleware({ client, config, logger, path: "/auth" });
-  const { mw: reverseProxy } = createReverseProxyMiddleware({ config, logger, path: "/api" });
+  const { mw: auth, services } = createAuthMiddleware({ client, config, logger, path: "/auth" });
+  const { mw: reverseProxy } = createReverseProxyMiddleware({ config, logger, path: "/api", services });
 
   return {
     auth,

@@ -16,7 +16,7 @@ const createSessionMiddleware = ({ client, config, logger: mainLogger }) => {
   };
 
   logger.info(`Session    : ${process.env.SESSION_SECRET}`);
-  const sessionFunc = session({ 
+  const sessionFunc = session({
     cookie: cookieParams,
     secret: process.env.SESSION_SECRET,
     resave: true,
@@ -35,12 +35,12 @@ const createSessionMiddleware = ({ client, config, logger: mainLogger }) => {
   const passportSession = passport.session();
 
   passport.serializeUser((user, done) => {
-    // logger.info(`Serializing user ${printUser(user)}`);
+    // logger.info(`Serializing user ${JSON.stringify(user, null, 2)}`);
     done(null, user);
   });
-  
+
   passport.deserializeUser((user, done) => {
-    // logger.info(`Deserializing user ${printUser(user)}`);
+    // logger.info(`Deserializing user ${JSON.stringify(user, null, 2)}`);
     done(null, user as any);
   });
 

@@ -5,9 +5,9 @@ import {
   UPDATE_CONNECTIONS,
   UPDATE_TOKENS,
 } from 'actions/auth';
-import { AuthState } from 'store/types/auth';
+import { AuthState } from 'types/auth';
 
-const initialState: AuthState = {
+export const initialState: AuthState = {
   isAuthenticated: false,
   connections: [],
   tokens: {},

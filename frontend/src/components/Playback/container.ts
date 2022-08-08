@@ -1,19 +1,21 @@
 import { Dispatch, AnyAction } from 'redux';
 import { connect} from 'react-redux';
 
+import { setPlayingContext } from 'actions';
 import { RootState } from 'store';
+import { Context } from 'types/music';
 import { Playback as Component } from './component';
 
 
 const connectionTokensSelector = (state: RootState) => {
   const { connections, tokens } = state.auth;
-  const playbackConnectionTokens = connections.reduce((acc, connection) => {
+  const playbackConnectionTokens = connections.reduce((acc, service) => {
     const tokenKeys = Object.keys(tokens);
-    const playbackKey = `${connection}playback`;
+    const playbackKey = `${service}playback`;
     if (!tokenKeys.includes(playbackKey)) return acc;
     return {
       ...acc,
-      [connection]: tokens[playbackKey]
+      [service]: tokens[playbackKey]
     };
   }, {});
   return playbackConnectionTokens;
@@ -31,6 +33,7 @@ const mapStateToProps = (state: RootState) =>  {
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, props: ContainerProps) => {
   return {
+    setPlayingContext: (trackContext: Context | null) => dispatch(setPlayingContext(trackContext))
   }
 };
 
@@ -42,4 +45,4 @@ export const Playback = connect<
   DispatchProps,
   ContainerProps,
   RootState
->(mapStateToProps)(Component);
+>(mapStateToProps, mapDispatchToProps)(Component);

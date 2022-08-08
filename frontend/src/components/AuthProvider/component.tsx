@@ -1,7 +1,7 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect } from "react";
 import cookies from "js-cookie";
 import config from "config";
-import { Connection } from "rest/constants";
+import { Service } from "lib/constants";
 
 const COOKIE_KEY_AUTH_STATE = "cfm-auth";
 const COOKIE_KEY_TOKEN_PREFIX = `${COOKIE_KEY_AUTH_STATE}-token`;
@@ -20,14 +20,13 @@ const clearCookies = () => {
 
 const parseAccessTokens = () => {
   const tokens: Tokens = {};
-  COOKIE_KEY_TOKENS.forEach((connection) => {
-    const key = `${COOKIE_KEY_TOKEN_PREFIX}-${connection}`;
+  COOKIE_KEY_TOKENS.forEach((service) => {
+    const key = `${COOKIE_KEY_TOKEN_PREFIX}-${service}`;
     const token = cookies.get(key);
     if (!token) return;
-    tokens[connection] = token;
+    tokens[service] = token;
     cookies.remove(key);
   });
-  console.log("AuthProvider | Got ATs:", tokens);
   return tokens;
 };
 
@@ -51,7 +50,7 @@ export interface AuthProviderProps {
   tokens: Tokens;
   clearTokens: () => void;
   setAuthentication: (state: boolean) => void;
-  updateConnections: (connections: Connection[]) => void;
+  updateConnections: (connections: Service[]) => void;
   updateTokens: (tokens: Tokens) => void;
 }
 
@@ -63,7 +62,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
     updateConnections([]);
     clearTokens();
     clearCookies();
-  }, []);
+  }, [clearTokens, updateConnections, setAuthentication]);
   
   const getAuthState = useCallback(() => {
     const authStateStr = cookies.get(COOKIE_KEY_AUTH_STATE);
@@ -73,7 +72,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
     const authState = JSON.parse(authStateStr);
     setAuthentication(authState.isLoggedIn);
     updateConnections(authState.connections);
-  }, []);
+  }, [setAuthentication, updateConnections]);
 
   const getTokens = useCallback(async () => {
     try {
@@ -88,7 +87,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
     } catch (e) {
       clearAuthState();
     }
-  }, [setAuthentication, clearAuthState, updateTokens]);
+  }, [clearAuthState, updateTokens]);
 
   const login = useCallback(() => {
     const redirectUri = `${config.api.backend}/auth/auth0?returnTo=${

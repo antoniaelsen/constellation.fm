@@ -3,15 +3,17 @@ import { Typography } from "@mui/material";
 
 import { StyledBox } from 'components/StyledBox';
 import { StyledLink } from 'components/StyledLink';
-import { Track } from 'store/types/music';
+import { TrackSimple } from 'types/music';
 
 const IMG_WIDTH = 72;
 
-interface SongInfoProps {
+
+
+export interface SongInfoProps {
   imageWidth?: number;
   hideAlbum?: boolean;
   hideImage?: boolean;
-  track: Track;
+  track: TrackSimple;
 };
 
 export const SongInfo = (props: SongInfoProps) => {
@@ -36,9 +38,9 @@ export const SongInfo = (props: SongInfoProps) => {
 
         <StyledBox sx={{ display: "flex" }}>
           {artists.map(({ name, url }, i) => (
-            <React.Fragment key={url}>
+            <React.Fragment key={name}>
               {i > 0 && <Typography sx={{ display: "inline-block", mr: 1 }} variant="caption">, </Typography>}
-              <StyledLink key={url} href={url} variant="caption">{name}</StyledLink>
+              <StyledLink href={url} variant="caption">{name}</StyledLink>
             </React.Fragment>
           ))}
         </StyledBox>

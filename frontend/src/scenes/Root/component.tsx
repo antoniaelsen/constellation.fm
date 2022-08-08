@@ -3,21 +3,21 @@ import { useParams } from 'react-router';
 import { ReactReduxContext } from 'react-redux'
 import { useContextBridge } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
+import { ThemeProvider } from '@mui/material/styles';
 
 import { Nav } from 'components/Nav';
-import { ConnectionMenu } from 'components/ConnectionMenu';
+import { ServiceMenu } from 'components/ServiceMenu';
 import { Space } from 'components/Space';
 import { Playback } from 'components/Playback';
-import { Connection } from 'rest/constants';
+import { Service } from "lib/constants";
 
 
-import { ThemeProvider } from '@mui/material/styles'; // TODO(aelsen): move to providers
 import { StyledBox } from 'components/StyledBox';
 import { theme } from 'theme';
 import { HtmlContainerContext } from './HtmlContainerContext';
 
 interface RootProps {
-  connections: Connection[];
+  connections: Service[];
   getUser: () => void;
   getUserPlaylists: () => void;
 }
@@ -33,26 +33,20 @@ export const Root = (props: RootProps) => {
 
   const fetchSpotify = () => {
     if (connections !== connectionsOld) {
-      // console.log("Root | Connections changed");
       connectionsOld = connections;
     }
-    // console.log("Root | Checking if should spotify...", connections);
 
-    if (!connections.includes(Connection.SPOTIFY)) return;
+    if (!connections.includes(Service.SPOTIFY)) return;
   
-    // console.log("Root | Fetching spotify...");
-    // console.time("Root | spotify")
     getUser();
     getUserPlaylists();
   }
 
   useEffect(fetchSpotify, [connections, getUser, getUserPlaylists]);
-  // console.log("Root | playlistId", playlistId, params);
-  
 
   return (
     <StyledBox sx={{ display: "flex", flexFlow: "column", flex: 1 }}>
-      <ConnectionMenu open={true}/>
+      <ServiceMenu open={true}/>
 
       <StyledBox sx={{ display: "flex", flex: 1, transform: "rotate(0deg)" }}>
         <Nav />

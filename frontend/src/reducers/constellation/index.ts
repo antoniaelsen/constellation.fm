@@ -6,7 +6,7 @@ import {
   MOVE_CONSTELLATION,
   UPDATE_CONSTELLATION,
 } from 'actions';
-import { ConstellationState } from 'store/types/constellation';
+import { ConstellationState } from 'types/constellation';
 
 
 export const initialState : ConstellationState = {

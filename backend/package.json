@@ -29,6 +29,7 @@
     "passport-auth0": "^1.4.0",
     "passport-spotify": "^2.0.0",
     "prisma": "^4.0.0",
+    "qs": "^6.11.0",
     "querystring": "~0.2.0",
     "spotify-web-api-node": "^4.0.0",
     "winston": "^3.3.3"

@@ -5,8 +5,10 @@ import { denormalize } from 'normalizr';
 
 import { RootState } from 'store';
 import schemas from 'store/entities';
-import { Playlist } from 'store/types/music';
+import { Playlist } from 'types/music';
 import { Playlists as Component } from './component';
+
+
 
 const playlistSelector = (state: RootState) => {
   const ids = state.music.playlists;
@@ -34,8 +36,10 @@ interface ContainerProps {
 const mapStateToProps = (state: RootState, props: ContainerProps) =>  {
   const playlists = editablePlaylistSelector(state);
 
+  const { context, loadingPlaylists: loading } = state.music;
   return {
-    loading: state.music.loadingPlaylists,
+    context,
+    loading,
     playlists
   };
 };

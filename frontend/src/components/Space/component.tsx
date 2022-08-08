@@ -1,6 +1,5 @@
 import React from 'react';
 import { OrbitControls } from '@react-three/drei';
-import { useTheme } from "@mui/material/styles";
 import { Constellation } from "../Constellation";
 
 export interface SpaceProps {
@@ -8,7 +7,6 @@ export interface SpaceProps {
 }
 
 export const Space = (props: SpaceProps) => {
-  const theme = useTheme();
   const { constellationId } = props;
 
   return (
