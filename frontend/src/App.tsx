@@ -16,28 +16,6 @@ import { theme } from 'theme';
 import { AuthProvider } from './components/AuthProvider';
 import { Router } from 'scenes/Router';
 
-// declare var process: {
-//   env: {
-//     AUTH0_DOMAIN: string;
-//     AUTH0_CLIENT_ID: string;
-//     AUTH0_AUDIENCE: string;
-//     AUTH0_REDIRECT_URI: string;
-//   };
-// };
-
-// const config: AuthProviderConfig = {
-//   domain: process.env.AUTH0_DOMAIN,
-//   client_id: process.env.AUTH0_CLIENT_ID,
-//   audience: process.env.AUTH0_AUDIENCE,
-//   redirect_uri: process.env.AUTH0_REDIRECT_URI,
-// };
-
-declare var process: {
-  env: {
-    BACKEND_URL: string;
-  };
-};
-
 
 const App: React.FC = () => {
   return (

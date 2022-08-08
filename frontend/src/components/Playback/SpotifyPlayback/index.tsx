@@ -4,13 +4,25 @@ import { styled } from "@mui/material/styles";
 
 import { StyledBox } from "components/StyledBox";
 import { SongInfo } from "components/SongInfo";
-import { transformContextTrack, transformTrack } from "lib/spotify";
+import { transformContextTrack } from "lib/spotify";
 import { Device, DeviceMenu } from "./DeviceMenu";
 import { ServicePlaybackProps } from "../ServicePlayback";
 import { PlayControls } from "../PlayControls";
 import { useInterval } from "lib/useInterval";
 import { Context, RepeatState } from "types/music";
-import { createTrackContextFromApi, createTrackContextFromPlayer, getDevices, getPlayerState, setPlayerDevice, setPlayerPause, setPlayerPlayContext, setPlayerPosition, setPlayerRepeat, setPlayerShuffle, setPlayerVolume } from "./rest";
+import {
+  createTrackContextFromApi,
+  createTrackContextFromPlayer,
+  getDevices,
+  getPlayerState,
+  setPlayerDevice,
+  setPlayerPause,
+  setPlayerPlayContext,
+  setPlayerPosition,
+  setPlayerRepeat,
+  setPlayerShuffle,
+  setPlayerVolume
+} from "./rest";
 import { SpotifyPlaybackState } from "./types";
 import { mod } from "lib";
 
@@ -72,13 +84,15 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     volume
   } = playerState;
 
-  const updatePlayerPositionByInterval = () => {
-    if (!player) {
-      stopInterval("seek");
-      return;
-    }
-    setPlayerState((prev) => ({ ...prev, position: prev.position + POLL_PERIOD }));
-  }
+  const updatePlayerPositionByInterval = useCallback(() => {
+      if (!player) {
+        stopInterval("seek");
+        return;
+      }
+      setPlayerState((prev) => ({ ...prev, position: prev.position + POLL_PERIOD }));
+    },
+    [player, stopInterval]
+  );
 
   // TODO(aelsen)
   const getAvailableDevices = useCallback(async () => {
@@ -267,7 +281,7 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
       repeat,
       shuffle,
     }));
-  }, [getAvailableDevices, startInterval, stopInterval]);
+  }, [setPlayingContext, startInterval, stopInterval, updatePlayerPositionByInterval]);
   
   const handlePlayerStateChanged = async (state: SpotifyPlaybackState) => {
     if (!state) {
@@ -377,9 +391,9 @@ export const SpotifyPlayback = (props: SpotifyPlaybackProps) => {
     stopInterval("state");
   }
 
-
-  useEffect(initPlayer, []);
-  useEffect(handleDismount, []);
+  /* eslint-disable react-hooks/exhaustive-deps */
+  useEffect(initPlayer, [token]);
+  useEffect(handleDismount, [stopInterval]);
   useEffect(handlePlaybackSubscription, [local, getState, startInterval, stopInterval]);
 
   const context = contextRef.current;

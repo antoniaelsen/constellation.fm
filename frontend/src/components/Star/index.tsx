@@ -11,7 +11,6 @@ import { IconButton } from '@mui/material';
 import { StyledBox } from 'components/StyledBox';
 import { Track } from 'types/music';
 import { StarSongInfo } from './StarSongInfo';
-import styled from '@emotion/styled';
 
 const TRANSPARENT_CARDS = true;
 const STAR_RADIUS = 5;

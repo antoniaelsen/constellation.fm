@@ -33,7 +33,7 @@ export const useInterval = () => {
     }
 
     intervals.current[key] = setInterval(cb, period);
-  }, [stopInterval]);
+  }, []);
 
   useEffect(() => {
     return () => {

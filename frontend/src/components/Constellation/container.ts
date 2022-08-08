@@ -67,7 +67,4 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, props: ContainerProps
   }
 };
 
-type StateProps = ReturnType<typeof makeMapStateToProps>;
-type DispatchProps = ReturnType<typeof mapDispatchToProps>;
-
 export const Constellation = connect(makeMapStateToProps, mapDispatchToProps)(Component);
