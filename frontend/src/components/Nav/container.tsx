@@ -2,7 +2,7 @@ import {Dispatch, AnyAction} from 'redux';
 import {connect} from 'react-redux';
 import {createConstellation as createConstellationAction} from 'actions';
 import {RootState} from 'store';
-import {Constellation} from 'store/constellation/types';
+import {Constellation} from 'types/constellation';
 import {Nav as Component} from './component';
 
 const playlistSelector = (state: RootState) => state.music.playlists;

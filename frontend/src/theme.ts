@@ -1,10 +1,10 @@
-import { createMuiTheme } from '@material-ui/core/styles';
-import { orange, pink, grey } from '@material-ui/core/colors';
+import { createTheme, adaptV4Theme } from '@mui/material/styles';
+import { orange, pink, grey } from '@mui/material/colors';
 
 // Theming
-let muiTheme = createMuiTheme({
+let muiTheme = createTheme(adaptV4Theme({
   palette: {
-    type: 'dark',
+    mode: 'dark',
     background: {
       default: '#111',
       paper: '#222',
@@ -15,8 +15,11 @@ let muiTheme = createMuiTheme({
     secondary: {
       main: orange['A400'],
     },
+    info: {
+      main: grey['500'],
+    },
     text: {
-      primary: grey['300'],
+      primary: grey['200'],
     }
   },
   shape: {
@@ -28,7 +31,7 @@ let muiTheme = createMuiTheme({
       'sans-serif'
     ].join(','),
   },
-});
+}));
 
 console.log("Theme |", muiTheme);
 export const theme = muiTheme;

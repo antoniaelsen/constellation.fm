@@ -1,0 +1,122 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+}
+
+enum Service {
+  spotify
+  spotifyplayback
+  soundcloud
+  apple
+  tidal
+}
+
+model Session {
+  id              String    @id
+  sid             String    @unique
+  data            String
+  expiresAt       DateTime
+}
+
+model User {
+  id              String    @default(uuid()) @id
+  auth0Id         String    @unique
+  email           String    @unique
+  firstName       String
+  lastName        String
+  image           String?
+  updatedAt       DateTime  @updatedAt
+
+  connections     Connection[]
+  constellations  Constellation[]
+  shared          Share[]
+  following       Follow[]  @relation("src")
+  followers       Follow[]  @relation("dst")
+}
+
+model Follow {
+  srcId           String
+  src             User      @relation("src", fields: [srcId], references: [id])
+  dstId           String
+  dst             User      @relation("dst", fields: [dstId], references: [id])
+
+  @@unique([srcId, dstId])
+}
+
+model Connection {
+  accessToken     String
+  refreshToken    String
+  service         Service
+  expiresAt       DateTime
+  updatedAt       DateTime  @updatedAt
+
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+
+  @@id([userId, service])
+}
+
+model Constellation {
+  id              String    @default(uuid()) @id
+
+  serviceId       String
+  service         Service
+
+  name            String
+  description     String?
+  collaborative   Boolean   @default(false)
+  public          Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  ownerId         String
+  owner           User      @relation(fields: [ownerId], references: [id])
+
+  nodes           Node[]
+  edges           Edge[]
+
+  shares          Share[]
+}
+
+model Share {
+  constellationId String
+  constellation   Constellation @relation(fields: [constellationId], references: [id])
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+
+  @@unique([constellationId, userId])
+}
+
+model Node {
+  id              String        @default(uuid()) @id
+
+  constellationId String
+  constellation   Constellation @relation(fields: [constellationId], references: [id])
+
+  serviceId       String
+  service         Service
+
+  edges           NodeEdge[]
+}
+
+model Edge {
+  id              String        @default(uuid()) @id
+
+  constellationId String
+  constellation   Constellation @relation(fields: [constellationId], references: [id])
+
+  nodes           NodeEdge[]
+}
+
+model NodeEdge {
+  nodeId          String
+  node            Node          @relation(fields: [nodeId], references: [id])
+  edgeId          String
+  edge            Edge          @relation(fields: [edgeId], references: [id])
+
+  @@id([nodeId, edgeId])
+}

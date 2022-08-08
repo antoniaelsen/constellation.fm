@@ -1,45 +1,31 @@
 import React from 'react';
-import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import StarBorderRoundedIcon from '@material-ui/icons/StarBorderRounded';
+import Button from '@mui/material/Button';
+import StarBorderRoundedIcon from '@mui/icons-material/StarBorderRounded';
 
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    button: {
-
-    },
-    container: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '100%',
-    }
-  })
-);
-
-
+import { useAuth } from "components/AuthProvider";
+import { StyledBox } from 'components/StyledBox';
 interface Props {
 }
 
 export const Login: React.FC<Props> = (props) => {
-  const classes = useStyles();
-  console.log("Login | Rendering");
+  const { login } = useAuth();
 
   return (
-    <div className={classes.container}>
+    <StyledBox sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+    }}>
       <Button
         variant="contained"
         color="primary"
-        className={classes.button}
-        href={`${process.env.REACT_APP_BACKEND_URL}/auth/auth0?returnTo=${
-          window.location.href
-        }`}
+        onClick={() => login()}
         endIcon={<StarBorderRoundedIcon/>}
       >
         login
       </Button>
-    </div>
+    </StyledBox>
   );
 }
 

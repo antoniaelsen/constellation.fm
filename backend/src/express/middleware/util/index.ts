@@ -1,14 +1,18 @@
 import cors from 'cors';
-import expressWinston from 'express-winston';
-import winston from 'winston';
-import type { NextFunction, Request, Response } from "express";
-import type { MiddlewareFunc } from '../../../express/types/MiddlewareFunc';
+import type { NextFunction, Response } from "express";
+import type { MiddlewareFunc } from 'express/types/MiddlewareFunc';
+import type { Request } from 'express/types/Request';
 
 const createUtilMiddleware = ({ config, logger }): { mw: MiddlewareFunc[] } => {
   const childLogger = logger.child({ label: 'express' });
   const logMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    childLogger.info(`[${req.method}] "${req.path}"${req.xhr ? ' XHR' : ''}`,
-      `from "${req.headers.referer}" (${req.get('Origin')})`)
+    const session = req.sessionID ? `[${req.sessionID}]` : '[no session]';
+    const user = req.user ? `[${req.user?.id}]` : '[no user]';
+    const prefix = [session, user].join(' ');
+
+    const str = `${prefix} [${req.method}] "${req.path}"${req.xhr ? ' XHR' : ''} from origin ${req.get('Origin')} "${req.path}"`;
+    childLogger.debug(str);
+
     next();
   };
 
@@ -19,7 +23,7 @@ const createUtilMiddleware = ({ config, logger }): { mw: MiddlewareFunc[] } => {
 
   return {
     mw: [
-      logMiddleware, 
+      logMiddleware,
       cors(corsOptions),
       // TODO: rate limit?
     ]

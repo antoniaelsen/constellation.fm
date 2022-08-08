@@ -15,40 +15,26 @@ const createAppleAuthMiddleware = ({
   config,
   logger: mainLogger,
   path,
-  redirectWithToken,
+  addConnection,
+  connectAndRedirect,
+  redirectToReturnTo,
   saveReturnTo
 }) => {
   const logger = mainLogger.child({ labels: ['apple']});
-  const { keyID, privateKeyLocation, teamID } = config.apple;
+  const { keyID, privateKeyLocation, teamID } = config.auth.apple;
   logger.info(`keyId      : ${keyID}`);
   logger.info(`teamId     : ${teamID}`);
   logger.info(`key loc    : ${privateKeyLocation}`);
-  logger.info(`Redirect   : ${config.callbackDomain}`);
-  logger.info(`Callback   : ${`https://${config.callbackDomain}${path}/callback`}`);
+  logger.info(`Redirect   : ${config.backendDomain}`);
+  logger.info(`Callback   : ${`https://${config.backendDomain}${path}/callback`}`);
 
   const params = {
     keyID,
     teamID,
     privateKeyLocation,
     passReqToCallback: true,
-    callbackURL: `https://${config.callbackDomain}${path}/callback`,
+    callbackURL: `https://${config.backendDomain}${path}/callback`,
   };
-
-  const connectAndRedirect = (req, res) => {
-    const user = req.user;
-    const account = req.account;
-
-    logger.info(`Connect and redirect`)
-    logger.info(`- user: ${JSON.stringify(user, null, 2)}`)
-    logger.info(`- account: ${JSON.stringify(account, null, 2)}`);
-
-    if (!user) {
-      // TODO(aelsen)
-      logger.info(`Error connecting account -- invalid user`);
-    }
-    
-    redirectWithToken(req, res);
-  }
 
   const verifyCallback = (req, accessToken, refreshToken, profile, done) =>  {
     logger.info(`Got user login`);
@@ -75,7 +61,7 @@ const createAppleAuthMiddleware = ({
   router.get("/", saveReturnTo, authenticate);
   router.get("/callback", authenticate, connectAndRedirect);
 
-  return router;
+  return { router };
 };
 
 export default createAppleAuthMiddleware;

@@ -1,31 +1,43 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect } from "react";
 import cookies from "js-cookie";
+import config from "config";
+import { Service } from "lib/constants";
 
-import { Connection } from "rest/constants";
-   
-const backendApiUrl = process.env.REACT_APP_BACKEND_URL;
+const COOKIE_KEY_AUTH_STATE = "cfm-auth";
+const COOKIE_KEY_TOKEN_PREFIX = `${COOKIE_KEY_AUTH_STATE}-token`;
+const COOKIE_KEY_TOKENS = ["spotifyplayback"];
 
 type Tokens = {
   [key: string]: string | null;
 };
-const parseTokens = () => {
-  console.log("AuthProvider | parsing connection tokens");
-  const keys: Tokens = {};
-  Object.values(Connection).forEach((connection) => {
-    const str = cookies.get(connection);
-    if (!str) return;
-    keys[connection] = str;
-    cookies.remove(connection);
+
+const clearCookies = () => {
+  cookies.remove(COOKIE_KEY_AUTH_STATE);
+  COOKIE_KEY_TOKENS.forEach((key) => {
+    cookies.remove(`${COOKIE_KEY_TOKEN_PREFIX}-${key}`);
   });
-  return keys;
+}
+
+const parseAccessTokens = () => {
+  const tokens: Tokens = {};
+  COOKIE_KEY_TOKENS.forEach((service) => {
+    const key = `${COOKIE_KEY_TOKEN_PREFIX}-${service}`;
+    const token = cookies.get(key);
+    if (!token) return;
+    tokens[service] = token;
+    cookies.remove(key);
+  });
+  return tokens;
 };
 
 interface AuthContextType {
+  isAuthenticated: boolean;
   login: () => void;
   logout: () => void;
 }
 
-const AuthContext = createContext<any>({
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
   login: () => {},
   logout: () => {},
 });
@@ -38,52 +50,63 @@ export interface AuthProviderProps {
   tokens: Tokens;
   clearTokens: () => void;
   setAuthentication: (state: boolean) => void;
+  updateConnections: (connections: Service[]) => void;
   updateTokens: (tokens: Tokens) => void;
 }
 
-
 export const AuthProvider = (props: AuthProviderProps) => {
-  const { children } = props;
-  const { isAuthenticated, clearTokens, updateTokens, setAuthentication } = props;
+  const { children, isAuthenticated, clearTokens, updateConnections, updateTokens, setAuthentication } = props;
 
-  const getSession = useCallback(async () => {
-    console.log("AuthProvider | getSession");
+  const clearAuthState = useCallback(() => {
+    setAuthentication(false);
+    updateConnections([]);
+    clearTokens();
+    clearCookies();
+  }, [clearTokens, updateConnections, setAuthentication]);
+  
+  const getAuthState = useCallback(() => {
+    const authStateStr = cookies.get(COOKIE_KEY_AUTH_STATE);
+    if (!authStateStr) {
+      return;
+    }
+    const authState = JSON.parse(authStateStr);
+    setAuthentication(authState.isLoggedIn);
+    updateConnections(authState.connections);
+  }, [setAuthentication, updateConnections]);
+
+  const getTokens = useCallback(async () => {
     try {
-      const res = await fetch(`${backendApiUrl}/auth/tokens`, { credentials: "include" });
+      const res = await fetch(`${config.api.backend}/auth`, { credentials: "include" });
       if (res.status === 401) {
-        console.log("AuthProvider | getSession - Unauthorized");
-        setAuthentication(false);
-        clearTokens()
+        clearAuthState();
         return;
       }
-  
-      const tokens = parseTokens();
-      console.log("AuthProvider | getSessions - Authorized, tokens:", tokens);
-      setAuthentication(true);
+      
+      const tokens = parseAccessTokens();
       updateTokens(tokens);
     } catch (e) {
-      // TODO(aelsen);
-      console.log("ERROR", e);
+      clearAuthState();
     }
-  }, [setAuthentication, updateTokens]);
+  }, [clearAuthState, updateTokens]);
 
   const login = useCallback(() => {
-    const redirectUri = `${backendApiUrl}/auth/auth0?returnTo=${
+    const redirectUri = `${config.api.backend}/auth/auth0?returnTo=${
       window.location.href
     }`;
     window.location.href = redirectUri;
   }, []);
 
   const logout = useCallback(() => {
-    const redirectUri = `${backendApiUrl}/auth/logout?returnTo=${
+    const redirectUri = `${config.api.backend}/auth/logout?returnTo=${
       window.location.href
     }`;
     window.location.href = redirectUri;
   }, []);
 
   useEffect(() => {
-    getSession();
-  }, [getSession]);
+    getTokens();
+    getAuthState();
+  }, [getAuthState, getTokens]);
 
 
   return (

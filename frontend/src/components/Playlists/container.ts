@@ -5,8 +5,10 @@ import { denormalize } from 'normalizr';
 
 import { RootState } from 'store';
 import schemas from 'store/entities';
-import { Playlist } from 'store/music/types';
+import { Playlist } from 'types/music';
 import { Playlists as Component } from './component';
+
+
 
 const playlistSelector = (state: RootState) => {
   const ids = state.music.playlists;
@@ -23,7 +25,9 @@ const userSelector = (state: RootState) => {
 };
 
 const editablePlaylistSelector = createSelector([playlistSelector, userSelector], (playlists, user) =>
-  playlists.map((playlist: Playlist) => ({ ...playlist, editable: playlist.owner.id === user.id }))
+  playlists
+    .map((playlist: Playlist) => ({ ...playlist, editable: playlist.owner.id === user.id }))
+    .filter(({ editable }: Playlist) => editable)
 );
 
 interface ContainerProps {
@@ -32,7 +36,10 @@ interface ContainerProps {
 const mapStateToProps = (state: RootState, props: ContainerProps) =>  {
   const playlists = editablePlaylistSelector(state);
 
+  const { context, loadingPlaylists: loading } = state.music;
   return {
+    context,
+    loading,
     playlists
   };
 };

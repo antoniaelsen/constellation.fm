@@ -1,24 +1,16 @@
-import { CookieOptions, NextFunction, request, Request, Response, Router } from "express";
-import jwt from "jsonwebtoken";
-import session from "express-session";
-import passport from "passport";
+import { CookieOptions, NextFunction, Response, Router } from "express";
 
 import createAppleAuthMiddleware from "./apple";
 import createAuth0AuthMiddleware from "./auth0";
 import createSpotifyAuthMiddleware from "./spotify";
+import { Request } from "express/types/Request";
 
-const COOKIE_KEY = "token";
+const COOKIE_KEY_FRONTEND_ATS = ["spotifyplayback"];
 
-type ReturnToRequest = Request & {
-  session: {
-    returnTo: string
-  }
-}
-
-const createAuthMiddleware = ({ config, logger: mainLogger, path }) => {
+const createAuthMiddleware = ({ client, config, logger: mainLogger, path }) => {
   const logger = mainLogger.child({ labels: ['auth'] });
 
-  const cookieParams:CookieOptions = {
+  const cookieParams: CookieOptions = {
     // domain:,
     httpOnly: true,
     // maxAge:,
@@ -27,114 +19,136 @@ const createAuthMiddleware = ({ config, logger: mainLogger, path }) => {
     // secure: true,
   };
 
-  const setConnectionTokens = (req, res) => {
-    const account = req.user.account;
-    logger.info(`Set connection tokens - account: ${JSON.stringify(account)}`)
-    if (!account) return;
+  const addConnection = (req: Request, res: Response) => {
+    const user = req.user;
+    const account = req.account;
 
-    const connections = account ? [Object.keys(account)].join(",") : [];
-    logger.info(`- connections: ${connections}`);
-    Object.entries(account).forEach(([key, value]) => {
-      const token = (value as any)?.accessToken;
-      if (!token) return;
-      logger.info(`- setting cookie key ${key} to ${token}`)
-      res.cookie(key, token, { ...cookieParams, httpOnly: false });
+    if (!user) {
+      logger.error(`[${req.sessionID}] Error connecting account -- no user in session`);
+      return;
+    }
+
+    if (!account) {
+      logger.error(`[${req.sessionID}] Error connecting account -- no account in session`);
+      return;
+    }
+
+    logger.info(`Adding connection to user [${user.id}] for service [${account.service}] ${JSON.stringify(account, null, 2)}`)
+
+    user.connections = {
+      ...user.connections,
+      [account.service]: account.data,
+    }
+
+    req.logIn(user, (error) => {
+      if (!error) {
+        logger.info(`[${req.sessionID}] [${user.id}] Successfully updated user to add connection [${account.service}]`);
+        return;
+      }
+      logger.error(`[${req.sessionID}] [${user.id}] Failed add connection [${account.service}] to user [${user.id}]`);
     });
-  }
+  };
+
+  const connectAndRedirect = (req: Request, res: Response) => {
+    logger.info(`[${req.sessionID}] [${req.user?.id}] Connect and redirect`);
+    addConnection(req, res);
+    redirectToReturnTo(req, res);
+  };
+
+  const setAccessTokenCookies = (req: Request, res: Response) => {
+    // Most access tokens will NOT be passed to the FE for security reasons.
+    // Only access tokens with insignificant scopes will be passed
+    //  e.g. spotify playback scopes for web player.
+    const connections = req.user?.connections;
+
+    if (!connections) return;
+
+    COOKIE_KEY_FRONTEND_ATS.forEach((service) => {
+      const token = connections[service]?.accessToken;
+      if (!token) return;
+      logger.info(`[${req.sessionID}] [${req.user?.id}] Set connection access token cookie for [${service}]`);
+      res.cookie(`cfm-auth-token-${service}`, token, { ...cookieParams, httpOnly: false });
+    });
+  };
+
+  const setAuthStateCookie = (req: Request, res: Response) => {
+    logger.info(`[${req.sessionID}] [${req.user?.id}] Set auth state cookie ${JSON.stringify(req.user, null, 2)}`);
+    const authState = {
+      connections: Object.keys(req.user?.connections || {}),
+      isLoggedIn: !!req.user,
+    };
+
+    res.cookie("cfm-auth", JSON.stringify(authState), { ...cookieParams, httpOnly: false });
+
+    if (!req?.user?.connections) return;
+    Object.entries(req.user.connections).forEach(([service, data]) => {
+      logger.info(`[${req.sessionID}] [${req.user?.id}] - ${service} ${data.accessToken}`);
+    });
+  };
 
   const saveReturnTo = (req: Request, res: Response, next: NextFunction) => {
-    logger.info(`Saving returnTo: ${req.query?.returnTo}`)
     if (req.query && req.query.returnTo) {
       (req as any).session.returnTo = req.query.returnTo;
     }
     return next();
   };
- 
-  const redirectWithToken = (req, res) => {
-    const defaultUrl = `https://${config.redirectDomain}/`;
+
+  const redirectToReturnTo = (req: Request, res: Response) => {
+    const defaultUrl = `https://${config.frontendDomain}/`;
     const returnTo = (req as any).session.returnTo || defaultUrl;
+    setAuthStateCookie(req, res);
 
-    // TODO(aelsen): implement token
-    //  consolidate all available tokens?
-    //  add tokens as cookies
-    logger.info(`Redirect with token...`);
-    logger.info(`- returnTo: ${returnTo}`);
-    logger.info(`- user: ${JSON.stringify(req.user, null, 2)}`);
-    logger.info(`- account: ${JSON.stringify(req.user.account, null, 2)}`);
-
-    if (req.user) {
-      const token = jwt.sign(req.user, config.authTokenSecret);
-      res.cookie(COOKIE_KEY, token, { ...cookieParams, httpOnly: false });
-      logger.info(`- token: ${token}`);
-      setConnectionTokens(req, res);
-    }
-    
     return res.redirect(returnTo);
   };
 
-  const auth0Auth = createAuth0AuthMiddleware({
+  const { router: auth0Router } = createAuth0AuthMiddleware({
+    client,
     config,
     logger,
-    redirectWithToken,
+    addConnection,
+    connectAndRedirect,
+    redirectToReturnTo,
     saveReturnTo,
     path: `${path}/auth0`
   });
-  const appleAuth = createAppleAuthMiddleware({
+  // const appleAuth = createAppleAuthMiddleware({
+  //   config,
+  //   logger,
+  //   addConnection,
+  //   connectAndRedirect,
+  //   redirectToReturnTo,
+  //   saveReturnTo,
+  //   path: `${path}/apple`
+  // });
+  const { router: spotifyRouter, reauthorize: spotifyReauthorize } = createSpotifyAuthMiddleware({
+    client,
     config,
     logger,
-    redirectWithToken,
-    saveReturnTo,
-    path: `${path}/apple`
-  });
-  const spotifyAuth = createSpotifyAuthMiddleware({
-    config,
-    logger,
-    redirectWithToken,
+    addConnection,
+    connectAndRedirect,
+    redirectToReturnTo,
     saveReturnTo,
     path: `${path}/spotify`
   });
 
-  const jwtVerify = {};
-
   const router = Router();
 
-  logger.info(`Session    : ${process.env.SESSION_SECRET}`);
-  const sessionFunc = session({ 
-    cookie: cookieParams,
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false
-  });
-  router.use(sessionFunc as any);
-
-  router.use(passport.initialize());
-  router.use(passport.session());
-
-  passport.serializeUser((user, done) => {
-    logger.info(`Serializing user: ${JSON.stringify(user)}`);
-    done(null, user);
-  });
-  
-  passport.deserializeUser((user, done) => {
-    logger.info(`Deserializing user: ${JSON.stringify(user)}`);
-    done(null, user as any);
-  });
-
-  router.use("/auth0", auth0Auth);
-  router.use("/spotify", spotifyAuth);
-  router.get('/tokens', (req, res) => {
-    logger.info("Got request for tokens");
-    logger.info(` - user: ${JSON.stringify(req.user)}`)
+  router.use("/auth0", auth0Router);
+  router.use("/spotify", spotifyRouter);
+  router.get('/', (req: Request, res: Response) => {
     if (!req.user) {
       res.status(401);
       res.send();
       return;
     }
-    setConnectionTokens(req, res);
+    setAuthStateCookie(req, res);
+    setAccessTokenCookies(req, res);
     res.send();
-  })
-  
-  return { mw: [router], jwtVerify };
+  });
+
+  return { mw: [router], services: [
+    { service: "spotify", url: "https://api.spotify.com/v1", reauthorize: spotifyReauthorize }
+  ] };
 };
 
 export default createAuthMiddleware;

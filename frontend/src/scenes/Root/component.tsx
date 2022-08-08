@@ -1,67 +1,70 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useParams } from 'react-router';
+import { ReactReduxContext } from 'react-redux'
+import { useContextBridge } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { ThemeProvider } from '@mui/material/styles';
+
+import { Nav } from 'components/Nav';
+import { ServiceMenu } from 'components/ServiceMenu';
+import { Space } from 'components/Space';
+import { Playback } from 'components/Playback';
+import { Service } from "lib/constants";
 
 
-import { BrowserRouter as Router, Route, Redirect, Switch, useLocation } from 'react-router-dom';
-import { createStyles, makeStyles, Theme} from '@material-ui/core/styles';
-import { Login } from 'scenes/Login';
-import { Space } from 'scenes/Space';
+import { StyledBox } from 'components/StyledBox';
+import { theme } from 'theme';
+import { HtmlContainerContext } from './HtmlContainerContext';
 
-import { useAuth } from 'components/AuthProvider';
-
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    '@global': {
-      'html, body, #root': {
-        height: '100%',
-        // overflow: 'hidden',
-      },
-      // h2: {
-      //   'font-size': '1.5rem',
-      // },
-      // h3: {
-      //   'font-size': '1.2rem',
-      // },
-      // h4: {
-      //   'font-size': '0.9rem',
-      // },
-      // 'html': {
-      //   fontSize: '16px',
-      // },
-      '::-webkit-scrollbar': {
-          width: '0px',
-          background: 'transparent',
-      }
-    },
-    root: {
-      height: '100%',
-      display: 'flex',
-    },
-  })
-);
-interface Props {
-  isAuthenticated: boolean;
-  setAuthentication: (state: boolean) => void;
+interface RootProps {
+  connections: Service[];
+  getUser: () => void;
+  getUserPlaylists: () => void;
 }
 
-export const Root: React.FC<Props> = (props) => {
-  const { isAuthenticated } = useAuth();
-  const classes = useStyles();
-  console.log("Root | isAuthenticated:", isAuthenticated);
+let connectionsOld: any = null;
+export const Root = (props: RootProps) => {
+  const ContextBridge = useContextBridge(ReactReduxContext);
+
+  const ref = useRef(null);
+  const params: any = useParams();
+  const playlistId = params.playlistId;
+  const { connections, getUser, getUserPlaylists } = props;
+
+  const fetchSpotify = () => {
+    if (connections !== connectionsOld) {
+      connectionsOld = connections;
+    }
+
+    if (!connections.includes(Service.SPOTIFY)) return;
+  
+    getUser();
+    getUserPlaylists();
+  }
+
+  useEffect(fetchSpotify, [connections, getUser, getUserPlaylists]);
 
   return (
-    <Router>
-      <div className={classes.root}>
-        <Switch>
-          <Route exact path="/" render={() => {
-              if (!isAuthenticated) {
-                return (<Login/>);
-              }
-              return (<Space/>);
-            }}
-          />
-        </Switch>
-      </div>
-    </Router>
+    <StyledBox sx={{ display: "flex", flexFlow: "column", flex: 1 }}>
+      <ServiceMenu open={true}/>
+
+      <StyledBox sx={{ display: "flex", flex: 1, transform: "rotate(0deg)" }}>
+        <Nav />
+        <StyledBox sx={{ flexGrow: 1 }} ref={ref}>
+          <Canvas camera={{ fov: 75, near: 0.1, far: 100000, position: [0, 0, 5] }}>
+            <ContextBridge>
+              <HtmlContainerContext.Provider value={{ containerRef: ref }}>
+                <ThemeProvider theme={theme}>
+                  <Space constellationId={playlistId}/>
+                </ThemeProvider>
+              </HtmlContainerContext.Provider>
+            </ContextBridge>
+          </Canvas>
+        </StyledBox>
+      </StyledBox>
+  
+      <Playback /> 
+    </StyledBox>
   );
 }
+

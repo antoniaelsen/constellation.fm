@@ -2,16 +2,16 @@ import { createStore, applyMiddleware } from 'redux';
 import { apiMiddleware } from 'redux-api-middleware';
 import { composeWithDevTools } from 'redux-devtools-extension';
 
-import { apiFailureMiddleware } from 'middleware';
+import middleware from 'middleware';
 import reducers from 'reducers';
 import { initialState } from 'store';
 
-let middleware = [
+let mw = [
   apiMiddleware,
-  apiFailureMiddleware,
+  ...middleware,
 ];
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && false) {
   const loggerModule = require('redux-logger');
   const logger = loggerModule.createLogger({
     collapsed: true,
@@ -21,7 +21,7 @@ if (process.env.NODE_ENV !== 'production') {
     // }
   });
 
-  middleware.push(logger);
+  mw.push(logger);
 }
 
 // Using redux-devtools-extension to support Redux Dev Tools with TS
@@ -31,7 +31,7 @@ const store = createStore(
   reducers,
   initialState,
   composeEnhancers(
-    applyMiddleware(...middleware),
+    applyMiddleware(...mw),
   )
 );
 

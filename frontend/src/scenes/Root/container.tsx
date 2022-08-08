@@ -1,22 +1,28 @@
-import {Dispatch, AnyAction} from 'redux';
-import {connect} from 'react-redux';
-import {RootState} from 'store';
-import {setAuthentication as setAuthenticationAction} from 'actions';
-import {Root as Component} from './component';
+import { Dispatch, AnyAction } from 'redux';
+import { connect } from 'react-redux';
+
+import { updateTokens } from 'actions/auth';
+import { getUser, getUserPlaylists } from 'actions/rest/spotify';
+import { RootState } from 'store';
+import { Root as Component } from './component';
 
 
+const selectConnections = (state: RootState) => state.auth.connections;
 interface ContainerProps {
 };
 
 const mapStateToProps = (state: RootState, props: ContainerProps) =>  {
+  const connections = selectConnections(state);
   return {
-    isAuthenticated: state.auth.isAuthenticated,
+    connections
   };
 };
 
 const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, props: ContainerProps) => {
   return {
-    setAuthentication: (state: boolean) => { dispatch(setAuthenticationAction(state)) }
+    getUser: () => dispatch((getUser as any)()),
+    getUserPlaylists: () => dispatch((getUserPlaylists as any)()),
+    updateTokens: (tokens: { [key: string]: string | null }) => dispatch(updateTokens(tokens)),
   }
 };
 

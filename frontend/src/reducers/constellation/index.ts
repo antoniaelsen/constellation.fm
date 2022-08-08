@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { cloneDeep, merge } from 'lodash';
 import { AnyAction } from 'redux';
 import {
   CREATE_CONSTELLATION,
@@ -6,7 +6,7 @@ import {
   MOVE_CONSTELLATION,
   UPDATE_CONSTELLATION,
 } from 'actions';
-import { ConstellationState } from 'store/constellation/types';
+import { ConstellationState } from 'types/constellation';
 
 
 export const initialState : ConstellationState = {
@@ -20,7 +20,6 @@ const reducers: {[key: string]: ConstellationReducer} = {
   [CREATE_CONSTELLATION]: (state, action) => {
     const constellationIdNext = state.constellationIdNext + 1;
     const constellation = {...action.payload, id: constellationIdNext};
-    console.log("Adding constellation to store:", constellation);
     const constellations = [...state.constellations, constellation];
     return { ...state, constellations, constellationIdNext};
   },
@@ -34,10 +33,10 @@ const reducers: {[key: string]: ConstellationReducer} = {
   [MOVE_CONSTELLATION]: (state, action) => {
     const { id, index } = action.payload;
     const src = state.constellations.findIndex(constellation => constellation.id === id);
-    const constellation = _.cloneDeep(state.constellations.find(constellation => constellation.id === id));
+    const constellation = cloneDeep(state.constellations.find(constellation => constellation.id === id));
     if (!constellation) return state;
 
-    let constellations = _.cloneDeep(state.constellations);
+    let constellations = cloneDeep(state.constellations);
     constellations.splice(src, 1);
     constellations.splice(index, 0, constellation);
     return { ...state, constellations };
@@ -48,7 +47,7 @@ const reducers: {[key: string]: ConstellationReducer} = {
     const constellations = state.constellations.map(constellation => {
       if (constellation.id !== id) return constellation;
 
-      return _.merge(constellation, payload);
+      return merge(cloneDeep(constellation), payload);
     });
     return { ...state, constellations };
   },

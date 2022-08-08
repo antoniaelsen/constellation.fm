@@ -1,50 +1,24 @@
-import { AnyAction } from 'redux';
-import { merge, transform } from 'lodash';
+import { cloneDeep, merge, union } from 'lodash';
 import { normalize } from 'normalizr';
-import { Connection } from 'rest/constants';
 import {
   CREATE_PLAYLIST_SUCCESS,
+  GET_PLAYLIST_SUCCESS,
   GET_USER_SUCCESS,
-  GET_USER_PLAYLISTS_SUCCESS
+  GET_USER_PLAYLISTS_SUCCESS,
+  GET_USER_PLAYLISTS_LIMIT_SUCCESS,
+  GET_USER_PLAYLISTS_LIMIT_REQUEST,
+  GET_USER_PLAYLISTS_LIMIT_FAILURE,
+  GET_USER_PLAYLISTS_REQUEST,
+  GET_USER_PLAYLISTS_FAILURE,
+  PLAY_TRACK_SUCCESS,
+  PLAY_TRACK_FAILURE,
 } from 'actions/rest/spotify';
-import { MusicState, Playlist, User } from 'store/music/types';
 import schemas from 'store/entities';
+import { MusicState } from 'types/music';
+import { transformPlaylistFull, transformPlaylistSimplified, transformUser } from 'lib/spotify';
 
 
 type MusicReducer = (state: MusicState, data: any) => MusicState;
-
-const transformUser = (input: any): User => {
-  const { display_name: displayName, external_urls, id } = input;
-  const url = external_urls.spotify;
-  return {
-    connection: Connection.SPOTIFY,
-    connectionId: id,
-    id: `${Connection.SPOTIFY}-${id}`,
-    displayName,
-    url
-  };
-}
-
-const transformPlaylistSimplified = (input: any, i: number): Playlist => {
-  const { collaborative, description, external_urls, id, images, name, owner, public: isPublic } = input;
-  const image = images[0];
-  const url = external_urls.spotify;
-
-  return {
-    connection: Connection.SPOTIFY,
-    connectionId: id,
-    id: `${Connection.SPOTIFY}-${id}`,
-    order: i,
-    owner: transformUser(owner),
-    tracks: [],
-    collaborative,
-    description,
-    name,
-    image,
-    isPublic,
-    url
-  };
-}
 
 export const reducers: {[key: string]: MusicReducer} = {
   [GET_USER_SUCCESS]: (prevState, action) => {
@@ -54,27 +28,82 @@ export const reducers: {[key: string]: MusicReducer} = {
     return {
       ...prevState,
       currentUser: result,
-      entities: merge(prevState.entities, entities)
+      entities: merge(cloneDeep(prevState.entities), entities)
     };
   },
   [CREATE_PLAYLIST_SUCCESS]: (prevState, action) => {
-    const playlist = action.payload;
+    // const playlist = action.payload;
     return prevState;
   },
   [CREATE_PLAYLIST_SUCCESS]: (prevState, action) => {
-    const playlist = action.payload;
+    // const playlist = action.payload;
     return prevState;
+  },
+  [GET_PLAYLIST_SUCCESS]: (prevState, action) => {
+    const playlist = action.payload;
+    const transformed = transformPlaylistFull(playlist);
+    const normalized = normalize(transformed, schemas.playlist);
+    const { entities, result } = normalized;
+    return {
+      ...prevState,
+      entities: merge(cloneDeep(prevState.entities), entities),
+      playlists: union(prevState.playlists, [result])
+    };
+  },
+  [GET_USER_PLAYLISTS_REQUEST]: (prevState, action) => {
+    return {
+      ...prevState,
+      loadingPlaylists: true
+    };
+  },
+  [GET_USER_PLAYLISTS_FAILURE]: (prevState, action) => {
+    return {
+      ...prevState,
+      loadingPlaylists: false
+    };
   },
   [GET_USER_PLAYLISTS_SUCCESS]: (prevState, action) => {
     const { items } = action.payload;
     const transformed = items.map(transformPlaylistSimplified);
     const normalized = normalize(transformed, [schemas.playlist]);
     const { entities, result } = normalized;
-    console.log("Normalized:", normalized, prevState)
     return {
       ...prevState,
-      entities: merge(prevState.entities, entities),
-      playlists: merge(prevState.playlists, result)
+      loadingPlaylists: false,
+      entities: merge(cloneDeep(prevState.entities), entities),
+      playlists: union(prevState.playlists, result)
     };
   },
+  [GET_USER_PLAYLISTS_LIMIT_REQUEST]: (prevState, action) => {
+    return {
+      ...prevState,
+      loadingPlaylists: true
+    };
+  },
+  [GET_USER_PLAYLISTS_LIMIT_FAILURE]: (prevState, action) => {
+    return {
+      ...prevState,
+      loadingPlaylists: false
+    };
+  },
+  [GET_USER_PLAYLISTS_LIMIT_SUCCESS]: (prevState, action) => {
+    const { items, offset, total } = action.payload;
+    const transformed = items.map(transformPlaylistSimplified);
+    const normalized = normalize(transformed, [schemas.playlist]);
+    const { entities, result } = normalized;
+    return {
+      ...prevState,
+      entities: merge(cloneDeep(prevState.entities), entities),
+      playlists: union(prevState.playlists, result),
+      loadingPlaylists: offset > total
+    };
+  },
+
+  [PLAY_TRACK_SUCCESS]: (prevState, action) => {
+    return prevState;
+  },
+
+  [PLAY_TRACK_FAILURE]: (prevState, action) => {
+    return prevState;
+  }
 }
