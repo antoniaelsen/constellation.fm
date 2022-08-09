@@ -42,13 +42,28 @@ export const Root = (props: RootProps) => {
   useEffect(fetchSpotify, [connections, getUser, getUserPlaylists]);
 
   return (
-    <StyledBox sx={{ display: "flex", flexFlow: "column", flex: 1 }}>
+    <StyledBox sx={{
+      display: "flex",
+      flexFlow: "column",
+      flex: 1,
+      maxHeight: "100%",
+      maxWidth: "100%",
+      height: "100%",
+      width: "100%",
+      overflow: "hidden",
+    }}>
       <ServiceMenu open={true}/>
 
-      <StyledBox sx={{ display: "flex", flex: 1, transform: "rotate(0deg)" }}>
+      <StyledBox sx={{ display: "flex", flex: "1 1 auto", transform: "rotate(0deg)", minHeight: 0 }}>
         <Nav />
-        <StyledBox sx={{ flexGrow: 1 }} ref={ref}>
-          <Canvas camera={{ fov: 75, near: 0.1, far: 100000, position: [0, 0, 5] }}>
+        <StyledBox sx={{ flex: "1 1 auto" }} ref={ref}>
+          <Canvas
+            camera={{ fov: 75, near: 0.1, far: 100000, position: [0, 0, 5] }}
+            style={{
+              height: "100%",
+              width: "100%",
+            }}
+          >
             <ContextBridge>
               <HtmlContainerContext.Provider value={{ containerRef: ref }}>
                 <QueryClientProvider client={queryClient}>

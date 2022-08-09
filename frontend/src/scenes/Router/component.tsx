@@ -6,7 +6,6 @@ import { Login } from 'scenes/Login';
 import { Root } from 'scenes/Root';
 
 import { useAuth } from 'components/AuthProvider';
-import { StyledBox } from 'components/StyledBox';
 
 const PrivateRoute = (props) => {
   const { children, ...etc } = props;
@@ -28,19 +27,14 @@ interface Props {
 export const Router: React.FC<Props> = (props) => {
   return (
     <BrowserRouter>
-      <StyledBox sx={{
-        height: '100%',
-        display: 'flex',
-      }}>
-        <Switch>
-          <PrivateRoute path="/playlist/:playlistId">
-            <Root/>
-          </PrivateRoute>
-          <PrivateRoute path="/">
-            <Root/>
-          </PrivateRoute>
-        </Switch>
-      </StyledBox>
+      <Switch>
+        <PrivateRoute path="/playlist/:playlistId">
+          <Root/>
+        </PrivateRoute>
+        <PrivateRoute path="/">
+          <Root/>
+        </PrivateRoute>
+      </Switch>
     </BrowserRouter>
   );
 }
