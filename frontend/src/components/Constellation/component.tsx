@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import WebCola from 'react-cola';
-import { Line } from '@react-three/drei';
+import { CatmullRomLine, Line } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -81,7 +81,29 @@ export const Constellation = (props: ConstellationProps) => {
         renderLayout={(layout: any) => {
           return (
             <>
-              {layout.links().map(
+              <CatmullRomLine
+                closed={true}
+                curveType="centripetal"
+                segments={nodes.length * 10}
+                tension={0.5}
+                lineWidth={1}
+                dashed={false}
+                color="cyan"
+                points={
+                  layout.nodes().map(
+                    ({ x, y }, i: number) => {
+                      const point = new THREE.Vector3(
+                        x - GRAPH_WIDTH / 2,
+                        y - GRAPH_HEIGHT / 2,
+                        0,
+                        // a.z - GRAPH_DEPTH / 2
+                      );
+                      return point;
+                    }
+                  )
+                }
+              />
+              {/* {layout.links().map(
                 ({ source: a, target: b }: { source: Node, target: Node }, i: number) => {
                   const pointA = new THREE.Vector3(
                     a.x - GRAPH_WIDTH / 2,
@@ -104,7 +126,7 @@ export const Constellation = (props: ConstellationProps) => {
                     />
                   );
                 },
-              )}
+              )} */}
               {layout.nodes().map(
                 ({ x, y, z, id, order, track }: TrackNode, i: number) => {
                   let handleTooltipClick;
