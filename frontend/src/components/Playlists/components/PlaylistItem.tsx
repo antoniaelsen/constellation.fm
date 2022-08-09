@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { useHistory } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import { styled } from '@mui/material/styles';
 import MuiListItemButton from '@mui/material/ListItemButton';
@@ -39,11 +39,11 @@ export const PlaylistItem: React.SFC<PlaylistProps> = (props) => {
     selected,
     playing,
   } = props;
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleClick = useCallback(() => {
-    history.push(`/playlist/${id}`);
-  }, [id, history]);
+    navigate(`/playlist/${id}`);
+  }, [id, navigate]);
 
   return (
     <ListItem

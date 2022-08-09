@@ -6,7 +6,6 @@ import { getPlaylist } from 'rest/spotify';
 
 export interface ConstellationHoCProps {
   context: Context | null;
-  constellation: any;
   playlistId: string;
   playTrack: (trackCtx: PlayContext) => void;
 }
