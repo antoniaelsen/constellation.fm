@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed issue where constellation spotify web player would be initialized multiple times, and thus show in the devices menu multiple times
 - Disabled highlighting of text in Space (on canvas)
+- Fixed overflowing text in SongInfo Playback component
 
 ## [0.1.0] - 2022-08-07
 
