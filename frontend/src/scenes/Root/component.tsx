@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { useParams } from 'react-router';
 import { ReactReduxContext } from 'react-redux'
 import { useContextBridge } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { ThemeProvider } from '@mui/material/styles';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
 
 import { Nav } from 'components/Nav';
 import { ServiceMenu } from 'components/ServiceMenu';
@@ -13,6 +14,7 @@ import { Service } from "lib/constants";
 
 
 import { StyledBox } from 'components/StyledBox';
+import queryClient from 'rest/client';
 import { theme } from 'theme';
 import { HtmlContainerContext } from './HtmlContainerContext';
 
@@ -22,20 +24,15 @@ interface RootProps {
   getUserPlaylists: () => void;
 }
 
-let connectionsOld: any = null;
 export const Root = (props: RootProps) => {
-  const ContextBridge = useContextBridge(ReactReduxContext);
+  const ContextBridge = useContextBridge(ReactReduxContext, );
 
+  const { connections, getUser, getUserPlaylists } = props;
   const ref = useRef(null);
   const params: any = useParams();
   const playlistId = params.playlistId;
-  const { connections, getUser, getUserPlaylists } = props;
-
+  
   const fetchSpotify = () => {
-    if (connections !== connectionsOld) {
-      connectionsOld = connections;
-    }
-
     if (!connections.includes(Service.SPOTIFY)) return;
   
     getUser();
@@ -54,9 +51,11 @@ export const Root = (props: RootProps) => {
           <Canvas camera={{ fov: 75, near: 0.1, far: 100000, position: [0, 0, 5] }}>
             <ContextBridge>
               <HtmlContainerContext.Provider value={{ containerRef: ref }}>
-                <ThemeProvider theme={theme}>
-                  <Space constellationId={playlistId}/>
-                </ThemeProvider>
+                <QueryClientProvider client={queryClient}>
+                  <ThemeProvider theme={theme}>
+                    <Space playlistId={playlistId}/>
+                  </ThemeProvider>
+                </QueryClientProvider>
               </HtmlContainerContext.Provider>
             </ContextBridge>
           </Canvas>

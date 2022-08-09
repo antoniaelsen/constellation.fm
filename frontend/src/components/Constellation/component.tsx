@@ -34,7 +34,6 @@ interface TrackNode extends Node {
 export interface ConstellationProps {
   constellation: any;
   context: Context | null;
-  id: string;
   playlist: Playlist | null;
   playTrack(trackCtx: PlayContext): void;
 }

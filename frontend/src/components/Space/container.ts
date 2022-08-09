@@ -5,7 +5,7 @@ import { RootState } from 'store';
 import { Space as Component } from './component';
 
 interface ContainerProps {
-  constellationId: string;
+  playlistId: string;
 };
 
 const mapStateToProps = (state: RootState, props: ContainerProps) =>  {

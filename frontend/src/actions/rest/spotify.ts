@@ -1,6 +1,6 @@
 import { RSAA } from "redux-api-middleware";
 import config from "config";
-import { fetchOffsets, } from "./utils"
+import { fetchOffsets, } from "../../rest/utils"
 import { Service, SPOTIFY_URL } from "lib/constants";
 import { PlayContext } from "types/music";
 

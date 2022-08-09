@@ -12,7 +12,6 @@ import { PlayContext } from 'types/music';
 
 
 interface ContainerProps {
-  id: string;
 };
 
 const createSelectPlaylistById = () => createSelector(
@@ -59,7 +58,6 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, props: ContainerProps
     // addItemToPlaylist,
     // removePlaylistItems,
     // updatePlaylistItems,
-    getPlaylist: (id: string) => dispatch((getPlaylist as any)(id)),
     // updatePlaylist,
 
     playTrack: (trackCtx: PlayContext) => {

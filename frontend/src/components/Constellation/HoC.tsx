@@ -1,31 +1,46 @@
-import React, { useEffect } from 'react';
-import { Playlist, Context, PlayContext } from 'types/music';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Context, PlayContext } from 'types/music';
 import { Constellation } from './component';
+import { getPlaylist } from 'rest/spotify';
 
 export interface ConstellationHoCProps {
-  constellation: any;
   context: Context | null;
-  id: string;
-  playlist: Playlist | null;
-  getPlaylist: (id: string) => void;
+  constellation: any;
+  playlistId: string;
   playTrack: (trackCtx: PlayContext) => void;
 }
 
+
 export const ConstellationHoC = (props: ConstellationHoCProps) => {
   // HOC
-  const { constellation, context, id, playlist, getPlaylist, playTrack } = props;
-  const serviceId = playlist?.serviceId;
+  const { context, playlistId, playTrack } = props;
+  
+  const serviceId = playlistId?.split("-")?.[2];
 
-  useEffect(() => {
-    if (!serviceId) return;
-    getPlaylist(serviceId);
-  }, [serviceId, getPlaylist]);
+  const {
+    isLoading: loadingPlaylist,
+    data: playlist,
+  } = useQuery(
+    ['spotify', 'playlist', serviceId],
+    () => getPlaylist(serviceId),
+  );
+    
+  // const {
+  //   isLoading: loadingConstellation,
+  //   data: constellation,
+  // } = useQuery(
+  //   ['constellation', id],
+  //   () => fetchConstellation(id),
+  //   { enabled: !!playlist }
+  // );
 
-
-  if (!playlist) return (<></>);
+  
+  console.log("Constellation | playlistId:", playlistId, playlist);
+  if (loadingPlaylist || !playlist) return (<></>);
 
   // return (<></>)
   return (
-    <Constellation id={id} context={context} constellation={constellation} playlist={playlist} playTrack={playTrack}/>
+    <Constellation constellation={null} context={context} playlist={playlist} playTrack={playTrack}/>
   );
 };
