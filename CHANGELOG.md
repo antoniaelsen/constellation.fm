@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added ability to play song by pressing Star 'play' button
+
+### Removed
+- Removed useSpotifyPlayer hook in SpotifyPlayback, extracting it to it's own package, use-spotify-player
+
 ### Fixed
 - Fixed issue where constellation spotify web player would be initialized multiple times, and thus show in the devices menu multiple times
 - Disabled highlighting of text in Space (on canvas)
