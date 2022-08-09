@@ -6,7 +6,7 @@ const middleware = {
   [GET_USER_PLAYLISTS_LIMIT_SUCCESS]: (store, next, action, result) => {
     const { payload } = result;
     const { limit, offset, total } = payload;
-    if (offset > total || offset > 100) return;
+    if (offset > total) return;
     store.dispatch(getUserPlaylistsLimited(offset + limit));
   },
 }
