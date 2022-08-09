@@ -28,6 +28,7 @@ export interface Album {
   id: string;
   image: Image;
   name: string;
+  uri: string;
   url: string;
 }
 
@@ -86,6 +87,7 @@ export interface Playlist {
   order?: number;
   owner: User;
   tracks: PlaylistTrack[];
+  uri: string;
   url: string;
 }
 export interface ContextTrack extends TrackSimple {
@@ -109,6 +111,15 @@ export interface Context { // A playlist, album, queue
   current: ContextTrack;
   next: ContextTrack[];
   prev: ContextTrack[];
+}
+
+export interface PlayContext {
+  uri?: string | null;
+  position?: number;
+  offset?: {
+    position: number | null;
+    uri?: string; 
+  };
 }
 
 export interface MusicState {

@@ -53,7 +53,7 @@ const transformArtist = (input: SpotifyApi.ArtistObjectSimplified): Artist => {
 };
 
 const transformAlbum = (input: SpotifyApi.AlbumObjectSimplified): Album => {
-  const { external_urls, id, images, name } = input;
+  const { external_urls, id, images, name, uri } = input;
   const image = images?.[0];
   const url = external_urls?.spotify;
   return {
@@ -62,7 +62,8 @@ const transformAlbum = (input: SpotifyApi.AlbumObjectSimplified): Album => {
     id: `${Service.SPOTIFY}-album-${id}`,
     image,
     name, 
-    url
+    uri,
+    url,
   };
 };
 
@@ -83,7 +84,7 @@ const transformTrack = (input: SpotifyApi.TrackObjectFull): Track => {
 };
 
 const transformPlaylistSimplified = (input: SpotifyApi.PlaylistObjectSimplified, i: number): Playlist => {
-  const { collaborative, description, external_urls, id, images, name, owner, public: isPublic } = input;
+  const { collaborative, description, external_urls, id, images, name, owner, public: isPublic, uri } = input;
   const image = { url: images[0]?.url };  // TODO(aelsen)
   const url = external_urls.spotify;
 
@@ -100,12 +101,13 @@ const transformPlaylistSimplified = (input: SpotifyApi.PlaylistObjectSimplified,
     name,
     image,
     isPublic: !!isPublic,
+    uri,
     url
   };
 };
 
 const transformPlaylistFull = (input: SpotifyApi.PlaylistObjectFull): Playlist => {
-  const { collaborative, description, external_urls, id, images, name, owner, public: isPublic, tracks } = input;
+  const { collaborative, description, external_urls, id, images, name, owner, public: isPublic, tracks, uri } = input;
   const image = images[0];
   const url = external_urls.spotify;
 
@@ -121,6 +123,7 @@ const transformPlaylistFull = (input: SpotifyApi.PlaylistObjectFull): Playlist =
     name,
     image,
     isPublic: !!isPublic,
+    uri,
     url
   };
 };

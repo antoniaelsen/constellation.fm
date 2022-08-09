@@ -100,7 +100,9 @@ export const reducers: {[key: string]: MusicReducer} = {
   },
 
   [PLAY_TRACK_SUCCESS]: (prevState, action) => {
-    return prevState;
+    return {
+      ...prevState,
+    };
   },
 
   [PLAY_TRACK_FAILURE]: (prevState, action) => {

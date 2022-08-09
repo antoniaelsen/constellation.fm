@@ -21,7 +21,7 @@ export const SongInfo = (props: SongInfoProps) => {
   const { artists, album, name, url } = track;
 
   return (
-    <StyledBox sx={{ display: "flex", alignItems: "center" }}>
+    <StyledBox sx={{ display: "flex", alignItems: "center", overflow: "hidden" }}>
       {!hideImage && (
         <StyledBox sx={{ display: "flex", mr: 2 }}>
           <img
@@ -33,13 +33,13 @@ export const SongInfo = (props: SongInfoProps) => {
         </StyledBox>
       )}
 
-      <StyledBox sx={{ display: "flex", flexFlow: "column nowrap" }}>
+      <StyledBox sx={{ display: "flex", flexFlow: "column nowrap", overflow: "hidden", mr: 2  }}>
         <StyledLink color="textPrimary" href={url}>{name}</StyledLink>
 
-        <StyledBox sx={{ display: "flex" }}>
+        <StyledBox sx={{ display: "flex", overflow: "hidden" }}>
           {artists.map(({ name, url }, i) => (
             <React.Fragment key={name}>
-              {i > 0 && <Typography sx={{ display: "inline-block", mr: 1 }} variant="caption">, </Typography>}
+              {i > 0 && <Typography sx={{ display: "inline-block", mr: 1 }} noWrap={true} variant="caption">, </Typography>}
               <StyledLink href={url} variant="caption">{name}</StyledLink>
             </React.Fragment>
           ))}

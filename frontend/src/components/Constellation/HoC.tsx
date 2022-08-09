@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Playlist, Context } from 'types/music';
+import { Playlist, Context, PlayContext } from 'types/music';
 import { Constellation } from './component';
 
 export interface ConstellationHoCProps {
@@ -8,7 +8,7 @@ export interface ConstellationHoCProps {
   id: string;
   playlist: Playlist | null;
   getPlaylist: (id: string) => void;
-  playTrack: (id: string) => void;
+  playTrack: (trackCtx: PlayContext) => void;
 }
 
 export const ConstellationHoC = (props: ConstellationHoCProps) => {

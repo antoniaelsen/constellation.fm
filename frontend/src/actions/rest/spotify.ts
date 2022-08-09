@@ -2,6 +2,7 @@ import { RSAA } from "redux-api-middleware";
 import config from "config";
 import { fetchOffsets, } from "./utils"
 import { Service, SPOTIFY_URL } from "lib/constants";
+import { PlayContext } from "types/music";
 
 export const CREATE_PLAYLIST_REQUEST = "CREATE_PLAYLIST_REQUEST";
 export const CREATE_PLAYLIST_SUCCESS = "CREATE_PLAYLIST_SUCCESS";
@@ -61,9 +62,9 @@ export const requestParams = {
   credentials: "include"
 };
 
-export const spotifyType = (type: string) => ({
+export const spotifyType = (type: any) => ({
   meta: { service: Service.SPOTIFY },
-  type
+  ...(typeof type === "string" ? { type } : type),
 });
 
 export const getUser = () => ({
@@ -227,20 +228,16 @@ export const getTracksAudioFeatures = () => ({
 });
 
 
-type playTrackRequest = {
-  contextUri: string;
-  uris: string[];
-  offset?: {
-    position?: number;
-    uri?: string;
-  }
-}
-
-export const playTrack = (req: playTrackRequest) => ({
+export const playTrack = (trackCtx: PlayContext) => ({
   [RSAA]: {
     ...requestParams,
     endpoint: `${config.api.spotify}/me/player/play`,
     method: 'PUT',
+    body: JSON.stringify({
+      context_uri: trackCtx.uri,
+      position_ms: trackCtx.position,
+      offset: trackCtx.offset,
+    }),
     types: [
       PLAY_TRACK_REQUEST,
       PLAY_TRACK_SUCCESS,

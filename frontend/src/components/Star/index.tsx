@@ -107,11 +107,12 @@ export const Star = (props: StarProps) => {
       ? theme.palette.primary.main
       : clicked
         ? 'green'
-        : theme.palette.secondary.main
+        : theme.palette.secondary.main,
+    config: { duration: 500 }  
   });
   const { scale } = useSpring({
     scale: (playing ? 1.5 : 1) * (hovered ? 1.25 : 1),
-    config: { duration: 2500 }
+    config: { duration: 500 }
   })
 
   return (

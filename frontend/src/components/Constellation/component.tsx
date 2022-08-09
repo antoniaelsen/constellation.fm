@@ -4,7 +4,7 @@ import { Line } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { Playlist, Track, Context } from 'types/music';
+import { Context, PlayContext, Playlist, PlaylistTrack, Track } from 'types/music';
 import { Star } from '../Star';
 
 
@@ -28,6 +28,7 @@ interface Node {
 
 interface TrackNode extends Node {
   track: Track;
+  order: number;
 }
 
 export interface ConstellationProps {
@@ -35,7 +36,7 @@ export interface ConstellationProps {
   context: Context | null;
   id: string;
   playlist: Playlist | null;
-  playTrack(id: string): void;
+  playTrack(trackCtx: PlayContext): void;
 }
 
 export const Constellation = (props: ConstellationProps) => {
@@ -45,7 +46,7 @@ export const Constellation = (props: ConstellationProps) => {
   const { nodes, links } = useMemo(() => {
       if (!playlist) return { nodes: [], links: [] };
       const tracks = playlist.tracks?.filter(({ track }) => !!track);
-      const nodes = tracks.map(({ track }) => ({ id: track?.id, track }))
+      const nodes = tracks.map(({ order, track }: PlaylistTrack) => ({ id: track!.id, track: track!, order }))
       const links = nodes && nodes.length > 1 ? [
         ...nodes.slice(0, -1).map((node, i) => ({ source: i, target: i + 1 })),
         { source: 0, target: nodes.length - 1, length: COLA_LINK_DISTANCE * 3 }
@@ -106,14 +107,27 @@ export const Constellation = (props: ConstellationProps) => {
                 },
               )}
               {layout.nodes().map(
-                ({ x, y, z, id, track }: TrackNode, i: number) => {
-                  const playing = context?.current?.id === track.id;
+                ({ x, y, z, id, order, track }: TrackNode, i: number) => {
+                  let handleTooltipClick;
+                  let playing = false;
+                  
+                  if (context) {
+                    playing = context?.current?.id === track.serviceId;
+                    
+                    handleTooltipClick = () => {
+                      playTrack({
+                        uri: playlist?.uri,
+                        offset: { position: order },
+                        position: 0,
+                      });
+                    }
+                  }
                   return (
                     <Star
                       key={id}
                       playing={playing}
                       track={track}
-                      onTooltipClick={playTrack}
+                      onTooltipClick={handleTooltipClick}
                       position={[
                         x - GRAPH_WIDTH / 2,
                         y - GRAPH_HEIGHT / 2,

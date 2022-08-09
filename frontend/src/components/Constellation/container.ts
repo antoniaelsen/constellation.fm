@@ -2,12 +2,13 @@ import { Dispatch, AnyAction } from 'redux';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect'
 
-import { getPlaylist } from 'actions/rest/spotify';
+import { getPlaylist, playTrack } from 'actions/rest/spotify';
 import { RootState } from 'store';
 import { ConstellationHoC as Component } from './HoC';
 import schemas from 'store/entities';
 import { denormalize } from 'normalizr';
 import { isEqual } from 'lodash';
+import { PlayContext } from 'types/music';
 
 
 interface ContainerProps {
@@ -61,8 +62,9 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, props: ContainerProps
     getPlaylist: (id: string) => dispatch((getPlaylist as any)(id)),
     // updatePlaylist,
 
-    playTrack: (id: string) => {
-      console.log("Constellation HOC | Play track", id);
+    playTrack: (trackCtx: PlayContext) => {
+      console.log("Constellation HOC | Play track", trackCtx);
+      dispatch((playTrack as any)(trackCtx));
     }
   }
 };
