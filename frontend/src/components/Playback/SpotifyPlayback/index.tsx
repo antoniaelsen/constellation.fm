@@ -17,7 +17,7 @@ sconfig.api = config.api.spotify;
 const transformContext = (ctx: SContext): Context => {
   const { id: serviceId, type } = ctx;
     const service = Service.SPOTIFY;
-    const id = `${service}-${type}-${serviceId}`;
+    const id = serviceId === null ? null : `${service}-${type}-${serviceId}`;
     return{
       ...ctx,
       id,

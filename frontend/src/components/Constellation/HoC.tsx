@@ -35,7 +35,7 @@ export const ConstellationHoC = (props: ConstellationHoCProps) => {
   // );
 
   
-  console.log("Constellation | playlistId:", playlistId, playlist);
+  // console.log("Constellation HoC | playlistId:", playlistId, playlist);
   if (loadingPlaylist || !playlist) return (<></>);
 
   // return (<></>)

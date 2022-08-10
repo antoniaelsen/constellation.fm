@@ -28,7 +28,6 @@ const mapDispatchToProps = (dispatch: Dispatch<AnyAction>, props: ContainerProps
     // updatePlaylist,
 
     playTrack: (trackCtx: PlayContext) => {
-      console.log("Constellation HOC | Play track", trackCtx);
       dispatch((playTrack as any)(trackCtx));
     }
   }

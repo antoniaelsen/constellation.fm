@@ -1,18 +1,15 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import WebCola from 'react-cola';
 import { CatmullRomLine, Line } from '@react-three/drei';
-import { useThree } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
+import { GRAPH_DEPTH, GRAPH_HEIGHT, GRAPH_WIDTH, GRAPH_LINK_DISTANCE  } from 'lib/constants';
 import { Context, PlayContext, Playlist, PlaylistTrack, Track } from 'types/music';
 import { Star } from '../Star';
+import { useStore } from 'store/createZtore';
 
 
-const GRAPH_WIDTH = 500;
-const GRAPH_HEIGHT = 500;
-const GRAPH_DEPTH = 250;
-
-const COLA_LINK_DISTANCE = 50;
 const COLA_AVOID_OVERLAPS = true;
 const COLA_HANDLE_DISCONNECTED = false;
 
@@ -27,8 +24,50 @@ interface Node {
 }
 
 interface TrackNode extends Node {
-  track: Track;
-  order: number;
+  track: PlaylistTrack;
+}
+
+interface StarNodeProps {
+  playing: boolean;
+  track: PlaylistTrack;
+  x: number;
+  y: number;
+  onPlay: (order: number) => void;
+}
+
+const StarNode = (props: StarNodeProps) => {
+  const { playing, track: playlistTrack, x, y, onPlay } = props; 
+  const { order, track } = playlistTrack;
+  const id = track?.id || `unknown-${order}`;
+  const ref = useRef<THREE.Group>();
+  const setTarget = useStore((state) => state.space.setOrbitControlsTarget);
+
+  const handleTooltipClick = useCallback(() => {
+    onPlay(order);
+  }, [order, onPlay]);
+
+  useEffect(() => {
+    if (!playing) return;
+    const target = ref.current?.position.toArray();
+    setTarget(target);
+  }, [playing, setTarget]);
+  
+
+  return (
+    <Star
+      key={id}
+      ref={(ref)}
+      playing={playing}
+      track={track}
+      onTooltipClick={handleTooltipClick}
+      position={[
+        x - GRAPH_WIDTH / 2,
+        y - GRAPH_HEIGHT / 2,
+        0
+        // z - GRAPH_DEPTH / 2
+      ]}
+    />
+  );
 }
 
 export interface ConstellationProps {
@@ -39,16 +78,20 @@ export interface ConstellationProps {
 }
 
 export const Constellation = (props: ConstellationProps) => {
-  // HOC
   const { context, playlist, playTrack } = props;
 
   const { nodes, links } = useMemo(() => {
       if (!playlist) return { nodes: [], links: [] };
-      const tracks = playlist.tracks?.filter(({ track }) => !!track);
-      const nodes = tracks.map(({ order, track }: PlaylistTrack) => ({ id: track!.id, track: track!, order }))
+
+       // We wrap the playlist track in an obj here because it is destructured by react-cola
+      const tracks = !playlist.tracks ? [] : playlist.tracks
+          .filter(({ track }) => !!track)
+          .map((track) => ({ track }));
+
+      const nodes = tracks;
       const links = nodes && nodes.length > 1 ? [
         ...nodes.slice(0, -1).map((node, i) => ({ source: i, target: i + 1 })),
-        { source: 0, target: nodes.length - 1, length: COLA_LINK_DISTANCE * 3 }
+        { source: 0, target: nodes.length - 1, length: GRAPH_LINK_DISTANCE }
       ] : undefined;
       return { nodes, links };
     },
@@ -61,13 +104,21 @@ export const Constellation = (props: ConstellationProps) => {
       .links(links)
       .groups(groups)
       .constraints(constraints)
-      .linkDistance((link) => link.length || COLA_LINK_DISTANCE)
+      .linkDistance((link) => GRAPH_LINK_DISTANCE - (links.length * 1.25))
       .avoidOverlaps(COLA_AVOID_OVERLAPS)
       .handleDisconnected(COLA_HANDLE_DISCONNECTED),
     []
   );
 
-  const { camera } = useThree();
+  const handlePlay = useCallback((order) => {
+    playTrack({
+      uri: playlist?.uri,
+      offset: { position: order },
+      position: 0,
+    });
+  }, [playlist, playTrack]);
+
+  const camera = useThree((state) => state.camera);
   useEffect(() => {
     camera.position.set(0, 0, GRAPH_DEPTH * 2);
   }, [camera]);
@@ -128,33 +179,15 @@ export const Constellation = (props: ConstellationProps) => {
                 },
               )} */}
               {layout.nodes().map(
-                ({ x, y, z, id, order, track }: TrackNode, i: number) => {
-                  let handleTooltipClick;
-                  let playing = false;
-                  
-                  if (context) {
-                    playing = context?.current?.id === track.serviceId;
-                    
-                    handleTooltipClick = () => {
-                      playTrack({
-                        uri: playlist?.uri,
-                        offset: { position: order },
-                        position: 0,
-                      });
-                    }
-                  }
+                (node: TrackNode) => {
+                  const { x, y, z, track } = node;
                   return (
-                    <Star
-                      key={id}
-                      playing={playing}
+                    <StarNode
+                      x={x}
+                      y={y}
+                      playing={context?.current?.id === track.track?.serviceId}
                       track={track}
-                      onTooltipClick={handleTooltipClick}
-                      position={[
-                        x - GRAPH_WIDTH / 2,
-                        y - GRAPH_HEIGHT / 2,
-                        0
-                        // z - GRAPH_DEPTH / 2
-                      ]}
+                      onPlay={handlePlay}
                     />
                   );
                 }

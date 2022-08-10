@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { forwardRef, useRef, useState } from 'react';
 import { Html } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { a, useSpring } from '@react-spring/three';
@@ -8,14 +8,12 @@ import { alpha, ThemeProvider, useTheme } from "@mui/material/styles";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import { IconButton } from '@mui/material';
 
+import { STAR_RADIUS, STAR_HEIGHT_SEGS, STAR_WIDTH_SEGS  } from 'lib/constants';
 import { StyledBox } from 'components/StyledBox';
 import { Track } from 'types/music';
 import { StarSongInfo } from './StarSongInfo';
 
 const TRANSPARENT_CARDS = true;
-const STAR_RADIUS = 5;
-const STAR_HEIGHT_SEGS = 16;
-const STAR_WIDTH_SEGS = 16;
 
 
 export const StarTooltipCard = (({ children, ...etc }) => {
@@ -87,20 +85,20 @@ export const StarTooltip = (props: StarTooltipProps) => {
 }
 
 type StarProps = JSX.IntrinsicElements['group'] &  {
-  track: Track;
+  track: Track | null;
   playing?: boolean;
   position: THREE.Vector3 | number[];
   onTooltipClick(id: string): void;
 }
 
 
-export const Star = (props: StarProps) => {
+export const Star = forwardRef((props: StarProps, ref) => {
   const theme = useTheme();
   const { track, playing, position, onTooltipClick } = props;
-  const ref = useRef<THREE.Mesh>(null!);
+  const meshRef = useRef<THREE.Mesh>(null!);
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
-  useFrame(() => (ref.current.rotation.x += 0.01));
+  useFrame(() => (meshRef.current.rotation.x += 0.01));
 
   const { backgroundColor } = useSpring({
     backgroundColor: playing
@@ -116,9 +114,9 @@ export const Star = (props: StarProps) => {
   })
 
   return (
-    <group position={position}>
+    <group ref={(ref as any)} position={position}>
       <a.mesh
-        ref={ref}
+        ref={meshRef}
         scale={scale}
         onClick={() => click(!clicked)}
         onPointerOver={() => hover(true)}
@@ -129,7 +127,7 @@ export const Star = (props: StarProps) => {
           // @ts-ignore */}
         <a.meshStandardMaterial color={backgroundColor} opacity={0.5} />
       </a.mesh>
-      <StarTooltip track={track} onClick={onTooltipClick}/>
+      {track && <StarTooltip track={track} onClick={onTooltipClick}/>}
     </group>
   )
-};
+});
