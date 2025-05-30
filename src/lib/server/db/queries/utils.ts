@@ -6,6 +6,7 @@ const ALGORITHM = 'aes-256-gcm';
 
 export const encrypt = (text: string) => {
 	const iv = crypto.randomBytes(16);
+
 	const cipher = crypto.createCipheriv(ALGORITHM, ENCRYPTION_KEY_BUFFER, iv);
 	cipher.setAAD(Buffer.from('spotify-tokens'));
 

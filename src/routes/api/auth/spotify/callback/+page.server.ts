@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { storeSpotifyTokens, upsertUser } from '$lib/db/users';
+import { storeSpotifyTokens, upsertUser } from '$lib/server/db/queries/users';
 import {
 	SPOTIFY_CLIENT_ID,
 	SPOTIFY_CLIENT_SECRET,
@@ -19,7 +19,7 @@ export async function load({ url, locals }) {
 
 	if (!code || !user) {
 		console.log('redirecting to login');
-		throw redirect(302, '/login');
+		throw redirect(302, '/');
 	}
 
 	try {

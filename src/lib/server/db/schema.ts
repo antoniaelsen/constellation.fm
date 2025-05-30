@@ -1,7 +1,27 @@
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import { boolean, timestamp, pgTable, text, primaryKey, integer } from 'drizzle-orm/pg-core';
+import {
+	boolean,
+	timestamp,
+	pgTable,
+	text,
+	primaryKey,
+	integer,
+	unique,
+	bigint,
+	pgEnum,
+	jsonb
+} from 'drizzle-orm/pg-core';
 import type { AdapterAccountType } from 'next-auth/adapters';
 import { db } from '.';
+import { Provider } from '../../types/constellations';
+
+export function enumToPgEnum<T extends Record<string, any>>(
+	myEnum: T
+): [T[keyof T], ...T[keyof T][]] {
+	return Object.values(myEnum).map((value: any) => `${value}`) as any;
+}
+
+export const providerEnum = pgEnum('provider', enumToPgEnum(Provider));
 
 export const users = pgTable('user', {
 	id: text('id')
@@ -92,15 +112,13 @@ export const spotifyConnections = pgTable('spotify_connections', {
 		.$defaultFn(() => crypto.randomUUID()),
 	userId: text('userId')
 		.notNull()
+		.unique()
 		.references(() => users.id, { onDelete: 'cascade' }),
-	spotifyUserId: text('spotifyUserId').notNull(),
 	accessToken: text('accessToken').notNull(),
 	refreshToken: text('refreshToken').notNull(),
-	expiresAt: timestamp('expiresAt').notNull(),
-	scope: text('scope').notNull(),
-	isActive: boolean('isActive').default(true).notNull(),
-	createdAt: timestamp('createdAt').defaultNow().notNull(),
-	updatedAt: timestamp('updatedAt').defaultNow().notNull()
+	tokenType: text('tokenType').notNull(),
+	expires: bigint('expires', { mode: 'number' }).notNull(),
+	scope: text('scope').notNull()
 });
 
 export const drizzleAdapter = DrizzleAdapter(db, {
@@ -109,3 +127,64 @@ export const drizzleAdapter = DrizzleAdapter(db, {
 	sessionsTable: sessions,
 	verificationTokensTable: verificationTokens
 });
+
+export const constellations = pgTable(
+	'constellation',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		userId: text('userId')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		provider: providerEnum('provider').notNull(),
+		providerPlaylistId: text('providerPlaylistId').notNull()
+	},
+	(constellation) => ({
+		uniqUserPlaylist: unique().on(
+			constellation.userId,
+			constellation.provider,
+			constellation.providerPlaylistId
+		)
+	})
+);
+
+export const stars = pgTable(
+	'star',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		constellationId: text('constellationId')
+			.notNull()
+			.references(() => constellations.id, { onDelete: 'cascade' }),
+		provider: providerEnum('provider').notNull(),
+		providerTrackId: text('providerTrackId').notNull(),
+		providerOrder: text('providerOrder').notNull(),
+		isrc: text('isrc').notNull()
+	},
+	(star) => ({
+		uniqConstellationTrack: unique().on(star.constellationId, star.provider, star.providerTrackId)
+	})
+);
+
+export const edges = pgTable(
+	'edge',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		constellationId: text('constellationId')
+			.notNull()
+			.references(() => constellations.id, { onDelete: 'cascade' }),
+		sourceId: text('sourceId')
+			.notNull()
+			.references(() => stars.id, { onDelete: 'cascade' }),
+		targetId: text('targetId')
+			.notNull()
+			.references(() => stars.id, { onDelete: 'cascade' })
+	},
+	(edge) => ({
+		uniqConstellationEdge: unique().on(edge.constellationId, edge.sourceId, edge.targetId)
+	})
+);

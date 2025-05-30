@@ -39,3 +39,11 @@
 		display: none;
 	}
 }
+
+/* Flowbite overrides */
+
+.focus-within\:ring-4 {
+	&:focus-within {
+		box-shadow: none;
+	}
+}

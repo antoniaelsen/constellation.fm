@@ -69,6 +69,7 @@
 	"dependencies": {
 		"@auth/drizzle-adapter": "^1.9.1",
 		"@auth/sveltekit": "^1.9.2",
+		"@spotify/web-api-ts-sdk": "^1.2.0",
 		"@sveltestack/svelte-query": "^1.6.0",
 		"drizzle-orm": "^0.43.1",
 		"pg": "^8.16.0",
