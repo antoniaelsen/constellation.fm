@@ -54,8 +54,6 @@
 		sort = update;
 	}
 
-	$inspect(constellations);
-
 	let items = $derived(
 		constellations?.map((constellation: Constellation) => ({
 			name: constellation.metadata?.name || '',
@@ -90,7 +88,14 @@
 	hidden={open}><ChevronRightOutline /></Button
 >
 
-<Drawer id="sidebar" backdrop={false} hidden={!open} class={drawerClass}>
+<Drawer
+	id="sidebar"
+	activateClickOutside={false}
+	backdrop={false}
+	hidden={!open}
+	class={drawerClass}
+	backdropClass="pointer-events-none"
+>
 	<div class="flex items-center justify-between">
 		<P>constellation.fm</P>
 		<Button aria-label="Close sidebar" class="border-0 px-3" outline onclick={onClose}

@@ -23,6 +23,13 @@ export interface PlaylistMetadata {
 }
 
 /**
+ * Ephemeral metadata for a track, fetched from the provider's API.
+ */
+export interface TrackMetadata {
+	name: string;
+}
+
+/**
  * A constellation is a collection of playlist stars and edges.
  */
 export interface Constellation {
@@ -60,6 +67,7 @@ export interface Star {
 	provider: Provider;
 	providerTrackId: string;
 	providerOrder: string; // The order (sequential) of the track in the provider's playlist
+	metadata?: TrackMetadata;
 }
 
 export interface StarPrototype {

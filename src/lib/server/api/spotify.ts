@@ -1,7 +1,9 @@
 import type { SpotifyAuth } from '$lib/types';
 import {
+	InMemoryCachingStrategy,
 	SpotifyApi,
 	type AccessToken,
+	type IValidateResponses,
 	type Market,
 	type MaxInt,
 	type Playlist,
@@ -11,6 +13,7 @@ import {
 	type TrackItem,
 	type UserProfile
 } from '@spotify/web-api-ts-sdk';
+import { error } from '@sveltejs/kit';
 
 export const SPOTIFY_SCOPES = [
 	'user-read-playback-state',
@@ -35,20 +38,68 @@ export const SPOTIFY_SCOPES = [
 	'user-read-private'
 ];
 
+interface SpotifyError extends Error {
+	cause: {
+		code: number;
+	};
+}
+
+class ResponseValidator implements IValidateResponses {
+	public async validateResponse(response: Response): Promise<void> {
+		switch (response.status) {
+			case 401:
+				throw new Error(
+					'Bad or expired token. This can happen if the user revoked a token or the access token has expired. You should re-authenticate the user.',
+					{ cause: { code: 401 } }
+				);
+			case 403:
+				const body = await response.text();
+				throw new Error(
+					`Bad OAuth request (wrong consumer key, bad nonce, expired timestamp...). Unfortunately, re-authenticating the user won't help here. Body: ${body}`,
+					{ cause: { code: 403 } }
+				);
+			case 429:
+				const retryAfter = response.headers.get('Retry-After');
+				throw new Error(
+					`The app has exceeded its rate limits; retry after: ${retryAfter} seconds.`,
+					{ cause: { code: 429 } }
+				);
+			default:
+				if (!response.status.toString().startsWith('20')) {
+					const body = await response.text();
+					throw new Error(
+						`Unrecognised response code: ${response.status} - ${response.statusText}. Body: ${body}`,
+						{ cause: { code: response.status } }
+					);
+				}
+		}
+	}
+}
+
+const OPTS = {
+	responseValidator: new ResponseValidator(),
+	cachingStrategy: new InMemoryCachingStrategy()
+};
+
 export const getPlaylist = async (
 	tokens: AccessToken,
 	playlistId: string,
 	options?: { market?: Market; fields?: string; additionalTypes?: QueryAdditionalTypes }
 ): Promise<Playlist<QueryAdditionalTypes extends undefined ? Track : TrackItem>> => {
 	console.log('SPOTIFY - getPlaylist', options);
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens);
+	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
 
-	return await sdk.playlists.getPlaylist(
-		playlistId,
-		options?.market,
-		options?.fields,
-		options?.additionalTypes
-	);
+	try {
+		return await sdk.playlists.getPlaylist(
+			playlistId,
+			options?.market,
+			options?.fields,
+			options?.additionalTypes
+		);
+	} catch (err) {
+		console.error('SPOTIFY - getPlaylist', err);
+		throw error((err as SpotifyError).cause.code, 'Failed to fetch playlist');
+	}
 };
 
 export const getPlaylists = async (
@@ -56,25 +107,34 @@ export const getPlaylists = async (
 	options?: { limit?: MaxInt<50>; offset?: number }
 ): Promise<SimplifiedPlaylist[]> => {
 	console.log('SPOTIFY - getPlaylists', options);
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens);
+	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
 	let { limit, offset } = options || {};
 	if (limit) {
-		const page = await sdk.currentUser.playlists.playlists(limit, offset);
-		return page.items;
+		try {
+			const page = await sdk.currentUser.playlists.playlists(limit, offset);
+			return page.items;
+		} catch (err) {
+			console.error('SPOTIFY - getPlaylists err', err);
+			throw error((err as SpotifyError).cause.code, `Failed to fetch playlists: ${err}`);
+		}
 	}
 
 	limit = 50;
 	offset = 0;
 	let acc: SimplifiedPlaylist[] = [];
-	while (true) {
-		const response = await sdk.currentUser.playlists.playlists(limit, offset);
-		acc = [...acc, ...response.items];
+	try {
+		while (true) {
+			const response = await sdk.currentUser.playlists.playlists(limit, offset);
+			acc = [...acc, ...response.items];
 
-		if (response.items.length < limit) {
-			break;
+			if (response.items.length < limit) {
+				break;
+			}
+
+			offset += limit;
 		}
-
-		offset += limit;
+	} catch (err) {
+		throw error((err as SpotifyError).cause.code, 'Failed to fetch playlists');
 	}
 
 	return acc;
@@ -82,7 +142,7 @@ export const getPlaylists = async (
 
 export const getProfile = async (tokens: AccessToken): Promise<UserProfile> => {
 	console.log('SPOTIFY - getProfile');
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens);
+	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
 
 	return await sdk.currentUser.profile();
 };

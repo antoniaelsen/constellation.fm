@@ -3,6 +3,8 @@
 
 	import { page } from '$app/stores';
 	import { useAllConstellations } from '$lib/client/api/constellations';
+	import { writable } from 'svelte/store';
+	import { Provider } from '$lib/types/constellations';
 
 	let { children } = $props();
 
@@ -16,7 +18,39 @@
 		open = false;
 	}
 
-	const req = useAllConstellations({ refetchOnWindowFocus: false, retry: false });
+	// const req = useAllConstellations({ refetchOnWindowFocus: false, retry: false });
+	const req = writable({
+		data: Array.from({ length: 10 }, (_, i) => ({
+			id: i.toString(),
+			userId: i.toString(),
+			provider: Provider.SPOTIFY,
+			providerPlaylistId: i.toString(),
+			stars: Array.from({ length: 20 }, (_, s) => ({
+				id: s.toString(),
+				constellationId: i.toString(),
+				provider: Provider.SPOTIFY,
+				providerTrackId: s.toString(),
+				providerOrder: s.toString(),
+				isrc: `ISRC-${s}`,
+				metadata: {
+					name: `Track ${s}`
+				}
+			})),
+			edges: Array.from({ length: 19 }, (_, e) => ({
+				id: e.toString(),
+				constellationId: i.toString(),
+				sourceId: e.toString(),
+				targetId: (e + 1).toString()
+			})),
+			metadata: {
+				name: `Playlist ${i}`,
+				images: [],
+				owners: []
+			}
+		})),
+		error: null,
+		isLoading: false
+	});
 </script>
 
 <!--  -->

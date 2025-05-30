@@ -57,7 +57,14 @@ export async function GET({ locals, params }) {
 					status: 401
 				});
 			}
-			({ prototype, metadata } = await getSpotifyPlaylistConstellation(locals, providerPlaylistId));
+			try {
+				({ prototype, metadata } = await getSpotifyPlaylistConstellation(
+					locals,
+					providerPlaylistId
+				));
+			} catch (err) {
+				// fine
+			}
 			break;
 		}
 		default:
@@ -66,17 +73,18 @@ export async function GET({ locals, params }) {
 			});
 	}
 
-	if (!prototype) {
-		return new Response(JSON.stringify({ error: 'Failed to fetch playlist' }), {
-			status: 400
+	if (prototype) {
+		const update = !constellation.stars?.length ? prototype : { ...prototype, edges: [] };
+		const updated = await syncConstellation(userId, constellationId, update);
+		const response = { ...updated, metadata };
+		return new Response(JSON.stringify(response), {
+			headers: {
+				'Content-Type': 'application/json'
+			}
 		});
 	}
 
-	const update = !constellation.stars?.length ? prototype : { ...prototype, edges: [] };
-	const updated = await syncConstellation(userId, constellationId, update);
-	const response = { ...updated, metadata };
-
-	return new Response(JSON.stringify(response), {
+	return new Response(JSON.stringify(constellation), {
 		headers: {
 			'Content-Type': 'application/json'
 		}

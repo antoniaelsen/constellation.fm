@@ -6,7 +6,7 @@ import {
 } from '@sveltestack/svelte-query';
 import { apiFetch } from './fetch';
 
-const getConstellation = async (constellationId: string) => {
+const getConstellation = async (constellationId: string): Promise<Constellation> => {
 	const url = `/api/constellations/${constellationId}`;
 	return apiFetch(url).then((res) => res.json());
 };
@@ -23,12 +23,22 @@ const getConstellations = async (options?: {
 	return apiFetch(url).then((res) => res.json());
 };
 
-export const useConstellation = (constellationId: string) => {
-	return useQuery(['constellation', constellationId], () => getConstellation(constellationId));
+export const useConstellation = (
+	constellationId: string,
+	opts?: UseQueryOptions
+): UseQueryStoreResult<Constellation> => {
+	return useQuery(
+		['constellation', constellationId],
+		() => getConstellation(constellationId),
+		opts
+	);
 };
 
-export const useConstellations = (params: { limit: number; offset: number }) => {
-	return useQuery(['constellations', params], () => getConstellations(params));
+export const useConstellations = (
+	params: { limit: number; offset: number },
+	opts?: UseQueryOptions
+) => {
+	return useQuery(['constellations', params], () => getConstellations(params), opts);
 };
 
 export const useAllConstellations = (
