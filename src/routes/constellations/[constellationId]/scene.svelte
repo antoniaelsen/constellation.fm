@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { OrbitControls } from '@threlte/extras';
+	import { OrbitControls, Stars } from '@threlte/extras';
 
-	import { page } from '$app/stores';
-	import Star from '$lib/client/components/constellations/star.svelte';
+	let { children } = $props();
 </script>
 
 <T.PerspectiveCamera
 	makeDefault
-	position={[10, 10, 10]}
+	position={[250, 250, 250]}
+	near={0.01}
+	far={10000}
 	oncreate={(ref) => {
 		ref.lookAt(0, 1, 0);
 	}}
@@ -16,4 +17,8 @@
 	<OrbitControls enableDamping />
 </T.PerspectiveCamera>
 
-<Star position.y={1} />
+<T.AmbientLight intensity={1} />
+
+<Stars factor={30} depth={500} speed={1} />
+
+{@render children()}

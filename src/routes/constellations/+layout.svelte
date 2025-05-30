@@ -1,10 +1,12 @@
 <script lang="ts">
-	import Sidebar from './sidebar.svelte';
-
-	import { page } from '$app/stores';
-	import { useAllConstellations } from '$lib/client/api/constellations';
+	import { Canvas } from '@threlte/core';
 	import { writable } from 'svelte/store';
+
+	import { useAllConstellations } from '$lib/client/api/constellations';
 	import { Provider } from '$lib/types/constellations';
+	import Sidebar from './sidebar.svelte';
+	import Scene from './[constellationId]/Scene.svelte';
+	import { page } from '$app/stores';
 
 	let { children } = $props();
 
@@ -67,7 +69,11 @@
 			{onClose}
 		/>
 	</div>
-	<main class="z-1">
-		{@render children()}
+	<main class="z-1 flex h-screen items-center justify-center p-4">
+		<Canvas>
+			<Scene>
+				{@render children()}
+			</Scene>
+		</Canvas>
 	</main>
 </div>
