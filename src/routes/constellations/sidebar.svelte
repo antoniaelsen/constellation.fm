@@ -93,7 +93,7 @@
 	activateClickOutside={false}
 	backdrop={false}
 	hidden={!open}
-	class={drawerClass}
+	class={`bg-opacity-50 ${drawerClass}`}
 	backdropClass="pointer-events-none"
 >
 	<div class="flex items-center justify-between">

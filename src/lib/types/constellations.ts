@@ -9,24 +9,50 @@ export interface ProviderUser {
 }
 
 /**
+ * Ephemeral metadata for an album, fetched from the provider's API.
+ *
+ * Not stored in the database.
+ */
+export interface EAlbumMetadata {
+	name: string;
+	images: ImageMetadata[];
+}
+
+/**
+ * Ephemeral metadata for an artist, fetched from the provider's API.
+ *
+ * Not stored in the database.
+ */
+export interface EArtistMetadata {
+	name: string;
+	href: string;
+}
+
+/**
  * Ephemeral metadata for a playlist, fetched from the provider's API.
  */
-export interface PlaylistMetadata {
+export interface EPlaylistMetadata {
 	name: string;
 	description?: string;
-	images: {
-		url: string;
-		width?: number;
-		height?: number;
-	}[];
+	images: ImageMetadata[];
 	owners: ProviderUser[];
 }
 
 /**
  * Ephemeral metadata for a track, fetched from the provider's API.
+ *
+ * Not stored in the database.
  */
-export interface TrackMetadata {
+export interface ETrackMetadata {
 	name: string;
+	artists: EArtistMetadata[];
+	album: EAlbumMetadata;
+}
+
+export interface ImageMetadata {
+	url: string;
+	width?: number;
+	height?: number;
 }
 
 /**
@@ -39,7 +65,7 @@ export interface Constellation {
 	providerPlaylistId: string;
 	stars: Star[];
 	edges: Edge[];
-	metadata?: PlaylistMetadata;
+	metadata?: EPlaylistMetadata;
 }
 
 export interface ConstellationPrototype {
@@ -67,7 +93,7 @@ export interface Star {
 	provider: Provider;
 	providerTrackId: string;
 	providerOrder: string; // The order (sequential) of the track in the provider's playlist
-	metadata?: TrackMetadata;
+	metadata?: ETrackMetadata;
 }
 
 export interface StarPrototype {

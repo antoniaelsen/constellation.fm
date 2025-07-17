@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { Canvas } from '@threlte/core';
+	import { Stars } from '@threlte/extras';
 	import { writable } from 'svelte/store';
 
-	import { useAllConstellations } from '$lib/client/api/constellations';
-	import { Provider } from '$lib/types/constellations';
-	import Sidebar from './sidebar.svelte';
-	import Scene from './[constellationId]/Scene.svelte';
 	import { page } from '$app/stores';
+	import { useAllConstellations } from '$lib/client/api/constellations';
+	import Scene from '$lib/client/components/constellations/Scene.svelte';
+	import { Provider } from '$lib/types/constellations';
+
+	import Sidebar from './sidebar.svelte';
 
 	let { children } = $props();
 
@@ -72,6 +74,7 @@
 	<main class="z-1 flex h-screen items-center justify-center p-4">
 		<Canvas>
 			<Scene>
+				<Stars factor={30} depth={500} speed={1} />
 				{@render children()}
 			</Scene>
 		</Canvas>

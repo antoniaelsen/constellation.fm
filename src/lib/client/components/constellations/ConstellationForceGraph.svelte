@@ -3,7 +3,7 @@
 	import { useThrelte } from '@threlte/core';
 
 	import ForceGraph from '$lib/client/components/threlte-forcegraph/ForceGraph.svelte';
-	import Star from './star.svelte';
+	import Star from './Star.svelte';
 	import type { Edge as IEdge, Star as IStar } from '$lib/types/constellations';
 
 	const { constellation } = $props();

@@ -1,13 +1,9 @@
 <script lang="ts">
-	import { Canvas } from '@threlte/core';
-	import { OrbitControls } from '@threlte/extras';
-	import { Heading } from 'flowbite-svelte';
 	import { writable } from 'svelte/store';
 
 	import { useConstellation } from '$lib/client/api/constellations';
 	import { page } from '$app/stores';
 	import { Provider } from '$lib/types/constellations';
-	import Scene from './Scene.svelte';
 	import Constellation from '$lib/client/components/constellations/Constellation.svelte';
 
 	// const req = useConstellation($page.params.constellationId, { retry: false });

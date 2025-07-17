@@ -1,16 +1,14 @@
 <script lang="ts">
+	import type { EArtistMetadata } from '$lib/types/constellations';
 	import { A, Avatar, Card, P } from 'flowbite-svelte';
 
 	interface Props {
 		name: string;
 		href: string;
-		artists: {
-			name: string;
-			href: string;
-		}[];
+		artists: EArtistMetadata[];
 	}
 
-	let { name, href, artists } = $props();
+	let { name, href, artists }: Props = $props();
 </script>
 
 <Card

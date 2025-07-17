@@ -3,7 +3,7 @@
 	import { forceSimulation, forceLink, forceManyBody, forceCenter } from 'd3-force-3d';
 	import * as THREE from 'three';
 
-	import type { Edge as IEdge, Star as IStar } from '$lib/types/constellations';
+	import type { Constellation, Edge as IEdge, Star as IStar } from '$lib/types/constellations';
 	import Star from './Star.svelte';
 
 	const SCALE_STAR = 5;
@@ -22,6 +22,18 @@
 		target: { index: number };
 	}
 
+	interface Props {
+		constellation: Constellation;
+		activeNodeId: string | null;
+		linkWidth?: number;
+		chargeStrength?: number;
+		centerStrength?: number;
+		alphaMin?: number;
+		alphaDecay?: number;
+		alphaTarget?: number;
+		velocityDecay?: number;
+	}
+
 	const {
 		constellation,
 
@@ -29,11 +41,14 @@
 
 		linkWidth = 1,
 
+		chargeStrength = -200,
+		centerStrength = 1,
+
 		alphaMin = 0,
 		alphaDecay = 0.0228,
 		alphaTarget = 0,
 		velocityDecay = 0.4
-	} = $props();
+	}: Props = $props();
 
 	let stars = $state<D3ForceNode[]>([]);
 	let links = $state<D3ForceLink[]>([]);
@@ -59,8 +74,8 @@
 			.alphaTarget(alphaTarget)
 			.velocityDecay(velocityDecay)
 			.force('link', link)
-			.force('charge', forceManyBody())
-			.force('center', forceCenter())
+			.force('charge', forceManyBody().strength(chargeStrength))
+			.force('center', forceCenter().strength(centerStrength))
 			.stop();
 
 		return { simulation: sim, link };

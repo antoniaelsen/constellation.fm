@@ -19,6 +19,4 @@
 
 <T.AmbientLight intensity={1} />
 
-<Stars factor={30} depth={500} speed={1} />
-
 {@render children()}

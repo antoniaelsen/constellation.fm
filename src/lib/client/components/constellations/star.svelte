@@ -4,8 +4,19 @@
 	import { Spring } from 'svelte/motion';
 	import * as THREE from 'three';
 	import Nameplate from './Nameplate.svelte';
+	import type { ETrackMetadata } from '$lib/types/constellations';
 
 	interactivity();
+
+	interface Props {
+		active?: boolean;
+		activeColor?: string;
+		color?: string;
+		scale?: number;
+		showNameplate?: boolean;
+		metadata: ETrackMetadata;
+		onClick: () => void;
+	}
 
 	let groupRef = $state<THREE.Group | undefined>();
 	let starRef = $state<THREE.Mesh | undefined>();
@@ -19,7 +30,7 @@
 		metadata,
 		onClick,
 		...rest
-	} = $props();
+	}: Props = $props();
 
 	let scaleHover = new Spring(1);
 	let hovered = $state(false);
