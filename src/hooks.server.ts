@@ -12,16 +12,22 @@ export const handleDevtools: Handle = async ({ event, resolve }) => {
 };
 
 export const handleAuthorization: Handle = async ({ event, resolve }) => {
-	const BLACKLIST = ['/api/constellations', '/api/spotify'];
-
 	const { pathname } = event.url;
+
+	const BLACKLIST = ['/api/constellations', '/api/spotify', '/api/auth'];
 	if (BLACKLIST.some((path) => pathname.startsWith(path))) {
+		return await resolve(event);
+	}
+
+	if (pathname === '/') {
 		return await resolve(event);
 	}
 
 	const session = await event.locals.auth();
 	const userId = session?.user?.id;
-	if (!userId) {
+
+	if (!userId && pathname !== '/') {
+		// TODO(antoniae): redirect to appropriate page
 		console.error('Unauthorized - no user id in session');
 		return new Response('Unauthorized', { status: 401 });
 	}
