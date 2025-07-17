@@ -171,40 +171,36 @@ export async function deleteConstellation(userId: string, constellationId: strin
 /**
  * Sync stars for a constellation, adding new ones and removing old ones
  */
-async function syncStars(
+export async function syncStars(
 	userId: string,
 	constellationId: string,
 	newStars: StarPrototype[]
 ): Promise<Star[]> {
 	const existing = await db.select().from(stars).where(eq(stars.constellationId, constellationId));
 	const existingKeys = new Set(existing.map((star) => starKey(star as Star)));
+	const newStarPrototypesKeys = new Set(newStars.map((star) => starPrototypeKey(userId)(star)));
 
-	// insert new stars
 	await Promise.all(
 		newStars
 			.filter((star) => !existingKeys.has(starPrototypeKey(userId)(star)))
 			.map(async (sp) => {
-				await db.insert(stars).values({
+				const insert = {
 					constellationId,
 					provider: sp.provider,
 					providerTrackId: sp.providerTrackId,
 					providerOrder: sp.providerOrder,
 					isrc: sp.isrc
-				});
+				};
+				await db.insert(stars).values(insert).onConflictDoNothing();
 			})
 	);
 
-	// delete old stars
-	await db.delete(stars).where(
-		and(
-			eq(stars.constellationId, constellationId),
-			not(
-				inArray(
-					sql`${stars.constellationId} || ':' || ${stars.provider} || ':' || ${stars.providerTrackId} || ':' || ${stars.providerOrder}`,
-					newStars.map((star) => starPrototypeKey(userId)(star))
-				)
-			)
-		)
+	await Promise.all(
+		existing
+			.filter((star) => !newStarPrototypesKeys.has(starPrototypeKey(userId)(star as Star)))
+			.map(async (star) => {
+				await db.delete(stars).where(eq(stars.id, star.id));
+			})
 	);
 
 	return (await db
@@ -214,33 +210,51 @@ async function syncStars(
 }
 
 /**
- * Sync edges for a constellation, adding new ones and removing old ones
+ * Sync edges for a constellation, adding new ones and removing old ones, mapping to the stars
  */
-async function syncEdges(userId: string, constellationId: string, newEdges: EdgePrototype[]) {
-	const existing = await db
-		.select({ id: constellations.id })
-		.from(constellations)
-		.where(and(eq(constellations.userId, userId), eq(constellations.id, constellationId)))
-		.limit(1);
-}
-
-export async function syncConstellation(
+export async function syncEdges(
 	userId: string,
 	constellationId: string,
-	data: ConstellationPrototype
+	newEdges: EdgePrototype[],
+	stars: Star[]
 ) {
-	await syncStars(userId, constellationId, data.stars);
-	await syncEdges(userId, constellationId, data.edges);
-	return getConstellation(userId, constellationId);
+	const starIdMap = Object.fromEntries(stars.map((s) => [starPrototypeKey(userId)(s), s.id]));
+	const newEdgesWithStarIds = newEdges
+		.map((e) => ({
+			...e,
+			sourceId: starIdMap[starPrototypeKey(userId)(e.source)],
+			targetId: starIdMap[starPrototypeKey(userId)(e.target)]
+		}))
+		.filter((e) => e.sourceId && e.targetId);
+
+	await db.delete(edges).where(eq(edges.constellationId, constellationId));
+
+	if (newEdgesWithStarIds.length > 0) {
+		await db
+			.insert(edges)
+			.values(
+				newEdgesWithStarIds.map((e) => {
+					const insert = {
+						constellationId,
+						sourceId: e.sourceId,
+						targetId: e.targetId
+					};
+
+					console.log('insert edge', insert);
+					return insert;
+				})
+			)
+			.onConflictDoNothing();
+	}
 }
 
 /**
- * Sync constellations, adding new constellations ones and optionallyremoving old constellations
+ * Sync constellations, adding new constellations ones and optionally removing old constellations
  */
 export async function syncConstellations(
 	userId: string,
 	data: ConstellationPrototype[],
-	remove = false
+	pruneConstellations = false
 ) {
 	const existing: Pick<Constellation, 'id' | 'userId' | 'provider' | 'providerPlaylistId'>[] =
 		await db
@@ -267,7 +281,7 @@ export async function syncConstellations(
 		await db.insert(constellations).values(values).onConflictDoNothing();
 	}
 
-	if (remove) {
+	if (pruneConstellations) {
 		const newKeys = new Set(data.map((p) => constellationPrototypeKey(userId)(p)));
 		const toDelete = existing.filter((e) => !newKeys.has(constellationKey(e)));
 		await db.delete(constellations).where(

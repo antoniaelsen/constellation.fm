@@ -44,6 +44,7 @@ export interface EPlaylistMetadata {
  * Not stored in the database.
  */
 export interface ETrackMetadata {
+	isrc: string;
 	name: string;
 	artists: EArtistMetadata[];
 	album: EAlbumMetadata;
@@ -66,6 +67,11 @@ export interface Constellation {
 	stars: Star[];
 	edges: Edge[];
 	metadata?: EPlaylistMetadata;
+}
+
+export interface ConstellationMetadata {
+	playlist: EPlaylistMetadata;
+	stars: ETrackMetadata[];
 }
 
 export interface ConstellationPrototype {

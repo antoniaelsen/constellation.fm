@@ -1,21 +1,25 @@
 import { getPlaylist } from '$lib/server/api/spotify';
-import {
-	spotifyPlaylistToConstellationPrototype,
-	spotifyPlaylistMetadata
-} from '$lib/server/utils/spotify';
-import { getConstellation, syncConstellation } from '$lib/server/db/queries/constellations';
+import { spotifyPlaylistToConstellation } from '$lib/server/utils/spotify';
+import { getConstellation, syncEdges, syncStars } from '$lib/server/db/queries/constellations';
 import {
 	Provider,
-	type ConstellationPrototype,
-	type PlaylistMetadata
+	type Constellation,
+	type ConstellationMetadata,
+	type ConstellationPrototype
 } from '$lib/types/constellations';
 
+/**
+ * Get a constellation from its Spotify playlist, including ephemeral Spotify metadata
+ * @param locals
+ * @param playlistId
+ * @returns
+ */
 const getSpotifyPlaylistConstellation = async (
 	locals: App.Locals,
 	playlistId: string
 ): Promise<{
 	prototype: ConstellationPrototype | null;
-	metadata: PlaylistMetadata | null;
+	metadata: ConstellationMetadata | null;
 }> => {
 	const { spotify } = locals;
 	if (!spotify) {
@@ -23,13 +27,29 @@ const getSpotifyPlaylistConstellation = async (
 	}
 
 	const playlist = await getPlaylist(spotify, playlistId);
-	const prototype = spotifyPlaylistToConstellationPrototype(playlist);
-	const metadata = spotifyPlaylistMetadata(playlist);
+	const { prototype, metadata } = spotifyPlaylistToConstellation(playlist);
 
 	return { prototype, metadata };
 };
 
+const zipConstellationMetadata = (
+	constellation: Constellation,
+	metadata: ConstellationMetadata
+): Constellation => {
+	const starMetadata = Object.fromEntries(metadata.stars.map((star) => [star.isrc, star]));
+
+	return {
+		...constellation,
+		metadata: metadata.playlist,
+		stars: constellation.stars.map((star) => ({
+			...star,
+			metadata: starMetadata[star.isrc]
+		}))
+	};
+};
+
 export async function GET({ locals, params }) {
+	console.log('GET /api/constellations/[constellationId]', params);
 	const userId = locals.userId;
 	if (!userId) {
 		return new Response(JSON.stringify({ error: 'User not found' }), {
@@ -73,10 +93,28 @@ export async function GET({ locals, params }) {
 			});
 	}
 
+	if (!metadata) {
+		return new Response(JSON.stringify({ error: 'Failed to fetch metadata' }), {
+			status: 500
+		});
+	}
+
 	if (prototype) {
-		const update = !constellation.stars?.length ? prototype : { ...prototype, edges: [] };
-		const updated = await syncConstellation(userId, constellationId, update);
-		const response = { ...updated, metadata };
+		const stars = await syncStars(userId, constellationId, prototype.stars);
+
+		const empty = !constellation.stars?.length || !constellation.edges?.length;
+		if (empty) {
+			await syncEdges(userId, constellationId, prototype.edges, stars);
+		}
+
+		const updated = await getConstellation(userId, constellationId);
+		if (!updated) {
+			return new Response(JSON.stringify({ error: 'Failed to update constellation' }), {
+				status: 500
+			});
+		}
+
+		const response = zipConstellationMetadata(updated, metadata);
 		return new Response(JSON.stringify(response), {
 			headers: {
 				'Content-Type': 'application/json'

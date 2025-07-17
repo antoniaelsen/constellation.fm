@@ -7,7 +7,7 @@ import {
 import {
 	Provider,
 	type ConstellationPrototype,
-	type PlaylistMetadata
+	type EPlaylistMetadata
 } from '$lib/types/constellations';
 import type { MaxInt } from '@spotify/web-api-ts-sdk';
 
@@ -16,7 +16,7 @@ const getSpotifyPlaylistConstellations = async (
 	options?: { offset?: number; limit?: MaxInt<50> }
 ): Promise<{
 	prototypes: ConstellationPrototype[];
-	metadata: Record<string, PlaylistMetadata>;
+	metadata: Record<string, EPlaylistMetadata>;
 }> => {
 	const { spotify } = locals;
 	if (!spotify) {
@@ -43,7 +43,8 @@ export async function GET({ locals, url }) {
 	const prune = limit <= 0;
 
 	let prototypes: ConstellationPrototype[] = [];
-	let metadata: Record<string, PlaylistMetadata> = {};
+	let metadata: Record<string, EPlaylistMetadata> = {};
+
 	if (providers.includes(Provider.SPOTIFY)) {
 		const { prototypes: spotifyPrototypes, metadata: spotifyMetadata } =
 			await getSpotifyPlaylistConstellations(locals, {

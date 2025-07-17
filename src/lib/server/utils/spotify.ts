@@ -8,16 +8,23 @@ import type {
 } from '@spotify/web-api-ts-sdk';
 import {
 	Provider,
+	type ConstellationMetadata,
 	type ConstellationPrototype,
-	type PlaylistMetadata,
+	type ETrackMetadata,
+	type EPlaylistMetadata,
 	type StarPrototype
 } from '$lib/types/constellations';
 
+/**
+ * Get the metadata for a Spotify playlist
+ * @param playlist - The Spotify playlist
+ * @returns The metadata for the playlist
+ */
 export const spotifyPlaylistMetadata = (
 	playlist:
 		| Playlist<QueryAdditionalTypes extends undefined ? Track : TrackItem>
 		| SimplifiedPlaylist
-): PlaylistMetadata => {
+): EPl => {
 	const { name, description, images, owner } = playlist;
 	const owners = [
 		{
@@ -35,38 +42,73 @@ export const spotifyPlaylistMetadata = (
 	};
 };
 
-export const spotifyPlaylistToStarPrototypes = (
+export const spotifyTrackToETrackMetadata = (track: Track): ETrackMetadata => {
+	const { name, artists, album, external_ids } = track;
+	return {
+		isrc: external_ids?.isrc,
+		name,
+		artists: artists.map((artist) => ({
+			name: artist.name,
+			href: artist.href
+		})),
+		album: {
+			name: album.name,
+			images: album.images.map((image) => ({
+				url: image.url,
+				width: image.width,
+				height: image.height
+			}))
+		}
+	};
+};
+
+export const spotifyPlaylistToStar = (
 	playlist: Playlist<QueryAdditionalTypes extends undefined ? Track : TrackItem>
-): StarPrototype[] => {
+): { prototype: StarPrototype; metadata: ETrackMetadata }[] => {
 	const provider = Provider.SPOTIFY;
 	const { tracks } = playlist;
 
-	return tracks.items.map((playlistTrack: PlaylistedTrack<TrackItem>) => ({
-		provider,
-		providerTrackId: playlistTrack.track.id,
-		providerOrder: playlistTrack.added_at,
-		isrc: (playlistTrack.track as Track).external_ids?.isrc
-	}));
+	return tracks.items.map((playlistTrack: PlaylistedTrack<TrackItem>) => {
+		const prototype = {
+			provider,
+			providerTrackId: playlistTrack.track.id,
+			providerOrder: playlistTrack.added_at,
+			isrc: (playlistTrack.track as Track).external_ids?.isrc
+		};
+
+		// TODO(antoniae): handle episodes
+		const metadata = spotifyTrackToETrackMetadata(playlistTrack.track as Track);
+
+		return { prototype, metadata };
+	});
 };
 
-export const spotifyPlaylistToConstellationPrototype = (
+export const spotifyPlaylistToConstellation = (
 	playlist: Playlist<QueryAdditionalTypes extends undefined ? Track : TrackItem>
-): ConstellationPrototype => {
+): { prototype: ConstellationPrototype; metadata: ConstellationMetadata } => {
 	const provider = Provider.SPOTIFY;
 	const { id } = playlist;
 
-	const stars = spotifyPlaylistToStarPrototypes(playlist);
-	const edges = stars.slice(0, -1).map((star: StarPrototype, i: number) => ({
-		source: stars[i],
-		target: stars[i + 1]
+	const stars = spotifyPlaylistToStar(playlist);
+	const starPrototypes = stars.map((star) => star.prototype);
+	const edgePrototypes = starPrototypes.slice(0, -1).map((star: StarPrototype, i: number) => ({
+		source: starPrototypes[i],
+		target: starPrototypes[i + 1]
 	}));
 
-	return {
+	const prototype = {
 		provider,
 		providerPlaylistId: id,
-		stars,
-		edges
+		stars: starPrototypes,
+		edges: edgePrototypes
 	};
+
+	const metadata = {
+		playlist: spotifyPlaylistMetadata(playlist),
+		stars: stars.map((star) => star.metadata)
+	};
+
+	return { prototype, metadata };
 };
 
 export const spotifyPlaylistsToConstellationPrototypes = (
