@@ -125,7 +125,7 @@
 
 		const normalizedDistance = distanceToActive / totalLength;
 
-		return Math.exp(-5 * normalizedDistance);
+		return Math.max(Math.exp(-5 * normalizedDistance), 0.1);
 	};
 
 	useTask(() => {
