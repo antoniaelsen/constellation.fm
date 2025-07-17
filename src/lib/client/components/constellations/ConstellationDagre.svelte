@@ -112,12 +112,20 @@
 		});
 	});
 
-	const calculateEdgeOpacity = (i, activeIndex, totalLength) => {
+	const calculateEdgeOpacity = (
+		i: number,
+		activeIndex: number | null,
+		totalLength: number
+	): number => {
+		if (activeIndex === null) {
+			return 0;
+		}
+
 		let distanceToActive = i >= activeIndex ? totalLength - i + activeIndex : activeIndex - i;
 
 		const normalizedDistance = distanceToActive / totalLength;
 
-		return Math.exp(-5 * (1 - normalizedDistance));
+		return Math.exp(-5 * normalizedDistance);
 	};
 
 	useTask(() => {
