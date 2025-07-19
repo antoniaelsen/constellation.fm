@@ -84,7 +84,7 @@
 		<T.Group position={platePosition} quaternion={plateQuaternion} scale={10}>
 			<HTML transform={true} occlude={'blending'}>
 				<Nameplate
-					className={hovered ? 'opacity-100' : 'opacity-50'}
+					className={hovered || active ? 'opacity-100' : 'opacity-50'}
 					name={metadata.name ?? ''}
 					href={metadata.href ?? ''}
 					artists={metadata.artists}

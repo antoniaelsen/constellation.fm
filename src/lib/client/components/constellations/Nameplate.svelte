@@ -14,12 +14,12 @@
 
 <Card
 	{...rest}
-	class="flex w-max flex-row flex-nowrap items-center justify-start gap-3 overflow-hidden px-4 py-3 {className}"
+	class="flex w-max flex-row flex-nowrap items-center justify-start gap-3 overflow-hidden px-4 py-3 select-none {className}"
 >
 	<Avatar src="https://placecats.com/300/200" cornerStyle="rounded" class="pointer-events-none" />
 
 	<div class="flex flex-col">
-		<A class="text-gray-900 hover:no-underline dark:text-gray-100" size="md" {href}>
+		<A class="text-gray-900 select-none hover:no-underline dark:text-gray-100" size="md" {href}>
 			{name}
 		</A>
 
@@ -29,14 +29,14 @@
 					class="flex-inherit flex flex-row flex-nowrap items-center justify-start gap-0 overflow-hidden text-gray-500 dark:text-gray-500"
 				>
 					<A
-						class="text-ellipsis whitespace-nowrap text-inherit dark:text-inherit"
+						class="text-ellipsis whitespace-nowrap text-inherit select-none dark:text-inherit"
 						size="sm"
 						href={artist.href}
 					>
 						{artist.name}
 					</A>
 					{#if artist !== artists[artists.length - 1]}
-						<P class="text-inherit dark:text-inherit">,</P>
+						<P class="text-inherit select-none dark:text-inherit">,</P>
 					{/if}
 				</div>
 			{/each}
