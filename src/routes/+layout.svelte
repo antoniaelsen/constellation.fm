@@ -2,12 +2,12 @@
 	import { QueryClient, QueryClientProvider } from '@sveltestack/svelte-query';
 	import { Avatar } from 'flowbite-svelte';
 
-	import Login from '../lib/client/components/login.svelte';
-	import Toolbar from '../lib/client/components/toolbar.svelte';
+	import Login from '../lib/client/components/Login.svelte';
+	import Toolbar from '../lib/client/components/Toolbar.svelte';
 	import '../app.css';
 
 	import { page } from '$app/stores';
-	import SpotifyConnect from '$lib/client/components/spotify-connect.svelte';
+	import SpotifyConnect from '$lib/client/components/SpotifyConnect.svelte';
 
 	let { children } = $props();
 	let session = $derived($page.data.session);
@@ -33,7 +33,7 @@
 					{/if}
 				</div>
 
-				<div class="fixed bottom-4 left-1/2 -translate-x-1/2 transform">
+				<div class="fixed top-4 left-1/2 -translate-x-1/2 transform">
 					<Toolbar activeUrl={$page.url.pathname} />
 				</div>
 			{/if}

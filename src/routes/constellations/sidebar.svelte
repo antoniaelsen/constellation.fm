@@ -2,9 +2,9 @@
 	import { Provider, type Constellation } from '$lib/types/constellations';
 	import { Avatar, Button, Drawer, Hr, Listgroup, ListgroupItem, P } from 'flowbite-svelte';
 	import { ChevronRightOutline, ChevronLeftOutline } from 'flowbite-svelte-icons';
-	import SortDropdown from '$lib/client/components/sort-dropdown.svelte';
-	import Search from '$lib/client/components/search.svelte';
-	import Skeleton from '$lib/client/components/skeleton.svelte';
+	import SortDropdown from '$lib/client/components/SortDropdown.svelte';
+	import Search from '$lib/client/components/Search.svelte';
+	import Skeleton from '$lib/client/components/Skeleton.svelte';
 	import { SortOrder } from '$lib/types';
 
 	interface Props {
