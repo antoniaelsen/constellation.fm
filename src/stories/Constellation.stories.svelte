@@ -20,7 +20,7 @@
 
 <Story
 	name="Basic"
-	args={{ activeNodeId: '1', showNameplates: false, constellation: CONSTELLATION }}
+	args={{ activeNodeId: null, showNameplates: false, constellation: CONSTELLATION }}
 >
 	{#snippet template(args)}
 		<Constellation

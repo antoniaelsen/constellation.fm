@@ -16,7 +16,7 @@
 
 <Card
 	{...rest}
-	class="flex w-max flex-row flex-nowrap  overflow-hidden px-4 py-3 select-none {className}"
+	class="flex w-max flex-row flex-nowrap overflow-hidden px-4 py-3 select-none {className}"
 >
 	<TrackInfo {name} {href} {artists} {album} />
 </Card>

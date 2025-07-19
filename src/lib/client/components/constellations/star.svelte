@@ -49,10 +49,9 @@
 		right.cross(camera.current.up).normalize();
 
 		const position = direction.multiplyScalar(100);
-		position.add(right.multiplyScalar(30));
+		position.add(right.multiplyScalar(10));
 		platePosition = position.toArray();
 
-		// Simply copy the camera's quaternion to make the plate parallel to view plane
 		plateQuaternion = camera.current.quaternion.toArray();
 	});
 
@@ -82,9 +81,9 @@
 
 	{#if showNameplate}
 		<T.Group position={platePosition} quaternion={plateQuaternion} scale={10}>
-			<HTML transform={true} occlude={'blending'}>
+			<HTML transform={true} occlude={'raycast'}>
 				<Nameplate
-					className={hovered || active ? 'opacity-100' : 'opacity-50'}
+					className={`${hovered || active ? 'opacity-100' : 'opacity-50'} translate-x-1/2`}
 					name={metadata.name ?? ''}
 					href={metadata.href ?? ''}
 					artists={metadata.artists}

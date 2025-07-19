@@ -115,13 +115,9 @@
 		});
 	});
 
-	const calculateEdgeOpacity = (
-		i: number,
-		activeIndex: number | null,
-		totalLength: number
-	): number => {
-		if (activeIndex === null) {
-			return 0;
+	const calculateEdgeOpacity = (i: number, activeIndex: number, totalLength: number): number => {
+		if (activeIndex < 0) {
+			return EDGE_OPACITY_MIN;
 		}
 
 		let distanceToActive = i >= activeIndex ? totalLength - i + activeIndex : activeIndex - i;
