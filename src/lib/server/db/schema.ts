@@ -14,6 +14,7 @@ import {
 import type { AdapterAccountType } from 'next-auth/adapters';
 import { db } from '.';
 import { Provider } from '../../types/constellations';
+import { sql } from 'drizzle-orm';
 
 export function enumToPgEnum<T extends Record<string, any>>(
 	myEnum: T
@@ -160,7 +161,8 @@ export const stars = pgTable(
 			.references(() => constellations.id, { onDelete: 'cascade' }),
 		provider: providerEnum('provider').notNull(),
 		providerTrackId: text('providerTrackId').notNull(),
-		providerOrder: text('providerOrder').notNull(),
+		providerOrder: integer('providerOrder').notNull(),
+		providerTimestamp: timestamp({ mode: 'date' }).notNull(),
 		isrc: text('isrc').notNull()
 	},
 	(star) => ({

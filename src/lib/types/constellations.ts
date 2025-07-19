@@ -46,6 +46,7 @@ export interface EPlaylistMetadata {
 export interface ETrackMetadata {
 	isrc: string;
 	name: string;
+	href: string;
 	artists: EArtistMetadata[];
 	album: EAlbumMetadata;
 }
@@ -92,19 +93,22 @@ export interface EdgePrototype {
 	target: StarPrototype;
 }
 
-export interface Star {
+export interface Star extends StarPrototype {
 	id: string;
 	constellationId: string;
-	isrc: string;
-	provider: Provider;
-	providerTrackId: string;
-	providerOrder: string; // The order (sequential) of the track in the provider's playlist
 	metadata?: ETrackMetadata;
 }
 
 export interface StarPrototype {
 	isrc: string;
+
 	provider: Provider;
+
 	providerTrackId: string;
-	providerOrder: string;
+
+	// The order (sequential) of the track in the provider's playlist
+	providerOrder: number;
+
+	// The datetime of the track in the provider's playlist (to differentiate between multiple instances of the same track)
+	providerTimestamp: Date;
 }

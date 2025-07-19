@@ -68,11 +68,12 @@ export const spotifyPlaylistToStar = (
 	const provider = Provider.SPOTIFY;
 	const { tracks } = playlist;
 
-	return tracks.items.map((playlistTrack: PlaylistedTrack<TrackItem>) => {
+	return tracks.items.map((playlistTrack: PlaylistedTrack<TrackItem>, index: number) => {
 		const prototype = {
 			provider,
 			providerTrackId: playlistTrack.track.id,
-			providerOrder: playlistTrack.added_at,
+			providerTimestamp: new Date(playlistTrack.added_at),
+			providerOrder: index,
 			isrc: (playlistTrack.track as Track).external_ids?.isrc
 		};
 

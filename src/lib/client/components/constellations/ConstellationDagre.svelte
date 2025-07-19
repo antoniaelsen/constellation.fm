@@ -8,6 +8,7 @@
 
 	const SCALE_STAR = 5;
 	const SCALE_LINK = 0.5;
+	const EDGE_OPACITY_MIN = 0.2;
 
 	interface D3ForceNode {
 		index: number;
@@ -25,6 +26,7 @@
 	interface Props {
 		constellation: Constellation;
 		activeNodeId: string | null;
+		showNameplates?: boolean;
 		linkWidth?: number;
 		chargeStrength?: number;
 		centerStrength?: number;
@@ -38,6 +40,7 @@
 		constellation,
 
 		activeNodeId,
+		showNameplates,
 
 		linkWidth = 1,
 
@@ -125,7 +128,7 @@
 
 		const normalizedDistance = distanceToActive / totalLength;
 
-		return Math.max(Math.exp(-5 * normalizedDistance), 0.1);
+		return Math.max(Math.exp(-5 * normalizedDistance), EDGE_OPACITY_MIN);
 	};
 
 	useTask(() => {
@@ -141,6 +144,7 @@
 		position={[star.x || 0, star.y || 0, star.z || 0]}
 		scale={SCALE_STAR}
 		metadata={star.star.metadata}
+		showNameplate={showNameplates}
 		onClick={() => {}}
 	/>
 {/each}

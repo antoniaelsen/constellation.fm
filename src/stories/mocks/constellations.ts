@@ -30,7 +30,8 @@ export const CONSTELLATIONS: Constellation[] = [
 			constellationId: i.toString(),
 			provider: Provider.SPOTIFY,
 			providerTrackId: s.toString(),
-			providerOrder: s.toString(),
+			providerTimestamp: new Date().toISOString(),
+			providerOrder: s,
 			isrc: `ISRC-${s}`,
 			metadata: {
 				name: `Mock Track ${s}`,
@@ -50,5 +51,6 @@ export const CONSTELLATIONS: Constellation[] = [
 export const mockTrack = (): ETrackMetadata => ({
 	name: 'Mock Track',
 	artists: [MOCK_ARTIST],
-	album: MOCK_ALBUM
+	album: MOCK_ALBUM,
+	isrc: 'ISRC-1234567890'
 });

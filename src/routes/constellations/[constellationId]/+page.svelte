@@ -3,7 +3,9 @@
 	import { page } from '$app/stores';
 	import Constellation from '$lib/client/components/constellations/Constellation.svelte';
 
-	const req = $derived(useConstellation($page.params.constellationId, { retry: false }));
+	const req = $derived(
+		useConstellation($page.params.constellationId, { retry: false, refetchOnWindowFocus: false })
+	);
 	$inspect($page.params.constellationId);
 	$inspect($req.data);
 

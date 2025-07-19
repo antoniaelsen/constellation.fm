@@ -18,4 +18,7 @@
 	const CONSTELLATION = CONSTELLATIONS[0];
 </script>
 
-<Story name="Basic" args={{ activeNodeId: '1', constellation: CONSTELLATION }} />
+<Story
+	name="Basic"
+	args={{ activeNodeId: '1', showNameplates: true, constellation: CONSTELLATION }}
+/>

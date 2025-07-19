@@ -26,7 +26,7 @@
 		activeColor = 'cyan',
 		color = 'white',
 		scale = 1,
-		showNameplate = $bindable(false),
+		showNameplate = $bindable(true),
 		metadata,
 		onClick,
 		...rest
@@ -81,9 +81,20 @@
 	</T.Mesh>
 
 	{#if showNameplate}
-		<T.Group position={platePosition} quaternion={plateQuaternion} scale={5}>
+		<T.Group position={platePosition} quaternion={plateQuaternion} scale={10}>
 			<HTML transform={true} occlude={'blending'}>
-				<Nameplate name={metadata.name} href={metadata.href} artists={metadata.artists} />
+				<Nameplate
+					className={hovered ? 'opacity-100' : 'opacity-50'}
+					name={metadata.name ?? ''}
+					href={metadata.href ?? ''}
+					artists={metadata.artists}
+					onpointerenter={() => {
+						hovered = true;
+					}}
+					onpointerleave={() => {
+						hovered = false;
+					}}
+				/>
 			</HTML>
 		</T.Group>
 	{/if}

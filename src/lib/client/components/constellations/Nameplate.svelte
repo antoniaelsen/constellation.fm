@@ -1,18 +1,20 @@
 <script lang="ts">
 	import type { EArtistMetadata } from '$lib/types/constellations';
-	import { A, Avatar, Card, P } from 'flowbite-svelte';
+	import { A, Avatar, Card, P, type CardProps } from 'flowbite-svelte';
 
-	interface Props {
+	interface Props extends Omit<CardProps, 'children'> {
+		className?: string;
 		name: string;
 		href: string;
 		artists: EArtistMetadata[];
 	}
 
-	let { name, href, artists }: Props = $props();
+	let { name, href, artists, className, ...rest }: Props = $props();
 </script>
 
 <Card
-	class="flex w-max flex-row flex-nowrap items-center justify-start gap-3 overflow-hidden px-4 py-3"
+	{...rest}
+	class="flex w-max flex-row flex-nowrap items-center justify-start gap-3 overflow-hidden px-4 py-3 {className}"
 >
 	<Avatar src="https://placecats.com/300/200" cornerStyle="rounded" class="pointer-events-none" />
 

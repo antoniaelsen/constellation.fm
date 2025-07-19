@@ -19,12 +19,19 @@ const constellationPrototypeKey =
 		`${userId}:${c.provider}:${c.providerPlaylistId}`;
 
 const starKey = (
-	s: Pick<Star, 'constellationId' | 'provider' | 'providerTrackId' | 'providerOrder'>
-) => `${s.constellationId}:${s.provider}:${s.providerTrackId}:${s.providerOrder}`;
+	s: Pick<
+		Star,
+		'constellationId' | 'provider' | 'providerTrackId' | 'providerTimestamp' | 'providerOrder'
+	>
+) =>
+	`${s.constellationId}:${s.provider}:${s.providerTrackId}:${s.providerTimestamp}:${s.providerOrder}`;
 
 const starPrototypeKey =
-	(userId: string) => (s: Pick<StarPrototype, 'provider' | 'providerTrackId' | 'providerOrder'>) =>
-		`${userId}:${s.provider}:${s.providerTrackId}:${s.providerOrder}`;
+	(userId: string) =>
+	(
+		s: Pick<StarPrototype, 'provider' | 'providerTrackId' | 'providerTimestamp' | 'providerOrder'>
+	) =>
+		`${userId}:${s.provider}:${s.providerTrackId}:${s.providerTimestamp}:${s.providerOrder}`;
 
 export async function getConstellation(
 	userId: string,
@@ -47,7 +54,8 @@ export async function getConstellation(
 	const constellationStars: Star[] = await db
 		.select()
 		.from(stars)
-		.where(eq(stars.constellationId, constellation[0].id));
+		.where(eq(stars.constellationId, constellation[0].id))
+		.orderBy(stars.providerOrder);
 
 	const constellationEdges: Edge[] = await db
 		.select()
@@ -189,6 +197,7 @@ export async function syncStars(
 					provider: sp.provider,
 					providerTrackId: sp.providerTrackId,
 					providerOrder: sp.providerOrder,
+					providerTimestamp: sp.providerTimestamp,
 					isrc: sp.isrc
 				};
 				await db.insert(stars).values(insert).onConflictDoNothing();
