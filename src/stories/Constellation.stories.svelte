@@ -20,5 +20,13 @@
 
 <Story
 	name="Basic"
-	args={{ activeNodeId: '1', showNameplates: true, constellation: CONSTELLATION }}
-/>
+	args={{ activeNodeId: '1', showNameplates: false, constellation: CONSTELLATION }}
+>
+	{#snippet template(args)}
+		<Constellation
+			activeNodeId={args.activeNodeId}
+			constellation={args.constellation}
+			showNameplates={args.showNameplates}
+		/>
+	{/snippet}
+</Story>

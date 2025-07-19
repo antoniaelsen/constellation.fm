@@ -47,7 +47,7 @@
 	<main class="z-1 flex h-screen items-center justify-center p-4">
 		<Canvas>
 			<Scene>
-				<Stars factor={30} depth={500} speed={1} />
+				<Stars factor={30} depth={1000} speed={1} />
 				{@render children()}
 			</Scene>
 		</Canvas>

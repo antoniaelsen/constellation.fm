@@ -5,9 +5,10 @@
 	interface Props {
 		activeNodeId: string | null;
 		constellation: Constellation;
+		showNameplates: boolean;
 	}
 
-	let { activeNodeId, constellation }: Props = $props();
+	let { activeNodeId, constellation, showNameplates }: Props = $props();
 </script>
 
-<ConstellationDagre {activeNodeId} {constellation} />
+<ConstellationDagre {activeNodeId} {constellation} {showNameplates} />
