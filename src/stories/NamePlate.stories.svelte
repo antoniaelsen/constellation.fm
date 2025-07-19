@@ -1,10 +1,10 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
-	import NamePlate from '$lib/client/components/constellations/Nameplate.svelte';
+	import Nameplate from '$lib/client/components/Nameplate.svelte';
 
 	const { Story } = defineMeta({
-		title: 'constellations/NamePlate',
-		component: NamePlate,
+		title: 'Nameplate',
+		component: Nameplate,
 		tags: ['autodocs'],
 		parameters: {
 			layout: 'fullscreen'
@@ -21,6 +21,10 @@
 		artists: [
 			{ name: 'Mock Artist 1', href: '' },
 			{ name: 'Mock Artist 2', href: '' }
-		]
+		],
+		album: {
+			name: 'Mock Album',
+			images: [{ url: 'https://placecats.com/200/200' }]
+		}
 	}}
 />

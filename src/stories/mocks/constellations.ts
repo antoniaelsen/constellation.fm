@@ -16,7 +16,7 @@ export const MOCK_ARTIST: EArtistMetadata = {
 
 export const MOCK_ALBUM: EAlbumMetadata = {
 	name: 'Mock Album',
-	images: []
+	images: [{ url: 'https://placecats.com/200/200', width: 200, height: 200 }]
 };
 
 export const CONSTELLATIONS: Constellation[] = [
@@ -30,7 +30,7 @@ export const CONSTELLATIONS: Constellation[] = [
 			constellationId: i.toString(),
 			provider: Provider.SPOTIFY,
 			providerTrackId: s.toString(),
-			providerTimestamp: new Date().toISOString(),
+			providerTimestamp: new Date(),
 			providerOrder: s,
 			isrc: `ISRC-${s}`,
 			metadata: {

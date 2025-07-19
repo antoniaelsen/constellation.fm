@@ -25,7 +25,7 @@ export interface EAlbumMetadata {
  */
 export interface EArtistMetadata {
 	name: string;
-	href: string;
+	href?: string;
 }
 
 /**
@@ -44,9 +44,9 @@ export interface EPlaylistMetadata {
  * Not stored in the database.
  */
 export interface ETrackMetadata {
-	isrc: string;
 	name: string;
-	href: string;
+	isrc?: string;
+	href?: string;
 	artists: EArtistMetadata[];
 	album: EAlbumMetadata;
 }

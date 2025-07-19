@@ -1,22 +1,19 @@
 <script lang="ts">
-	import type { EArtistMetadata } from '$lib/types/constellations';
-	import { A, Avatar, Card, P, type CardProps } from 'flowbite-svelte';
+	import type { EAlbumMetadata, EArtistMetadata } from '$lib/types/constellations';
+	import { A, Avatar, P } from 'flowbite-svelte';
 
-	interface Props extends Omit<CardProps, 'children'> {
-		className?: string;
-		name: string;
-		href: string;
+	interface Props {
+		album?: EAlbumMetadata;
 		artists: EArtistMetadata[];
+		href?: string;
+		name: string;
 	}
 
-	let { name, href, artists, className, ...rest }: Props = $props();
+	let { name, href, artists, album }: Props = $props();
 </script>
 
-<Card
-	{...rest}
-	class="flex w-max flex-row flex-nowrap items-center justify-start gap-3 overflow-hidden px-4 py-3 select-none {className}"
->
-	<Avatar src="https://placecats.com/300/200" cornerStyle="rounded" class="pointer-events-none" />
+<div class="flex flex-row flex-nowrap items-center justify-start gap-3">
+	<Avatar src={album?.images[0]?.url} cornerStyle="rounded" class="pointer-events-none" />
 
 	<div class="flex flex-col">
 		<A class="text-gray-900 select-none hover:no-underline dark:text-gray-100" size="md" {href}>
@@ -42,4 +39,4 @@
 			{/each}
 		</div>
 	</div>
-</Card>
+</div>

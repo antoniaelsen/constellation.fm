@@ -3,7 +3,7 @@
 	import { HTML, interactivity } from '@threlte/extras';
 	import { Spring } from 'svelte/motion';
 	import * as THREE from 'three';
-	import Nameplate from './Nameplate.svelte';
+	import Nameplate from '../Nameplate.svelte';
 	import type { ETrackMetadata } from '$lib/types/constellations';
 
 	interactivity();
@@ -88,6 +88,7 @@
 					name={metadata.name ?? ''}
 					href={metadata.href ?? ''}
 					artists={metadata.artists}
+					album={metadata.album}
 					onpointerenter={() => {
 						hovered = true;
 					}}
