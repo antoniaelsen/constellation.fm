@@ -5,6 +5,7 @@
 
 	import type { Constellation, Edge as IEdge, Star as IStar } from '$lib/types/constellations';
 	import Star from './Star.svelte';
+	import type { Star as StarType } from '$lib/types/constellations';
 
 	const SCALE_STAR = 5;
 	const SCALE_LINK = 0.5;
@@ -15,6 +16,10 @@
 		x: number;
 		y: number;
 		z: number;
+	}
+
+	interface StarD3ForceNode extends D3ForceNode {
+		star: StarType;
 	}
 
 	interface D3ForceLink {
@@ -53,7 +58,7 @@
 		velocityDecay = 0.4
 	}: Props = $props();
 
-	let stars = $state<D3ForceNode[]>([]);
+	let stars = $state<StarD3ForceNode[]>([]);
 	let links = $state<D3ForceLink[]>([]);
 
 	const sim = $derived.by(() => {
@@ -137,6 +142,7 @@
 {#each stars as star (star.index)}
 	<Star
 		active={star.index === activeStarIndex}
+		index={star.star.providerOrder}
 		position={[star.x || 0, star.y || 0, star.z || 0]}
 		scale={SCALE_STAR}
 		metadata={star.star.metadata}

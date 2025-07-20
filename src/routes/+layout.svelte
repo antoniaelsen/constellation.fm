@@ -20,12 +20,10 @@
 <QueryClientProvider client={queryClient}>
 	<div class="flex h-screen w-screen flex-col overflow-hidden bg-gray-100 dark:bg-gray-900">
 		{#if session}
-			{#if !spotify}
+			{#if !spotify?.webApi || !spotify?.playbackApi}
 				<SpotifyConnect class="flex-grow" />
 			{:else}
-				<div class="flex-grow">
-					{@render children()}
-				</div>
+				{@render children()}
 
 				<div class="fixed top-4 right-4">
 					{#if user?.image}

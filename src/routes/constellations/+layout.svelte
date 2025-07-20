@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { Canvas } from '@threlte/core';
 	import { Stars } from '@threlte/extras';
-	import { writable } from 'svelte/store';
 
 	import { page } from '$app/stores';
 	import { useAllConstellations } from '$lib/client/api/constellations';
 	import Scene from '$lib/client/components/constellations/Scene.svelte';
-	import { Provider } from '$lib/types/constellations';
 
 	import Sidebar from './sidebar.svelte';
+	import SpotifyPlayerBar from '$lib/client/components/player/SpotifyPlayerBar.svelte';
 
 	let { children } = $props();
 
@@ -23,15 +22,10 @@
 	}
 
 	const req = useAllConstellations({ refetchOnWindowFocus: false, retry: false });
-	// const req = writable({
-	// 	data: CONSTELLATIONS,
-	// 	error: null,
-	// 	isLoading: false
-	// });
 </script>
 
 <!--  -->
-<div class="relative">
+<div class="relative flex flex-grow flex-col">
 	<div class="fixed top-0 left-0 z-10">
 		<Sidebar
 			activeUrl={$page.url.pathname}
@@ -44,7 +38,7 @@
 			{onClose}
 		/>
 	</div>
-	<main class="z-1 flex h-screen items-center justify-center p-4">
+	<main class="z-1 flex flex-auto items-center justify-center p-4">
 		<Canvas>
 			<Scene>
 				<Stars factor={30} depth={1000} speed={1} />
@@ -52,4 +46,6 @@
 			</Scene>
 		</Canvas>
 	</main>
+
+	<SpotifyPlayerBar className="flex-initial" />
 </div>

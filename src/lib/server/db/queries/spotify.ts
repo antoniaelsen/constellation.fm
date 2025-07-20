@@ -1,23 +1,28 @@
-import type { AccessToken } from '@spotify/web-api-ts-sdk';
 import { eq } from 'drizzle-orm';
 
-import { refreshTokens } from '$lib/server/api/spotify';
+import {
+	formatScope,
+	refreshTokens,
+	SPOTIFY_SCOPES,
+	SPOTIFY_SCOPES_PLAYBACK
+} from '$lib/server/api/spotify';
 import { encrypt, decrypt } from '$lib/server/db/queries/utils';
 import type { SpotifyAuth } from '$lib/types';
 import { db } from '../index';
 import { spotifyConnections } from '../schema';
 
-export async function createSpotifyConnection(userId: string, data: SpotifyAuth) {
-	const expires = Date.now() + data.expires_in * 1000;
-	if (!data) {
+export async function upsertSpotifyConnection(userId: string, tokenData: SpotifyAuth) {
+	const expires = Date.now() + tokenData.expires_in * 1000;
+	if (!tokenData) {
 		return;
 	}
+
 	const values = {
-		accessToken: encrypt(data.access_token),
-		refreshToken: encrypt(data.refresh_token),
-		tokenType: data.token_type,
-		scope: data.scope,
-		expires
+		accessToken: encrypt(tokenData.access_token),
+		refreshToken: encrypt(tokenData.refresh_token),
+		tokenType: tokenData.token_type,
+		scope: formatScope(tokenData.scope),
+		expires: expires
 	};
 
 	return await db
@@ -27,31 +32,48 @@ export async function createSpotifyConnection(userId: string, data: SpotifyAuth)
 			userId
 		})
 		.onConflictDoUpdate({
-			target: spotifyConnections.userId,
+			target: [spotifyConnections.userId, spotifyConnections.scope],
 			set: values
 		});
 }
 
-export async function getSpotifyConnection(userId: string): Promise<SpotifyAuth | null> {
+export async function getSpotifyConnection(userId: string): Promise<{
+	webApi: SpotifyAuth | null;
+	playbackApi: SpotifyAuth | null;
+} | null> {
+	console.log('SPOTIFY - getSpotifyConnection - userId', userId);
 	if (!userId) {
+		console.log('SPOTIFY - getSpotifyConnection - no userId');
 		return null;
 	}
 
-	const connection = await db
+	const connections = await db
 		.select()
 		.from(spotifyConnections)
-		.where(eq(spotifyConnections.userId, userId))
-		.limit(1);
+		.where(eq(spotifyConnections.userId, userId));
 
-	if (connection.length === 0) {
+	if (connections.length === 0) {
 		return null;
 	}
 
-	const conn = connection[0];
+	const decryptOrRefresh = async (
+		conn: typeof spotifyConnections.$inferSelect | null
+	): Promise<SpotifyAuth | null> => {
+		if (!conn) {
+			return null;
+		}
 
-	const shouldRefresh = conn.expires <= Date.now();
-	if (!shouldRefresh) {
-		const expiresIn = conn.expires - Date.now();
+		const expired = conn.expires <= Date.now();
+		const expiresIn = expired ? 0 : conn.expires - Date.now();
+
+		if (expired) {
+			const refreshed = await refreshSpotifyConnection(userId, decrypt(conn.refreshToken));
+			if (!refreshed) {
+				return null;
+			}
+			return refreshed;
+		}
+
 		return {
 			access_token: decrypt(conn.accessToken),
 			refresh_token: decrypt(conn.refreshToken),
@@ -59,10 +81,17 @@ export async function getSpotifyConnection(userId: string): Promise<SpotifyAuth 
 			expires_in: expiresIn,
 			scope: conn.scope
 		};
-	}
+	};
 
-	const { refreshToken } = conn;
-	return refreshSpotifyConnection(userId, refreshToken);
+	const scopeWebApi = formatScope(SPOTIFY_SCOPES);
+	const scopePlaybackApi = formatScope(SPOTIFY_SCOPES_PLAYBACK);
+	const existingWebApi = connections.find((conn) => conn.scope === scopeWebApi);
+	const existingPlaybackApi = connections.find((conn) => conn.scope === scopePlaybackApi);
+
+	return {
+		webApi: existingWebApi ? await decryptOrRefresh(existingWebApi) : null,
+		playbackApi: existingPlaybackApi ? await decryptOrRefresh(existingPlaybackApi) : null
+	};
 }
 
 export async function refreshSpotifyConnection(
@@ -107,7 +136,7 @@ export async function refreshSpotifyConnection(
 		refresh_token,
 		token_type,
 		expires_in,
-		scope
+		scope: formatScope(scope)
 	};
 }
 

@@ -1,15 +1,19 @@
 <script lang="ts">
 	import Player, { type Props as PlayerProps } from './Player.svelte';
 	import TrackInfo from '../TrackInfo.svelte';
+	import type { CardProps } from 'flowbite-svelte';
 
-	interface Props extends PlayerProps {}
+	export interface Props extends PlayerProps {
+		className?: string;
+	}
 
 	let {
-		currentTrack,
-		duration,
-		position,
-		isActive,
-		isPaused,
+		className,
+		currentTrack = null,
+		duration = 0,
+		position = 0,
+		isActive = false,
+		isPaused = true,
 		onNextTrack,
 		onPreviousTrack,
 		onSeek,
@@ -19,10 +23,16 @@
 	$inspect(currentTrack);
 </script>
 
-<div class="flex items-center gap-8 p-4">
-	{#if currentTrack}
-		<TrackInfo name={currentTrack.name} artists={currentTrack.artists} album={currentTrack.album} />
-	{/if}
+<div class={`flex items-center gap-8 p-4`}>
+	<div class="flex-1">
+		{#if currentTrack}
+			<TrackInfo
+				name={currentTrack.name}
+				artists={currentTrack.artists}
+				album={currentTrack.album}
+			/>
+		{/if}
+	</div>
 
 	<Player
 		{currentTrack}
@@ -35,4 +45,6 @@
 		{onPreviousTrack}
 		{onNextTrack}
 	/>
+
+	<div class="flex-1"></div>
 </div>

@@ -11,8 +11,15 @@ export interface Session extends SvelteKitSession {
 		id: string;
 	};
 	spotify: {
-		expires: number;
-		scopes: string;
+		webApi: {
+			expires: number;
+			scopes: string;
+		} | null;
+		playbackApi: {
+			accessToken: string;
+			expires: number;
+			scopes: string;
+		} | null;
 	} | null;
 }
 

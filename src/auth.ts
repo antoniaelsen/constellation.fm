@@ -11,10 +11,22 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 	callbacks: {
 		async session({ session, user }): Promise<Session> {
 			const spotifyDb = await getSpotifyConnection(user.id);
+
 			const spotify = spotifyDb
 				? {
-						expires: spotifyDb.expires!,
-						scopes: spotifyDb.scope
+						webApi: spotifyDb.webApi
+							? {
+									expires: spotifyDb.webApi.expires_in + Date.now(),
+									scopes: spotifyDb.webApi.scope
+								}
+							: null,
+						playbackApi: spotifyDb.playbackApi
+							? {
+									accessToken: spotifyDb.playbackApi.access_token,
+									expires: spotifyDb.playbackApi.expires_in + Date.now(),
+									scopes: spotifyDb.playbackApi.scope
+								}
+							: null
 					}
 				: null;
 

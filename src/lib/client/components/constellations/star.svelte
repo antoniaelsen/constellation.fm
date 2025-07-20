@@ -3,8 +3,9 @@
 	import { HTML, interactivity } from '@threlte/extras';
 	import { Spring } from 'svelte/motion';
 	import * as THREE from 'three';
-	import Nameplate from '../Nameplate.svelte';
+
 	import type { ETrackMetadata } from '$lib/types/constellations';
+	import Nameplate from '../Nameplate.svelte';
 
 	interactivity();
 
@@ -13,8 +14,11 @@
 		activeColor?: string;
 		color?: string;
 		scale?: number;
+
+		index: number;
+		metadata?: ETrackMetadata;
 		showNameplate?: boolean;
-		metadata: ETrackMetadata;
+
 		onClick: () => void;
 	}
 
@@ -27,6 +31,7 @@
 		color = 'white',
 		scale = 1,
 		showNameplate = $bindable(true),
+		index,
 		metadata,
 		onClick,
 		...rest
@@ -79,22 +84,32 @@
 		<T.MeshBasicMaterial color={active ? activeColor : color} side={THREE.DoubleSide} />
 	</T.Mesh>
 
-	{#if showNameplate}
+	{#if showNameplate && metadata}
 		<T.Group position={platePosition} quaternion={plateQuaternion} scale={10}>
 			<HTML transform={true} occlude={'raycast'}>
-				<Nameplate
-					className={`${hovered || active ? 'opacity-100' : 'opacity-50'} translate-x-1/2`}
-					name={metadata.name ?? ''}
-					href={metadata.href ?? ''}
-					artists={metadata.artists}
-					album={metadata.album}
+				<div
 					onpointerenter={() => {
 						hovered = true;
 					}}
 					onpointerleave={() => {
 						hovered = false;
 					}}
-				/>
+				>
+					<Nameplate
+						className={`${hovered || active ? 'opacity-100' : 'opacity-50'} translate-x-1/2 `}
+						name={metadata.name ?? ''}
+						href={metadata.href ?? ''}
+						artists={metadata.artists}
+						album={metadata.album}
+						{index}
+						onpointerenter={() => {
+							hovered = true;
+						}}
+						onpointerleave={() => {
+							hovered = false;
+						}}
+					/>
+				</div>
 			</HTML>
 		</T.Group>
 	{/if}

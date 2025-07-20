@@ -26,6 +26,7 @@ export interface EAlbumMetadata {
 export interface EArtistMetadata {
 	name: string;
 	href?: string;
+	genres?: string[];
 }
 
 /**
@@ -43,12 +44,47 @@ export interface EPlaylistMetadata {
  *
  * Not stored in the database.
  */
+export interface ETrackFeatures {
+	// Key in pitch class notation (e.g. 0 = C, 1 = C#, 2 = D, etc.)
+	key?: number;
+
+	mode?: 'major' | 'minor';
+
+	// Tempo (bpm)
+	tempo?: number;
+
+	timeSignature?: {
+		beatsPerBar: number;
+		beatType: number;
+	};
+
+	// Spotify-specific analysis
+
+	// How danceable the track is (0-1)
+	danceability?: number;
+
+	// How energetic the track is (0-1)
+	energy?: number;
+
+	// How instrumental the track is (0-1)
+	instrumentalness?: number;
+
+	// How happy/positive the track is (0-1)
+	valence?: number;
+}
+
+/**
+ * Ephemeral metadata for a track, fetched from the provider's API.
+ *
+ * Not stored in the database.
+ */
 export interface ETrackMetadata {
-	name: string;
+	album: EAlbumMetadata;
+	features?: ETrackFeatures;
+	artists: EArtistMetadata[];
 	isrc?: string;
 	href?: string;
-	artists: EArtistMetadata[];
-	album: EAlbumMetadata;
+	name: string;
 }
 
 export interface ImageMetadata {

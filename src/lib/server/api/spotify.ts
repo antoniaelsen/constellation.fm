@@ -38,6 +38,13 @@ export const SPOTIFY_SCOPES = [
 	'user-read-private'
 ];
 
+export const SPOTIFY_SCOPES_PLAYBACK = ['user-read-email', 'user-read-private', 'streaming'];
+
+export const formatScope = (scope: string | string[]) => {
+	const scopes = typeof scope === 'string' ? scope.split(' ') : scope;
+	return scopes.sort().join(' ');
+};
+
 interface SpotifyError extends Error {
 	cause: {
 		code: number;
@@ -164,7 +171,8 @@ export const getTokens = async (code: string): Promise<SpotifyAuth> => {
 		})
 	});
 
-	return await response.json();
+	const tokens = await response.json();
+	return tokens;
 };
 
 export const refreshTokens = async (refreshToken: string): Promise<SpotifyAuth> => {

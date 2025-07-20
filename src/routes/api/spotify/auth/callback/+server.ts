@@ -1,5 +1,5 @@
-import { getTokens } from '$lib/server/api/spotify';
-import { createSpotifyConnection } from '$lib/server/db/queries/spotify';
+import { formatScope, getTokens, SPOTIFY_SCOPES } from '$lib/server/api/spotify';
+import { upsertSpotifyConnection } from '$lib/server/db/queries/spotify';
 
 export async function GET({ url, locals }) {
 	const session = await locals.auth();
@@ -47,7 +47,18 @@ export async function GET({ url, locals }) {
 
 	const userId = session.user.id;
 
-	await createSpotifyConnection(userId, data);
+	await upsertSpotifyConnection(userId, data);
+
+	const hasPlaybackToken = session.spotify?.playbackApi;
+	const isWebApiToken = formatScope(data.scope) === formatScope(SPOTIFY_SCOPES);
+	if (!hasPlaybackToken && isWebApiToken) {
+		return new Response(null, {
+			status: 302,
+			headers: {
+				Location: '/api/spotify/auth/login'
+			}
+		});
+	}
 
 	return new Response(null, {
 		status: 302,

@@ -17,11 +17,12 @@
 	}
 
 	export interface Props {
-		currentTrack: PlaybackTrackInfo;
-		duration: number;
-		position: number;
-		isActive: boolean;
-		isPaused: boolean;
+		className?: string;
+		currentTrack: PlaybackTrackInfo | null;
+		duration?: number;
+		position?: number;
+		isActive?: boolean;
+		isPaused?: boolean;
 		onNextTrack: () => void;
 		onPreviousTrack: () => void;
 		onSeek: (position: number) => void;
@@ -29,6 +30,7 @@
 	}
 
 	let {
+		className,
 		currentTrack,
 		duration,
 		position,
@@ -40,10 +42,10 @@
 		onNextTrack
 	}: Props = $props();
 
-	let isValid = $derived(!!currentTrack && duration > 0);
+	let isValid = $derived(!!currentTrack && !!duration && !!position);
 </script>
 
-<div class="flex flex-grow flex-col gap-3">
+<div class={`flex flex-grow flex-col gap-3 ${className}`}>
 	<div class="flex justify-center gap-2">
 		<Button
 			class="border-none p-2! hover:border-none hover:bg-transparent"
@@ -55,11 +57,18 @@
 		>
 			<BackwardStepSolid />
 		</Button>
-		<Button class="p-2!" color="green" pill={true} size="sm" onclick={() => onTogglePlay()}>
+		<Button
+			class="p-2!"
+			color="green"
+			disabled={!isValid}
+			pill={true}
+			size="sm"
+			onclick={() => onTogglePlay()}
+		>
 			{#if isPaused}
-				<PlaySolid />
+				<PlaySolid color="dark" />
 			{:else}
-				<PauseSolid />
+				<PauseSolid color="dark" />
 			{/if}
 		</Button>
 		<Button
@@ -75,39 +84,39 @@
 	</div>
 
 	<div class="flex items-center gap-3">
-		{#if currentTrack && duration > 0}
-			<span class="w-9 text-center text-xs text-gray-500">
+		<span class="w-9 text-center text-xs text-xs text-gray-500">
+			{#if currentTrack && !!duration && !!position}
 				{Math.floor(position / 1000 / 60)}:{String(Math.floor(position / 1000) % 60).padStart(
 					2,
 					'0'
 				)}
-			</span>
-		{:else}
-			<span class="w-9"></span>
-		{/if}
+			{:else}
+				0:00
+			{/if}
+		</span>
 		<Range
 			min="0"
 			disabled={!isValid}
 			id="seek"
 			max={duration || 100}
-			value={duration > 0 ? position : 0}
+			value={position || 0}
 			class="flex-grow {!isValid ? 'opacity-50' : ''}"
 			oninput={(e: any) => {
-				if (currentTrack && duration > 0) {
+				if (currentTrack && !!duration) {
 					const newPosition = parseInt(e.target.value);
 					onSeek(newPosition);
 				}
 			}}
 		/>
-		{#if isValid}
-			<span class="w-9 text-center text-xs text-gray-500">
+		<span class="w-9 text-center text-xs text-xs text-gray-500">
+			{#if isValid && !!duration}
 				{Math.floor(duration / 1000 / 60)}:{String(Math.floor(duration / 1000) % 60).padStart(
 					2,
 					'0'
 				)}
-			</span>
-		{:else}
-			<span class="w-9"></span>
-		{/if}
+			{:else}
+				0:00
+			{/if}
+		</span>
 	</div>
 </div>

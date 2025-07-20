@@ -101,3 +101,16 @@
 		/>
 	{/snippet}
 </Story>
+
+<Story
+	name="Inactive"
+	args={{
+		currentTrack: null,
+		isActive: false,
+		isPaused: true,
+		onNextTrack: fn(),
+		onPreviousTrack: fn(),
+		onSeek: fn(),
+		onTogglePlay: fn()
+	}}
+/>

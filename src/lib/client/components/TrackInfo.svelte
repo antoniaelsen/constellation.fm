@@ -16,7 +16,7 @@
 	<Avatar src={album?.images[0]?.url} cornerStyle="rounded" class="pointer-events-none" />
 
 	<div class="flex flex-col">
-		<A class="text-gray-900 select-none hover:no-underline dark:text-gray-100" size="md" {href}>
+		<A class="text-sm text-gray-900 select-none hover:no-underline dark:text-gray-100" {href}>
 			{name}
 		</A>
 
@@ -26,14 +26,13 @@
 					class="flex-inherit flex flex-row flex-nowrap items-center justify-start gap-0 overflow-hidden text-gray-500 dark:text-gray-500"
 				>
 					<A
-						class="text-ellipsis whitespace-nowrap text-inherit select-none dark:text-inherit"
-						size="sm"
+						class="text-xs text-ellipsis whitespace-nowrap text-inherit select-none dark:text-inherit"
 						href={artist.href}
 					>
 						{artist.name}
 					</A>
 					{#if artist !== artists[artists.length - 1]}
-						<P class="text-inherit select-none dark:text-inherit">,</P>
+						<P class="text-xs text-inherit select-none dark:text-inherit">,&nbsp;</P>
 					{/if}
 				</div>
 			{/each}

@@ -1,12 +1,16 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
+	import PlayerBar, { type Props as PlayerBarProps } from './PlayerBar.svelte';
 
-	interface Props {
-		// currentTrack: SpotifyApi.TrackObjectFull;
-		token: string;
-	}
+	const PLAYER_NAME = 'constellation.fm';
 
-	let { token }: Props = $props();
+	export interface Props extends PlayerBarProps {}
+	const rest = $props();
+
+	let session = $derived($page.data.session);
+	let spotifyPlaybackApi = $derived(session?.spotify?.playbackApi);
+	$inspect(spotifyPlaybackApi);
 
 	let player: any;
 	let currentTrack = $state<any>(null);
@@ -14,10 +18,10 @@
 	let position = $state(0);
 	let isActive = $state(false);
 	let isPaused = $state(false);
+	let isScriptLoaded = $state(false);
 
 	const onSeek = (newPosition: number) => {
 		if (!player) return;
-		console.log('Player - Seeking to', newPosition);
 		player.seek(newPosition);
 	};
 
@@ -44,8 +48,18 @@
 		document.body.appendChild(script);
 
 		window.onSpotifyWebPlaybackSDKReady = () => {
+			console.log('Player - Script loaded');
+			isScriptLoaded = true;
+		};
+	});
+
+	$effect(() => {
+		const token = spotifyPlaybackApi?.accessToken;
+		if (token && isScriptLoaded && !player) {
+			if (!token || !isScriptLoaded || !spotifyPlaybackApi) return;
+
 			player = new window.Spotify.Player({
-				name: 'Constellation.fm Web Player',
+				name: PLAYER_NAME,
 				getOAuthToken: (cb: (token: string) => void) => {
 					cb(token);
 				},
@@ -53,11 +67,11 @@
 			});
 
 			player.addListener('ready', ({ device_id }: { device_id: string }) => {
-				console.log('Player - Ready with Device ID', device_id);
+				// console.log('Player - Ready with Device ID', device_id);
 			});
 
 			player.addListener('not_ready', ({ device_id }: { device_id: string }) => {
-				console.log('Player - Device ID has gone offline', device_id);
+				// console.log('Player - Device ID has gone offline', device_id);
 			});
 
 			player.addListener('player_state_changed', (state: any) => {
@@ -77,14 +91,28 @@
 			});
 
 			player.connect();
-		};
+		}
+	});
 
+	$effect.root(() => {
 		return () => {
-			if (!player) {
-				return;
+			if (player) {
+				console.log('Player - Disconnecting');
+				player.disconnect();
 			}
-			console.log('Player - Disconnecting');
-			player.disconnect();
 		};
 	});
 </script>
+
+<PlayerBar
+	{currentTrack}
+	{duration}
+	{position}
+	{isActive}
+	{isPaused}
+	{onSeek}
+	{onTogglePlay}
+	{onPreviousTrack}
+	{onNextTrack}
+	{...rest}
+/>

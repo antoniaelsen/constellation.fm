@@ -107,20 +107,25 @@ export const authenticators = pgTable(
 	]
 );
 
-export const spotifyConnections = pgTable('spotify_connections', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
-	userId: text('userId')
-		.notNull()
-		.unique()
-		.references(() => users.id, { onDelete: 'cascade' }),
-	accessToken: text('accessToken').notNull(),
-	refreshToken: text('refreshToken').notNull(),
-	tokenType: text('tokenType').notNull(),
-	expires: bigint('expires', { mode: 'number' }).notNull(),
-	scope: text('scope').notNull()
-});
+export const spotifyConnections = pgTable(
+	'spotify_connections',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		userId: text('userId')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		accessToken: text('accessToken').notNull(),
+		refreshToken: text('refreshToken').notNull(),
+		tokenType: text('tokenType').notNull(),
+		expires: bigint('expires', { mode: 'number' }).notNull(),
+		scope: text('scope').notNull()
+	},
+	(spotifyConnection) => ({
+		uniqUserScope: unique().on(spotifyConnection.userId, spotifyConnection.scope)
+	})
+);
 
 export const drizzleAdapter = DrizzleAdapter(db, {
 	usersTable: users,
