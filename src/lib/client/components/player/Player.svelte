@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { PlaybackTrackInfo } from '$lib/types/constellations';
 	import { Button, Range } from 'flowbite-svelte';
 	import {
 		PlaySolid,
@@ -6,15 +7,6 @@
 		ForwardStepSolid,
 		BackwardStepSolid
 	} from 'flowbite-svelte-icons';
-
-	export interface PlaybackTrackInfo {
-		name: string;
-		artists: { name: string }[];
-		album: {
-			name: string;
-			images: { url: string }[];
-		};
-	}
 
 	export interface Props {
 		className?: string;

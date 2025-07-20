@@ -1,5 +1,6 @@
 import { getPlaylists as getSpotifyPlaylists } from '$lib/server/api/spotify';
 import { syncConstellations } from '$lib/server/db/queries/constellations';
+import { disconnectSpotify } from '$lib/server/db/queries/spotify';
 import {
 	spotifyPlaylistMetadata,
 	spotifyPlaylistsToConstellationPrototypes
@@ -10,6 +11,7 @@ import {
 	type EPlaylistMetadata
 } from '$lib/types/constellations';
 import type { MaxInt } from '@spotify/web-api-ts-sdk';
+import { error } from 'console';
 
 const getSpotifyPlaylistConstellations = async (
 	locals: App.Locals,
@@ -18,12 +20,12 @@ const getSpotifyPlaylistConstellations = async (
 	prototypes: ConstellationPrototype[];
 	metadata: Record<string, EPlaylistMetadata>;
 }> => {
-	const { spotify } = locals;
-	if (!spotify) {
+	const { spotify: { webApi } = {} } = locals;
+	if (!webApi) {
 		return { prototypes: [], metadata: {} };
 	}
 
-	const playlists = await getSpotifyPlaylists(spotify, options);
+	const playlists = await getSpotifyPlaylists(webApi, options);
 	const prototypes = spotifyPlaylistsToConstellationPrototypes(playlists);
 	const metadata = Object.fromEntries(playlists.map((p) => [p.id, spotifyPlaylistMetadata(p)]));
 	return { prototypes, metadata };
@@ -45,16 +47,28 @@ export async function GET({ locals, url }) {
 	let prototypes: ConstellationPrototype[] = [];
 	let metadata: Record<string, EPlaylistMetadata> = {};
 
-	if (providers.includes(Provider.SPOTIFY)) {
-		const { prototypes: spotifyPrototypes, metadata: spotifyMetadata } =
-			await getSpotifyPlaylistConstellations(locals, {
-				offset,
-				limit
-			});
-		prototypes = [...prototypes, ...spotifyPrototypes];
-		metadata = { ...metadata, ...spotifyMetadata };
+	try {
+		if (providers.includes(Provider.SPOTIFY)) {
+			const { prototypes: spotifyPrototypes, metadata: spotifyMetadata } =
+				await getSpotifyPlaylistConstellations(locals, {
+					offset,
+					limit
+				});
+			prototypes = [...prototypes, ...spotifyPrototypes];
+			metadata = { ...metadata, ...spotifyMetadata };
+		}
+		// TODO(antoniae): add other providers
+	} catch (err) {
+		console.error('GET - constellations err', 'type:', typeof err, err);
+		if ((err as Error).status === 401) {
+			console.error('GET - constellations err - 401 - disconnecting Spotify');
+			await disconnectSpotify(userId);
+		}
+
+		return new Response(JSON.stringify({ error: `Failed to fetch constellations: ${err}` }), {
+			status: (err as Error).status ?? 500
+		});
 	}
-	// TODO(antoniae): add other providers
 
 	const updated = await syncConstellations(userId, prototypes, prune);
 	const response = updated.map((c) => ({

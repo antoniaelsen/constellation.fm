@@ -249,7 +249,6 @@ export async function syncEdges(
 						targetId: e.targetId
 					};
 
-					console.log('insert edge', insert);
 					return insert;
 				})
 			)

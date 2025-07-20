@@ -15,7 +15,8 @@
 			layout: 'fullscreen'
 		},
 		args: {
-			onClick: fn()
+			onClick: fn(),
+			onNameplateButtonClick: fn()
 		}
 	});
 </script>
@@ -23,6 +24,9 @@
 <Story
 	name="Basic"
 	args={{
-		metadata: mockTrack()
+		index: 0,
+		metadata: mockTrack(),
+		onClick: fn(),
+		onNameplateButtonClick: fn()
 	}}
 />

@@ -19,8 +19,6 @@
 		onSeek,
 		onTogglePlay
 	}: Props = $props();
-
-	$inspect(currentTrack);
 </script>
 
 <div class={`flex items-center gap-8 p-4`}>

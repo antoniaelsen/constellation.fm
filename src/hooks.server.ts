@@ -11,6 +11,17 @@ export const handleDevtools: Handle = async ({ event, resolve }) => {
 	return await resolve(event);
 };
 
+export const handleLog: Handle = async ({ event, resolve }) => {
+	console.log(`[${event.request.method}] ${event.url.pathname}`);
+	const start = performance.now();
+	const response = await resolve(event);
+	const end = performance.now();
+	console.log(
+		`[${event.request.method}] ${event.url.pathname} (took ${(end - start).toFixed(2)}ms)`
+	);
+	return response;
+};
+
 export const handleAuthorization: Handle = async ({ event, resolve }) => {
 	const { pathname } = event.url;
 
@@ -57,13 +68,13 @@ export const handleSpotifyAuthorization: Handle = async ({ event, resolve }) => 
 		return new Response('Unauthorized', { status: 401 });
 	}
 
-	const tokens = await getSpotifyConnection(userId);
-	if (!tokens) {
+	const spotify = await getSpotifyConnection(userId);
+	if (!spotify) {
 		console.error('Spotify not connected');
 		return new Response('Spotify not connected', { status: 401 });
 	}
 
-	event.locals.spotify = tokens;
+	event.locals.spotify = spotify;
 	event.locals.userId = userId;
 
 	return await resolve(event);
@@ -71,6 +82,7 @@ export const handleSpotifyAuthorization: Handle = async ({ event, resolve }) => 
 
 export const handle: Handle = sequence(
 	handleDevtools,
+	handleLog,
 	handleAuthentication,
 	handleAuthorization,
 	handleSpotifyAuthorization

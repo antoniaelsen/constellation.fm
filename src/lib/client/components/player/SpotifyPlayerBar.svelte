@@ -1,24 +1,37 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import PlayerBar, { type Props as PlayerBarProps } from './PlayerBar.svelte';
+	import PlayerBar from './PlayerBar.svelte';
+	import { Provider, type PlaybackTrackInfo } from '$lib/types/constellations';
 
 	const PLAYER_NAME = 'constellation.fm';
 
-	export interface Props extends PlayerBarProps {}
-	const rest = $props();
+	interface Props {
+		className?: string;
+		currentTrack: PlaybackTrackInfo | null;
+		onDeviceIdChange: (deviceId: string | null) => void;
+		onTrackWindowChange: ({
+			current,
+			next,
+			previous
+		}: {
+			current: PlaybackTrackInfo | null;
+			next: PlaybackTrackInfo | null;
+			previous: PlaybackTrackInfo | null;
+		}) => void;
+	}
+	const { currentTrack, onDeviceIdChange, onTrackWindowChange, ...rest }: Props = $props();
 
 	let session = $derived($page.data.session);
 	let spotifyPlaybackApi = $derived(session?.spotify?.playbackApi);
-	$inspect(spotifyPlaybackApi);
 
 	let player: any;
-	let currentTrack = $state<any>(null);
 	let duration = $state(0);
 	let position = $state(0);
 	let isActive = $state(false);
 	let isPaused = $state(false);
 	let isScriptLoaded = $state(false);
+	let positionInterval: ReturnType<typeof setInterval> | undefined;
 
 	const onSeek = (newPosition: number) => {
 		if (!player) return;
@@ -32,12 +45,45 @@
 
 	const onPreviousTrack = () => {
 		if (!player) return;
+
+		if (position > 3000) {
+			player.seek(0);
+			return;
+		}
+
 		player.previousTrack();
 	};
 
 	const onNextTrack = () => {
 		if (!player) return;
 		player.nextTrack();
+	};
+
+	const clearPositionInterval = () => {
+		if (positionInterval) {
+			clearInterval(positionInterval);
+			positionInterval = undefined;
+		}
+	};
+
+	const startPositionInterval = () => {
+		clearPositionInterval();
+		positionInterval = setInterval(() => {
+			position += 1000; // Increment by 1 second
+		}, 1000);
+	};
+
+	const toPlaybackTrack = (track: any): PlaybackTrackInfo => {
+		return {
+			provider: Provider.SPOTIFY,
+			providerTrackId: track.linked_from?.id ?? track.id,
+			name: track.name,
+			artists: track.artists.map((artist: any) => ({ name: artist.name })),
+			album: {
+				name: track.album.name,
+				images: track.album.images.map((image: any) => ({ url: image.url }))
+			}
+		};
 	};
 
 	onMount(() => {
@@ -48,8 +94,17 @@
 		document.body.appendChild(script);
 
 		window.onSpotifyWebPlaybackSDKReady = () => {
-			console.log('Player - Script loaded');
+			console.log('Spotify Web Player - Script loaded');
 			isScriptLoaded = true;
+		};
+
+		return () => {
+			clearPositionInterval();
+			if (player) {
+				console.log('Spotify Web Player - Disconnecting');
+				player.disconnect();
+			}
+			document.body.removeChild(script);
 		};
 	});
 
@@ -67,23 +122,38 @@
 			});
 
 			player.addListener('ready', ({ device_id }: { device_id: string }) => {
-				// console.log('Player - Ready with Device ID', device_id);
+				console.log('Spotify Web Player - Ready with Device ID', device_id);
+				onDeviceIdChange(device_id);
 			});
 
 			player.addListener('not_ready', ({ device_id }: { device_id: string }) => {
-				// console.log('Player - Device ID has gone offline', device_id);
+				console.log('Spotify Web Player - No longer ready with Device ID', device_id);
+				onDeviceIdChange(null);
 			});
 
 			player.addListener('player_state_changed', (state: any) => {
-				console.log('Player - Player state changed', state);
+				// console.log('Player - Player state changed', state);
 				if (!state) {
+					clearPositionInterval();
 					return;
 				}
 
-				currentTrack = state.track_window.current_track;
+				const { current_track, next_tracks, previous_tracks } = state.track_window;
+				onTrackWindowChange({
+					current: current_track ? toPlaybackTrack(current_track) : null,
+					next: next_tracks?.[0] ? toPlaybackTrack(next_tracks?.[0]) : null,
+					previous: previous_tracks?.[0] ? toPlaybackTrack(previous_tracks?.[0]) : null
+				});
 				isPaused = state.paused;
 				position = state.position;
 				duration = state.duration;
+
+				// Start or stop the position interval based on pause state
+				if (isPaused) {
+					clearPositionInterval();
+				} else {
+					startPositionInterval();
+				}
 
 				player.getCurrentState().then((state: any) => {
 					isActive = !!state;
@@ -92,15 +162,6 @@
 
 			player.connect();
 		}
-	});
-
-	$effect.root(() => {
-		return () => {
-			if (player) {
-				console.log('Player - Disconnecting');
-				player.disconnect();
-			}
-		};
 	});
 </script>
 

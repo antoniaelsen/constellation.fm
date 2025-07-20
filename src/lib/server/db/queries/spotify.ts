@@ -7,11 +7,11 @@ import {
 	SPOTIFY_SCOPES_PLAYBACK
 } from '$lib/server/api/spotify';
 import { encrypt, decrypt } from '$lib/server/db/queries/utils';
-import type { SpotifyAuth } from '$lib/types';
+import type { SpotifyAccessToken } from '$lib/types';
 import { db } from '../index';
 import { spotifyConnections } from '../schema';
 
-export async function upsertSpotifyConnection(userId: string, tokenData: SpotifyAuth) {
+export async function upsertSpotifyConnection(userId: string, tokenData: SpotifyAccessToken) {
 	const expires = Date.now() + tokenData.expires_in * 1000;
 	if (!tokenData) {
 		return;
@@ -38,12 +38,10 @@ export async function upsertSpotifyConnection(userId: string, tokenData: Spotify
 }
 
 export async function getSpotifyConnection(userId: string): Promise<{
-	webApi: SpotifyAuth | null;
-	playbackApi: SpotifyAuth | null;
+	webApi: SpotifyAccessToken | null;
+	playbackApi: SpotifyAccessToken | null;
 } | null> {
-	console.log('SPOTIFY - getSpotifyConnection - userId', userId);
 	if (!userId) {
-		console.log('SPOTIFY - getSpotifyConnection - no userId');
 		return null;
 	}
 
@@ -58,7 +56,7 @@ export async function getSpotifyConnection(userId: string): Promise<{
 
 	const decryptOrRefresh = async (
 		conn: typeof spotifyConnections.$inferSelect | null
-	): Promise<SpotifyAuth | null> => {
+	): Promise<SpotifyAccessToken | null> => {
 		if (!conn) {
 			return null;
 		}
@@ -67,10 +65,13 @@ export async function getSpotifyConnection(userId: string): Promise<{
 		const expiresIn = expired ? 0 : conn.expires - Date.now();
 
 		if (expired) {
+			console.log('SPOTIFY - getSpotifyConnection - refreshing', conn.scope);
 			const refreshed = await refreshSpotifyConnection(userId, decrypt(conn.refreshToken));
 			if (!refreshed) {
+				console.log('SPOTIFY - getSpotifyConnection - failed to refresh', conn.scope);
 				return null;
 			}
+			console.log('SPOTIFY - getSpotifyConnection - refreshed', conn.scope);
 			return refreshed;
 		}
 
@@ -97,12 +98,12 @@ export async function getSpotifyConnection(userId: string): Promise<{
 export async function refreshSpotifyConnection(
 	userId: string,
 	refreshToken: string
-): Promise<SpotifyAuth | null> {
+): Promise<SpotifyAccessToken | null> {
 	if (!userId || !refreshToken) {
 		return null;
 	}
 
-	let tokens: SpotifyAuth;
+	let tokens: SpotifyAccessToken;
 	try {
 		tokens = await refreshTokens(refreshToken);
 	} catch (error) {
@@ -111,6 +112,7 @@ export async function refreshSpotifyConnection(
 	}
 
 	if (!tokens) {
+		console.error('SPOTIFY - refreshSpotifyConnection - no tokens');
 		return null;
 	}
 

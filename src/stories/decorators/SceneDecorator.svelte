@@ -6,7 +6,7 @@
 	let { children }: { children: Snippet } = $props();
 </script>
 
-<div class="h-full w-full">
+<div class="relative h-full w-full">
 	<Canvas>
 		<Scene>
 			{@render children?.()}

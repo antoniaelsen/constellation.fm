@@ -5,11 +5,36 @@
 	import { page } from '$app/stores';
 	import { useAllConstellations } from '$lib/client/api/constellations';
 	import Scene from '$lib/client/components/constellations/Scene.svelte';
+	import { playerState } from '$lib/client/stores/player';
 
 	import Sidebar from './sidebar.svelte';
 	import SpotifyPlayerBar from '$lib/client/components/player/SpotifyPlayerBar.svelte';
+	import type { PlaybackTrackInfo } from '$lib/types/constellations';
 
 	let { children } = $props();
+
+	const updateDeviceId = (deviceId: string | null) => {
+		$playerState = {
+			...$playerState,
+			deviceId
+		};
+	};
+
+	const updateTrackWindow = (trackWindow: {
+		current: PlaybackTrackInfo | null;
+		next: PlaybackTrackInfo | null;
+		previous: PlaybackTrackInfo | null;
+	}) => {
+		$playerState = {
+			...$playerState,
+			window: {
+				...$playerState.window,
+				current: trackWindow.current,
+				next: trackWindow.next,
+				previous: trackWindow.previous
+			}
+		};
+	};
 
 	let open = $state(true);
 
@@ -38,7 +63,8 @@
 			{onClose}
 		/>
 	</div>
-	<main class="z-1 flex flex-auto items-center justify-center p-4">
+
+	<main class="relative z-1 flex flex-auto items-center justify-center p-4">
 		<Canvas>
 			<Scene>
 				<Stars factor={30} depth={1000} speed={1} />
@@ -47,5 +73,10 @@
 		</Canvas>
 	</main>
 
-	<SpotifyPlayerBar className="flex-initial" />
+	<SpotifyPlayerBar
+		className="fixed bottom-0 left-0 right-0"
+		currentTrack={$playerState.window.current}
+		onDeviceIdChange={updateDeviceId}
+		onTrackWindowChange={updateTrackWindow}
+	/>
 </div>

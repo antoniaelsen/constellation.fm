@@ -8,6 +8,17 @@ export interface ProviderUser {
 	href?: string;
 }
 
+export interface PlaybackTrackInfo {
+	provider: Provider;
+	providerTrackId: string;
+	name: string;
+	artists: { name: string }[];
+	album: {
+		name: string;
+		images: { url: string }[];
+	};
+}
+
 /**
  * Ephemeral metadata for an album, fetched from the provider's API.
  *
@@ -37,6 +48,7 @@ export interface EPlaylistMetadata {
 	description?: string;
 	images: ImageMetadata[];
 	owners: ProviderUser[];
+	uri: string;
 }
 
 /**
@@ -85,6 +97,7 @@ export interface ETrackMetadata {
 	isrc?: string;
 	href?: string;
 	name: string;
+	uri: string;
 }
 
 export interface ImageMetadata {

@@ -16,6 +16,7 @@
 <Story
 	name="Basic"
 	args={{
+		index: 0,
 		name: 'Mock Track',
 		href: '',
 		artists: [

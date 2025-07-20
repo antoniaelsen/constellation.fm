@@ -39,6 +39,7 @@
 		alphaDecay?: number;
 		alphaTarget?: number;
 		velocityDecay?: number;
+		onStarButtonClick?: (star: StarType) => void;
 	}
 
 	const {
@@ -46,6 +47,7 @@
 
 		activeNodeId,
 		showNameplates,
+		onStarButtonClick,
 
 		linkWidth = 1,
 
@@ -147,7 +149,12 @@
 		scale={SCALE_STAR}
 		metadata={star.star.metadata}
 		showNameplate={showNameplates}
-		onClick={() => {}}
+		onClick={() => {
+			console.log('click star', star.star.id);
+		}}
+		onNameplateButtonClick={() => {
+			onStarButtonClick?.(star.star);
+		}}
 	/>
 {/each}
 {#each links as link, i}

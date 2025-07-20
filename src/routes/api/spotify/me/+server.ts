@@ -1,14 +1,14 @@
 import { getProfile } from '$lib/server/api/spotify';
 
 export async function GET({ locals }) {
-	const { spotify } = locals;
-	if (!spotify) {
+	const { spotify: { webApi } = {} } = locals;
+	if (!webApi) {
 		return new Response(JSON.stringify({ error: 'Spotify not connected' }), {
 			status: 401
 		});
 	}
 
-	const profile = await getProfile(spotify);
+	const profile = await getProfile(webApi);
 
 	return new Response(JSON.stringify(profile), {
 		headers: {

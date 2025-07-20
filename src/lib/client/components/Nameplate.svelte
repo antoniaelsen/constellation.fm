@@ -12,11 +12,14 @@
 		index: number;
 		isActive?: boolean;
 		name: string;
-		onpointerenter?: () => void;
-		onpointerleave?: () => void;
+		onButtonClick?: () => void;
+		onPointerEnter?: () => void;
+		onPointerLeave?: () => void;
 	}
 
 	let hovered = $state(false);
+	let isButtonHovered = $state(false);
+	let isPointerDown = $state(false);
 
 	let {
 		name,
@@ -26,8 +29,10 @@
 		className,
 		index,
 		isActive,
-		onpointerenter,
-		onpointerleave,
+		onClick,
+		onButtonClick,
+		onPointerEnter,
+		onPointerLeave,
 		...rest
 	}: Props = $props();
 </script>
@@ -35,23 +40,50 @@
 <Card
 	{...rest}
 	class="flex w-max flex-row flex-nowrap items-center overflow-hidden px-4 py-3 select-none {className}"
+	onclick={() => {
+		onClick?.();
+	}}
 	onpointerenter={() => {
 		hovered = true;
-		onpointerenter?.();
+		onPointerEnter?.();
 	}}
 	onpointerleave={() => {
 		hovered = false;
-		onpointerleave?.();
+		onPointerLeave?.();
 	}}
 >
 	<div class="-ml-4 flex min-w-10 items-center justify-center">
 		{#if hovered}
+			<!-- use pointer events en lieu of click for threlte support -->
 			<Button
 				class=" border-none bg-transparent p-2! hover:border-none hover:bg-transparent!"
 				color="dark"
 				outline={true}
 				pill={true}
 				size="sm"
+				onpointerenter={(e) => {
+					e.stopPropagation();
+					isButtonHovered = true;
+				}}
+				onpointerleave={(e) => {
+					e.stopPropagation();
+					isPointerDown = false;
+					isButtonHovered = false;
+				}}
+				onpointerdown={(e) => {
+					e.stopPropagation();
+					isPointerDown = true;
+					onButtonClick?.();
+				}}
+				onpointerup={(e) => {
+					e.stopPropagation();
+					isPointerDown = false;
+				}}
+				onpointercancel={(e) => {
+					e.stopPropagation();
+					isPointerDown = false;
+					isButtonHovered = false;
+				}}
 			>
 				{#if isActive}
 					<PauseSolid />

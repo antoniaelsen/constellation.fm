@@ -10,19 +10,21 @@ export interface Session extends SvelteKitSession {
 	user: SvelteKitUser & {
 		id: string;
 	};
-	spotify: {
-		webApi: {
-			expires: number;
-			scopes: string;
-		} | null;
-		playbackApi: {
-			accessToken: string;
-			expires: number;
-			scopes: string;
-		} | null;
-	} | null;
+	spotify: SpotifyAuth | null;
 }
 
-export interface SpotifyAuth extends AccessToken {
+export interface SpotifyAccessToken extends AccessToken {
 	scope: string;
+}
+
+export interface SpotifyAuth {
+	webApi: {
+		expires: number;
+		scopes: string;
+	} | null;
+	playbackApi: {
+		accessToken: string;
+		expires: number;
+		scopes: string;
+	} | null;
 }

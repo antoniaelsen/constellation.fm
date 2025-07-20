@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { T, useTask, useThrelte } from '@threlte/core';
-	import { HTML, interactivity } from '@threlte/extras';
+	import { HTML } from '@threlte/extras';
 	import { Spring } from 'svelte/motion';
 	import * as THREE from 'three';
 
 	import type { ETrackMetadata } from '$lib/types/constellations';
 	import Nameplate from '../Nameplate.svelte';
-
-	interactivity();
-
 	interface Props {
 		active?: boolean;
 		activeColor?: string;
@@ -19,7 +16,8 @@
 		metadata?: ETrackMetadata;
 		showNameplate?: boolean;
 
-		onClick: () => void;
+		onClick?: () => void;
+		onNameplateButtonClick?: () => void;
 	}
 
 	let groupRef = $state<THREE.Group | undefined>();
@@ -34,6 +32,7 @@
 		index,
 		metadata,
 		onClick,
+		onNameplateButtonClick,
 		...rest
 	}: Props = $props();
 
@@ -78,7 +77,10 @@
 		onpointerleave={() => {
 			hovered = false;
 		}}
-		onclick={onClick}
+		onclick={(e) => {
+			e.stopPropagation();
+			onClick?.();
+		}}
 	>
 		<T.SphereGeometry args={[1]} />
 		<T.MeshBasicMaterial color={active ? activeColor : color} side={THREE.DoubleSide} />
@@ -86,7 +88,7 @@
 
 	{#if showNameplate && metadata}
 		<T.Group position={platePosition} quaternion={plateQuaternion} scale={10}>
-			<HTML transform={true} occlude={'raycast'}>
+			<HTML transform={true}>
 				<div
 					onpointerenter={() => {
 						hovered = true;
@@ -102,11 +104,8 @@
 						artists={metadata.artists}
 						album={metadata.album}
 						{index}
-						onpointerenter={() => {
-							hovered = true;
-						}}
-						onpointerleave={() => {
-							hovered = false;
+						onButtonClick={() => {
+							onNameplateButtonClick?.();
 						}}
 					/>
 				</div>

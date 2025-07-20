@@ -31,7 +31,7 @@
 					{/if}
 				</div>
 
-				<div class="fixed top-4 left-1/2 -translate-x-1/2 transform">
+				<div class="fixed top-4 left-1/2 z-10 -translate-x-1/2 transform">
 					<Toolbar activeUrl={$page.url.pathname} />
 				</div>
 			{/if}

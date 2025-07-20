@@ -1,4 +1,4 @@
-import type { SpotifyAuth } from '$lib/types';
+import type { SpotifyAccessToken } from '$lib/types';
 import {
 	InMemoryCachingStrategy,
 	SpotifyApi,
@@ -93,7 +93,6 @@ export const getPlaylist = async (
 	playlistId: string,
 	options?: { market?: Market; fields?: string; additionalTypes?: QueryAdditionalTypes }
 ): Promise<Playlist<QueryAdditionalTypes extends undefined ? Track : TrackItem>> => {
-	console.log('SPOTIFY - getPlaylist', options);
 	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
 
 	try {
@@ -104,8 +103,8 @@ export const getPlaylist = async (
 			options?.additionalTypes
 		);
 	} catch (err) {
-		console.error('SPOTIFY - getPlaylist', err);
-		throw error((err as SpotifyError).cause.code, 'Failed to fetch playlist');
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause.code, `Failed to fetch playlist: ${spotifyErr.message}`);
 	}
 };
 
@@ -113,7 +112,6 @@ export const getPlaylists = async (
 	tokens: AccessToken,
 	options?: { limit?: MaxInt<50>; offset?: number }
 ): Promise<SimplifiedPlaylist[]> => {
-	console.log('SPOTIFY - getPlaylists', options);
 	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
 	let { limit, offset } = options || {};
 	if (limit) {
@@ -121,7 +119,6 @@ export const getPlaylists = async (
 			const page = await sdk.currentUser.playlists.playlists(limit, offset);
 			return page.items;
 		} catch (err) {
-			console.error('SPOTIFY - getPlaylists err', err);
 			throw error((err as SpotifyError).cause.code, `Failed to fetch playlists: ${err}`);
 		}
 	}
@@ -141,21 +138,25 @@ export const getPlaylists = async (
 			offset += limit;
 		}
 	} catch (err) {
-		throw error((err as SpotifyError).cause.code, 'Failed to fetch playlists');
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause.code, `Failed to fetch playlists: ${spotifyErr.message}`);
 	}
 
 	return acc;
 };
 
 export const getProfile = async (tokens: AccessToken): Promise<UserProfile> => {
-	console.log('SPOTIFY - getProfile');
 	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
 
-	return await sdk.currentUser.profile();
+	try {
+		return await sdk.currentUser.profile();
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause.code, `Failed to fetch profile: ${spotifyErr.message}`);
+	}
 };
 
-export const getTokens = async (code: string): Promise<SpotifyAuth> => {
-	console.log('SPOTIFY - getTokens');
+export const getTokens = async (code: string): Promise<SpotifyAccessToken> => {
 	const response = await fetch('https://accounts.spotify.com/api/token', {
 		method: 'POST',
 		headers: {
@@ -171,12 +172,10 @@ export const getTokens = async (code: string): Promise<SpotifyAuth> => {
 		})
 	});
 
-	const tokens = await response.json();
-	return tokens;
+	return await response.json();
 };
 
-export const refreshTokens = async (refreshToken: string): Promise<SpotifyAuth> => {
-	console.log('SPOTIFY - refreshTokens');
+export const refreshTokens = async (refreshToken: string): Promise<SpotifyAccessToken> => {
 	const response = await fetch('https://accounts.spotify.com/api/token', {
 		method: 'POST',
 		headers: {
@@ -192,4 +191,36 @@ export const refreshTokens = async (refreshToken: string): Promise<SpotifyAuth> 
 		})
 	});
 	return await response.json();
+};
+
+export const startPlayback = async (
+	tokens: AccessToken,
+	deviceId: string,
+	target: { contextUri: string; offset: { position: number }; uris: string[] },
+	positionMs: number
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+
+	const { contextUri, offset, uris } = target;
+	try {
+		return await sdk.player.startResumePlayback(deviceId, contextUri, uris, offset, positionMs);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause.code, `Failed to start playback: ${spotifyErr.message}`);
+	}
+};
+
+export const transferPlayback = async (
+	tokens: AccessToken,
+	deviceId: string,
+	play: boolean
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+
+	try {
+		return await sdk.player.transferPlayback([deviceId], play);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause.code, `Failed to transfer playback: ${spotifyErr.message}`);
+	}
 };

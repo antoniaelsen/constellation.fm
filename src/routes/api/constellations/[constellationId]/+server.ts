@@ -21,12 +21,12 @@ const getSpotifyPlaylistConstellation = async (
 	prototype: ConstellationPrototype | null;
 	metadata: ConstellationMetadata | null;
 }> => {
-	const { spotify } = locals;
-	if (!spotify) {
+	const { spotify: { webApi } = {} } = locals;
+	if (!webApi) {
 		return { prototype: null, metadata: null };
 	}
 
-	const playlist = await getPlaylist(spotify, playlistId);
+	const playlist = await getPlaylist(webApi, playlistId);
 	const { prototype, metadata } = spotifyPlaylistToConstellation(playlist);
 
 	return { prototype, metadata };
@@ -49,7 +49,6 @@ const zipConstellationMetadata = (
 };
 
 export async function GET({ locals, params }) {
-	console.log('GET /api/constellations/[constellationId]', params);
 	const userId = locals.userId;
 	if (!userId) {
 		return new Response(JSON.stringify({ error: 'User not found' }), {
@@ -71,8 +70,8 @@ export async function GET({ locals, params }) {
 	const { provider, providerPlaylistId } = constellation;
 	switch (provider) {
 		case Provider.SPOTIFY: {
-			const { spotify } = locals;
-			if (!spotify) {
+			const { spotify: { webApi } = {} } = locals;
+			if (!webApi) {
 				return new Response(JSON.stringify({ error: 'Spotify access token not found' }), {
 					status: 401
 				});

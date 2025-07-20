@@ -1,5 +1,5 @@
 /// <reference types="@sveltejs/kit" />
-import type { SpotifyAuth } from '$lib/types';
+import type { SpotifyAccessToken } from '$lib/types';
 
 declare global {
 	interface Window {
@@ -16,8 +16,8 @@ declare global {
 	namespace App {
 		interface Session {
 			spotify?: {
-				webApi: SpotifyAuth | null;
-				playbackApi: SpotifyAuth | null;
+				webApi: SpotifyAccessToken | null;
+				playbackApi: SpotifyAccessToken | null;
 			};
 		}
 

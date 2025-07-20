@@ -24,8 +24,8 @@ export const spotifyPlaylistMetadata = (
 	playlist:
 		| Playlist<QueryAdditionalTypes extends undefined ? Track : TrackItem>
 		| SimplifiedPlaylist
-): EPl => {
-	const { name, description, images, owner } = playlist;
+): EPlaylistMetadata => {
+	const { name, description, images, owner, uri } = playlist;
 	const owners = [
 		{
 			provider: Provider.SPOTIFY,
@@ -38,12 +38,13 @@ export const spotifyPlaylistMetadata = (
 		name,
 		description,
 		images: images || [],
-		owners
+		owners,
+		uri
 	};
 };
 
 export const spotifyTrackToETrackMetadata = (track: Track): ETrackMetadata => {
-	const { name, artists, album, external_ids } = track;
+	const { name, artists, album, external_ids, uri } = track;
 	return {
 		isrc: external_ids?.isrc,
 		name,
@@ -58,7 +59,8 @@ export const spotifyTrackToETrackMetadata = (track: Track): ETrackMetadata => {
 				width: image.width,
 				height: image.height
 			}))
-		}
+		},
+		uri
 	};
 };
 
