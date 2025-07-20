@@ -70,6 +70,12 @@
 <T.Group bind:ref={groupRef} {...rest}>
 	<T.Mesh
 		bind:ref={starRef}
+		transition={{
+			scale: {
+				duration: 500,
+				easing: 'easeInOut'
+			}
+		}}
 		scale={scaleHover.current * scale}
 		onpointerenter={() => {
 			hovered = true;
@@ -98,7 +104,7 @@
 					}}
 				>
 					<Nameplate
-						className={`${hovered || active ? 'opacity-100' : 'opacity-50'} translate-x-1/2 `}
+						className={`${hovered || active ? 'opacity-100' : 'opacity-75 bg-transparent! border-none! shadow-none!'} translate-x-1/2 transition-all duration-500`}
 						name={metadata.name ?? ''}
 						href={metadata.href ?? ''}
 						artists={metadata.artists}
