@@ -9,7 +9,7 @@
 
 	const SCALE_STAR = 5;
 	const SCALE_LINK = 0.5;
-	const EDGE_OPACITY_MIN = 0.2;
+	const EDGE_OPACITY_MIN = 0.15;
 
 	interface D3ForceNode {
 		index: number;

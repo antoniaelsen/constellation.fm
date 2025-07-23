@@ -69,10 +69,15 @@ class ResponseDeserializer extends DefaultResponseDeserializer {
 			'https://api.spotify.com/v1/me/player/repeat',
 			'https://api.spotify.com/v1/me/player/shuffle'
 		];
+		const blacklisted = BLACKLIST_PARSE.some((url) => response.url.startsWith(url));
 
-		if (text.length > 0 && !BLACKLIST_PARSE.some((url) => url.startsWith(url))) {
-			const json = JSON.parse(text);
-			return json as TReturnType;
+		if (text.length > 0 && !blacklisted) {
+			try {
+				const json = JSON.parse(text);
+				return json as TReturnType;
+			} catch (err) {
+				throw new Error(`Failed to parse JSON: ${err}`, { cause: { code: 500 } });
+			}
 		}
 
 		return null as TReturnType;
@@ -113,6 +118,12 @@ class ResponseValidator implements IValidateResponses {
 }
 
 const OPTS: SdkOptions = {
+	beforeRequest: (url, options) => {
+		LOGGER.info(`[${options.method}] ${url}`, options);
+	},
+	afterRequest: (url, options, response) => {
+		LOGGER.info(`[${options.method}] ${url} ${response.status} ${response.statusText}`, options);
+	},
 	cachingStrategy: new InMemoryCachingStrategy(),
 	deserializer: new ResponseDeserializer(),
 	responseValidator: new ResponseValidator()
@@ -259,12 +270,9 @@ export const setRepeatMode = async (
 ): Promise<void> => {
 	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
 
-	LOGGER.info(`Setting repeat mode to '${repeatMode}' for device '${deviceId}'`);
 	try {
 		return await sdk.player.setRepeatMode(repeatMode, deviceId);
 	} catch (err) {
-		LOGGER.error('Failed to set repeat mode:', err);
-		console.log(err);
 		const spotifyErr = err as SpotifyError;
 		const statusCode = spotifyErr.cause?.code || 500;
 		throw error(statusCode, `Failed to set repeat mode: ${spotifyErr.message}`);

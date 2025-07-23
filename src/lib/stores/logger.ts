@@ -24,9 +24,13 @@ const plogger: Logger = (() => {
 			},
 			targets: [
 				{
-					level: 'info',
+					level: 'trace',
 					target: 'pino-pretty',
-					options: {}
+					options: {
+						singleLine: true,
+						ignore: 'module,pid,hostname',
+						messageFormat: `[{module}] {msg}`
+					}
 				},
 				{
 					level: 'trace',
