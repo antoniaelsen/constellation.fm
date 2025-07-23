@@ -8,6 +8,17 @@ export interface ProviderUser {
 	href?: string;
 }
 
+export enum TrackOrder {
+	LINEAR = 'linear',
+	SHUFFLE = 'shuffle'
+}
+
+export enum TrackLoop {
+	OFF = 'off',
+	CONTEXT = 'context',
+	TRACK = 'track'
+}
+
 export interface PlaybackTrackInfo {
 	provider: Provider;
 	providerTrackId: string;

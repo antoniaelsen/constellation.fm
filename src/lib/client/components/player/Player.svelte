@@ -1,12 +1,13 @@
 <script lang="ts">
-	import type { PlaybackTrackInfo } from '$lib/types/constellations';
+	import { TrackLoop, type PlaybackTrackInfo, TrackOrder } from '$lib/types/constellations';
+	import PlayArrow from 'virtual:icons/ic/baseline-play-arrow';
+	import Pause from 'virtual:icons/ic/baseline-pause';
+	import SkipNext from 'virtual:icons/ic/baseline-skip-next';
+	import SkipPrevious from 'virtual:icons/ic/baseline-skip-previous';
+	import Repeat from 'virtual:icons/ic/baseline-repeat';
+	import RepeatOne from 'virtual:icons/ic/baseline-repeat-one';
+	import Shuffle from 'virtual:icons/ic/baseline-shuffle';
 	import { Button, Range } from 'flowbite-svelte';
-	import {
-		PlaySolid,
-		PauseSolid,
-		ForwardStepSolid,
-		BackwardStepSolid
-	} from 'flowbite-svelte-icons';
 
 	export interface Props {
 		className?: string;
@@ -15,8 +16,12 @@
 		position?: number;
 		isActive?: boolean;
 		isPaused?: boolean;
+		loop: TrackLoop;
+		order: TrackOrder;
 		onNextTrack: () => void;
 		onPreviousTrack: () => void;
+		onToggleOrder: () => void;
+		onToggleLoop: () => void;
 		onSeek: (position: number) => void;
 		onTogglePlay: () => void;
 	}
@@ -28,10 +33,14 @@
 		position,
 		isActive,
 		isPaused,
-		onTogglePlay,
+		loop,
+		order,
+		onNextTrack,
 		onSeek,
 		onPreviousTrack,
-		onNextTrack
+		onToggleLoop,
+		onToggleOrder,
+		onTogglePlay
 	}: Props = $props();
 
 	let isValid = $derived(!!currentTrack && !!duration && !!position);
@@ -40,14 +49,25 @@
 <div class={`flex flex-grow flex-col gap-3 ${className}`}>
 	<div class="flex justify-center gap-2">
 		<Button
-			class="border-none p-2! hover:border-none hover:bg-transparent"
+			class="border-none p-2! hover:border-none hover:bg-transparent!"
+			color={order === TrackOrder.SHUFFLE ? 'green' : 'dark'}
+			outline={true}
+			pill={true}
+			size="sm"
+			onclick={() => onToggleOrder()}
+		>
+			<Shuffle />
+		</Button>
+
+		<Button
+			class="border-none p-2! hover:border-none hover:bg-transparent!"
 			color="dark"
 			outline={true}
 			pill={true}
 			size="sm"
 			onclick={() => onPreviousTrack()}
 		>
-			<BackwardStepSolid />
+			<SkipPrevious />
 		</Button>
 		<Button
 			class="p-2!"
@@ -58,20 +78,36 @@
 			onclick={() => onTogglePlay()}
 		>
 			{#if isPaused}
-				<PlaySolid color="dark" />
+				<PlayArrow color="dark" />
 			{:else}
-				<PauseSolid color="dark" />
+				<Pause color="dark" />
 			{/if}
 		</Button>
 		<Button
-			class="border-none p-2! hover:border-none hover:bg-transparent"
+			class="border-none p-2! hover:border-none hover:bg-transparent!"
 			color="dark"
 			outline={true}
 			pill={true}
 			size="sm"
 			onclick={() => onNextTrack()}
 		>
-			<ForwardStepSolid />
+			<SkipNext />
+		</Button>
+		<Button
+			class="border-none p-2! hover:border-none hover:bg-transparent!"
+			color={loop === TrackLoop.OFF ? 'dark' : 'green'}
+			outline={true}
+			pill={true}
+			size="sm"
+			onclick={() => onToggleLoop()}
+		>
+			{#if loop === TrackLoop.OFF}
+				<Repeat />
+			{:else if loop === TrackLoop.CONTEXT}
+				<Repeat />
+			{:else}
+				<RepeatOne />
+			{/if}
 		</Button>
 	</div>
 

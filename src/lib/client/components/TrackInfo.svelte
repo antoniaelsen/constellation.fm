@@ -16,7 +16,10 @@
 	<Avatar src={album?.images[0]?.url} cornerStyle="rounded" class="pointer-events-none" />
 
 	<div class="flex flex-col">
-		<A class="text-sm text-gray-900 select-none hover:no-underline dark:text-gray-100" {href}>
+		<A
+			class="text-sm text-ellipsis whitespace-nowrap text-gray-900 select-none hover:no-underline dark:text-gray-100"
+			{href}
+		>
 			{name}
 		</A>
 

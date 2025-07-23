@@ -1,4 +1,5 @@
 import {
+	DefaultResponseDeserializer,
 	InMemoryCachingStrategy,
 	SpotifyApi,
 	type AccessToken,
@@ -7,6 +8,7 @@ import {
 	type MaxInt,
 	type Playlist,
 	type QueryAdditionalTypes,
+	type SdkOptions,
 	type SimplifiedPlaylist,
 	type Track,
 	type TrackItem,
@@ -57,6 +59,26 @@ interface SpotifyError extends Error {
 	};
 }
 
+class ResponseDeserializer extends DefaultResponseDeserializer {
+	public async deserialize<TReturnType>(response: Response): Promise<TReturnType> {
+		const text = await response.text();
+
+		// The Spotify Web API is returning text (not JSON) for some endpoints.
+		// Blacklist these endpoints to avoid parsing errors.
+		const BLACKLIST_PARSE = [
+			'https://api.spotify.com/v1/me/player/repeat',
+			'https://api.spotify.com/v1/me/player/shuffle'
+		];
+
+		if (text.length > 0 && !BLACKLIST_PARSE.some((url) => url.startsWith(url))) {
+			const json = JSON.parse(text);
+			return json as TReturnType;
+		}
+
+		return null as TReturnType;
+	}
+}
+
 class ResponseValidator implements IValidateResponses {
 	public async validateResponse(response: Response): Promise<void> {
 		switch (response.status) {
@@ -81,17 +103,19 @@ class ResponseValidator implements IValidateResponses {
 				if (!response.status.toString().startsWith('20')) {
 					const body = await response.text();
 					throw new Error(
-						`Unrecognised response code: ${response.status} - ${response.statusText}. Body: ${body}`,
+						`Unexpected error: (${response.status}) - ${response.statusText}${body ? `\n${body}` : ''}`,
 						{ cause: { code: response.status } }
 					);
 				}
+				break;
 		}
 	}
 }
 
-const OPTS = {
-	responseValidator: new ResponseValidator(),
-	cachingStrategy: new InMemoryCachingStrategy()
+const OPTS: SdkOptions = {
+	cachingStrategy: new InMemoryCachingStrategy(),
+	deserializer: new ResponseDeserializer(),
+	responseValidator: new ResponseValidator()
 };
 
 export const getPlaylist = async (
@@ -225,6 +249,40 @@ export const startPlayback = async (
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
 		throw error(spotifyErr.cause.code, `Failed to start playback: ${spotifyErr.message}`);
+	}
+};
+
+export const setRepeatMode = async (
+	tokens: AccessToken,
+	repeatMode: 'track' | 'context' | 'off',
+	deviceId?: string
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+
+	LOGGER.info(`Setting repeat mode to '${repeatMode}' for device '${deviceId}'`);
+	try {
+		return await sdk.player.setRepeatMode(repeatMode, deviceId);
+	} catch (err) {
+		LOGGER.error('Failed to set repeat mode:', err);
+		console.log(err);
+		const spotifyErr = err as SpotifyError;
+		const statusCode = spotifyErr.cause?.code || 500;
+		throw error(statusCode, `Failed to set repeat mode: ${spotifyErr.message}`);
+	}
+};
+
+export const toggleShuffle = async (
+	tokens: AccessToken,
+	shuffle: boolean,
+	deviceId?: string
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+
+	try {
+		return await sdk.player.togglePlaybackShuffle(shuffle, deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause.code, `Failed to toggle shuffle: ${spotifyErr.message}`);
 	}
 };
 

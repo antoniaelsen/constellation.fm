@@ -11,13 +11,17 @@
 		className,
 		currentTrack = null,
 		duration = 0,
-		position = 0,
 		isActive = false,
 		isPaused = true,
+		loop,
+		order,
+		position = 0,
 		onNextTrack,
 		onPreviousTrack,
 		onSeek,
-		onTogglePlay
+		onTogglePlay,
+		onToggleOrder,
+		onToggleLoop
 	}: Props = $props();
 </script>
 
@@ -35,13 +39,17 @@
 	<Player
 		{currentTrack}
 		{duration}
-		{position}
 		{isActive}
 		{isPaused}
-		{onSeek}
-		{onTogglePlay}
-		{onPreviousTrack}
+		{loop}
+		{order}
+		{position}
 		{onNextTrack}
+		{onPreviousTrack}
+		{onSeek}
+		{onToggleLoop}
+		{onToggleOrder}
+		{onTogglePlay}
 	/>
 
 	<div class="flex-1"></div>

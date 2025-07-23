@@ -76,6 +76,7 @@
 	<SpotifyPlayerBar
 		className="fixed bottom-0 left-0 right-0"
 		currentTrack={$playerState.window.current}
+		deviceId={$playerState.deviceId}
 		onDeviceIdChange={updateDeviceId}
 		onTrackWindowChange={updateTrackWindow}
 	/>

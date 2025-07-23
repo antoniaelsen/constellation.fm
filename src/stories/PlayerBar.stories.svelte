@@ -1,7 +1,9 @@
 <script module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import { fn } from '@storybook/test';
+
 	import PlayerBar from '$lib/client/components/player/PlayerBar.svelte';
+	import { Provider, TrackLoop, TrackOrder } from '$lib/types/constellations';
 
 	const mockTracks = [
 		{
@@ -10,7 +12,9 @@
 			album: {
 				name: 'Album One',
 				images: [{ url: 'https://placecats.com/200/200' }]
-			}
+			},
+			provider: Provider.SPOTIFY,
+			providerTrackId: '1234567890'
 		},
 		{
 			name: 'Second Track',
@@ -18,7 +22,9 @@
 			album: {
 				name: 'Album Two',
 				images: [{ url: 'https://placecats.com/200/200' }]
-			}
+			},
+			provider: Provider.SPOTIFY,
+			providerTrackId: '1234567890'
 		},
 		{
 			name: 'Third Track',
@@ -26,7 +32,9 @@
 			album: {
 				name: 'Album Three',
 				images: [{ url: 'https://placecats.com/200/200' }]
-			}
+			},
+			provider: Provider.SPOTIFY,
+			providerTrackId: '1234567890'
 		}
 	];
 
@@ -59,6 +67,8 @@
 		position: 10,
 		isActive: true,
 		isPaused: false,
+		loop: TrackLoop.OFF,
+		order: TrackOrder.LINEAR,
 		onNextTrack: fn(),
 		onPreviousTrack: fn(),
 		onSeek: fn(),
@@ -74,6 +84,8 @@
 			position={args.position}
 			isActive={args.isActive}
 			isPaused={args.isPaused}
+			loop={args.loop}
+			order={args.order}
 			onNextTrack={() => {
 				args.onNextTrack();
 				args._currentTrackIndex = (args._currentTrackIndex + 1) % mockTracks.length;
@@ -94,6 +106,17 @@
 				args.onSeek(newPosition);
 				args.position = newPosition;
 			}}
+			onToggleLoop={() => {
+				args.loop =
+					args.loop === TrackLoop.OFF
+						? TrackLoop.CONTEXT
+						: args.loop === TrackLoop.CONTEXT
+							? TrackLoop.TRACK
+							: TrackLoop.OFF;
+			}}
+			onToggleOrder={() => {
+				args.order = args.order === TrackOrder.LINEAR ? TrackOrder.SHUFFLE : TrackOrder.LINEAR;
+			}}
 			onTogglePlay={() => {
 				args.onTogglePlay();
 				args.isPaused = !args.isPaused;
@@ -111,6 +134,8 @@
 		onNextTrack: fn(),
 		onPreviousTrack: fn(),
 		onSeek: fn(),
-		onTogglePlay: fn()
+		onTogglePlay: fn(),
+		onToggleLoop: fn(),
+		onToggleOrder: fn()
 	}}
 />

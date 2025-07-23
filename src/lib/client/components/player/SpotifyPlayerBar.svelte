@@ -2,12 +2,18 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import PlayerBar from './PlayerBar.svelte';
-	import { Provider, type PlaybackTrackInfo } from '$lib/types/constellations';
+	import {
+		Provider,
+		TrackLoop,
+		TrackOrder,
+		type PlaybackTrackInfo
+	} from '$lib/types/constellations';
 
 	const PLAYER_NAME = 'constellation.fm';
 
 	interface Props {
 		className?: string;
+		deviceId: string | null;
 		currentTrack: PlaybackTrackInfo | null;
 		onDeviceIdChange: (deviceId: string | null) => void;
 		onTrackWindowChange: ({
@@ -20,7 +26,8 @@
 			previous: PlaybackTrackInfo | null;
 		}) => void;
 	}
-	const { currentTrack, onDeviceIdChange, onTrackWindowChange, ...rest }: Props = $props();
+	const { currentTrack, onDeviceIdChange, onTrackWindowChange, deviceId, ...rest }: Props =
+		$props();
 
 	let session = $derived($page.data.session);
 	let spotifyPlaybackApi = $derived(session?.spotify?.playbackApi);
@@ -31,6 +38,8 @@
 	let isActive = $state(false);
 	let isPaused = $state(false);
 	let isScriptLoaded = $state(false);
+	let order = $state(TrackOrder.LINEAR);
+	let loop = $state(TrackLoop.OFF);
 	let positionInterval: ReturnType<typeof setInterval> | undefined;
 
 	const onSeek = (newPosition: number) => {
@@ -57,6 +66,37 @@
 	const onNextTrack = () => {
 		if (!player) return;
 		player.nextTrack();
+	};
+
+	const onToggleOrder = () => {
+		const target = order === TrackOrder.LINEAR ? TrackOrder.SHUFFLE : TrackOrder.LINEAR;
+		fetch('/api/spotify/me/player/shuffle', {
+			method: 'PUT',
+			body: JSON.stringify({
+				deviceId,
+				state: order === TrackOrder.LINEAR ? false : true
+			})
+		}).then(() => {
+			order = target;
+		});
+	};
+
+	const onToggleLoop = () => {
+		const target =
+			loop === TrackLoop.OFF
+				? TrackLoop.CONTEXT
+				: loop === TrackLoop.CONTEXT
+					? TrackLoop.TRACK
+					: TrackLoop.OFF;
+		fetch('/api/spotify/me/player/repeat', {
+			method: 'PUT',
+			body: JSON.stringify({
+				deviceId,
+				state: loop === TrackLoop.OFF ? 'track' : 'context'
+			})
+		}).then(() => {
+			loop = target;
+		});
 	};
 
 	const clearPositionInterval = () => {
@@ -171,6 +211,10 @@
 	{position}
 	{isActive}
 	{isPaused}
+	{order}
+	{loop}
+	{onToggleOrder}
+	{onToggleLoop}
 	{onSeek}
 	{onTogglePlay}
 	{onPreviousTrack}
