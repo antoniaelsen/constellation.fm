@@ -53,6 +53,7 @@
 		"flowbite-svelte-icons": "^2.2.0",
 		"globals": "^16.0.0",
 		"jsdom": "^26.0.0",
+		"pino-pretty": "^13.0.0",
 		"playwright": "^1.52.0",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
@@ -80,6 +81,7 @@
 		"d3-force-3d": "^3.0.6",
 		"drizzle-orm": "^0.43.1",
 		"pg": "^8.16.0",
+		"pino": "^9.7.0",
 		"postgres": "^3.4.7",
 		"three": "^0.176.0"
 	}

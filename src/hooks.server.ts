@@ -2,6 +2,11 @@ import { handle as handleAuthentication } from './auth';
 import { sequence } from '@sveltejs/kit/hooks';
 import type { Handle } from '@sveltejs/kit';
 import { getSpotifyConnection } from '$lib/server/db/queries/spotify';
+import { logger } from '$lib/stores/logger';
+
+const LOGGER = logger.child({
+	module: 'hooks'
+});
 
 export const handleDevtools: Handle = async ({ event, resolve }) => {
 	if (event.url.pathname.startsWith('/.well-known/appspecific/com.chrome.devtools')) {
@@ -12,11 +17,11 @@ export const handleDevtools: Handle = async ({ event, resolve }) => {
 };
 
 export const handleLog: Handle = async ({ event, resolve }) => {
-	console.log(`[${event.request.method}] ${event.url.pathname}`);
+	LOGGER.info(`[${event.request.method}] ${event.url.pathname}`);
 	const start = performance.now();
 	const response = await resolve(event);
 	const end = performance.now();
-	console.log(
+	LOGGER.info(
 		`[${event.request.method}] ${event.url.pathname} (took ${(end - start).toFixed(2)}ms)`
 	);
 	return response;
@@ -39,7 +44,6 @@ export const handleAuthorization: Handle = async ({ event, resolve }) => {
 
 	if (!userId && pathname !== '/') {
 		// TODO(antoniae): redirect to appropriate page
-		console.error('Unauthorized - no user id in session');
 		return new Response('Unauthorized', { status: 401 });
 	}
 
@@ -64,13 +68,11 @@ export const handleSpotifyAuthorization: Handle = async ({ event, resolve }) => 
 	const session = await event.locals.auth();
 	const userId = session?.user?.id;
 	if (!userId) {
-		console.error('Unauthorized - no user id in local', event.locals);
 		return new Response('Unauthorized', { status: 401 });
 	}
 
 	const spotify = await getSpotifyConnection(userId);
 	if (!spotify) {
-		console.error('Spotify not connected');
 		return new Response('Spotify not connected', { status: 401 });
 	}
 

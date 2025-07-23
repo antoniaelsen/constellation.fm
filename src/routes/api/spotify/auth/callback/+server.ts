@@ -36,7 +36,6 @@ export async function GET({ url, locals }) {
 	try {
 		data = await getTokens(code);
 	} catch (error) {
-		console.error('Error getting Spotify token:', error);
 		return new Response(null, {
 			status: 302,
 			headers: {

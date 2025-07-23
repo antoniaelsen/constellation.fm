@@ -1,4 +1,3 @@
-import type { SpotifyAccessToken } from '$lib/types';
 import {
 	InMemoryCachingStrategy,
 	SpotifyApi,
@@ -14,6 +13,13 @@ import {
 	type UserProfile
 } from '@spotify/web-api-ts-sdk';
 import { error } from '@sveltejs/kit';
+
+import type { SpotifyAccessToken } from '$lib/types';
+import { logger } from '$lib/stores/logger';
+
+const LOGGER = logger.child({
+	module: 'api-spotify'
+});
 
 export const SPOTIFY_SCOPES = [
 	'user-read-playback-state',
@@ -157,40 +163,52 @@ export const getProfile = async (tokens: AccessToken): Promise<UserProfile> => {
 };
 
 export const getTokens = async (code: string): Promise<SpotifyAccessToken> => {
-	const response = await fetch('https://accounts.spotify.com/api/token', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded',
-			Authorization: `Basic ${Buffer.from(
-				`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-			).toString('base64')}`
-		},
-		body: new URLSearchParams({
-			code,
-			redirect_uri: process.env.SPOTIFY_REDIRECT_URI!,
-			grant_type: 'authorization_code'
-		})
-	});
+	try {
+		const response = await fetch('https://accounts.spotify.com/api/token', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				Authorization: `Basic ${Buffer.from(
+					`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+				).toString('base64')}`
+			},
+			body: new URLSearchParams({
+				code,
+				redirect_uri: process.env.SPOTIFY_REDIRECT_URI!,
+				grant_type: 'authorization_code'
+			})
+		});
 
-	return await response.json();
+		return await response.json();
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		LOGGER.error('Failed to fetch tokens: ', spotifyErr.message);
+		throw error(spotifyErr.cause.code, `Failed to fetch tokens: ${spotifyErr.message}`);
+	}
 };
 
 export const refreshTokens = async (refreshToken: string): Promise<SpotifyAccessToken> => {
-	const response = await fetch('https://accounts.spotify.com/api/token', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded',
-			Authorization: `Basic ${Buffer.from(
-				`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-			).toString('base64')}`
-		},
-		body: new URLSearchParams({
-			grant_type: 'refresh_token',
-			refresh_token: refreshToken,
-			client_id: process.env.SPOTIFY_CLIENT_ID!
-		})
-	});
-	return await response.json();
+	try {
+		const response = await fetch('https://accounts.spotify.com/api/token', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				Authorization: `Basic ${Buffer.from(
+					`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+				).toString('base64')}`
+			},
+			body: new URLSearchParams({
+				grant_type: 'refresh_token',
+				refresh_token: refreshToken,
+				client_id: process.env.SPOTIFY_CLIENT_ID!
+			})
+		});
+		return await response.json();
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		LOGGER.error('Failed to refresh tokens: ', spotifyErr.message);
+		throw error(spotifyErr.cause.code, `Failed to refresh tokens: ${spotifyErr.message}`);
+	}
 };
 
 export const startPlayback = async (

@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 
+import { logger } from '$lib/stores/logger';
 import {
 	formatScope,
 	refreshTokens,
@@ -10,6 +11,10 @@ import { encrypt, decrypt } from '$lib/server/db/queries/utils';
 import type { SpotifyAccessToken } from '$lib/types';
 import { db } from '../index';
 import { spotifyConnections } from '../schema';
+
+const LOGGER = logger.child({
+	module: 'db-spotify'
+});
 
 export async function upsertSpotifyConnection(userId: string, tokenData: SpotifyAccessToken) {
 	const expires = Date.now() + tokenData.expires_in * 1000;
@@ -65,13 +70,11 @@ export async function getSpotifyConnection(userId: string): Promise<{
 		const expiresIn = expired ? 0 : conn.expires - Date.now();
 
 		if (expired) {
-			console.log('SPOTIFY - getSpotifyConnection - refreshing', conn.scope);
+			LOGGER.info('Spotify token expired, refreshing...');
 			const refreshed = await refreshSpotifyConnection(userId, decrypt(conn.refreshToken));
 			if (!refreshed) {
-				console.log('SPOTIFY - getSpotifyConnection - failed to refresh', conn.scope);
 				return null;
 			}
-			console.log('SPOTIFY - getSpotifyConnection - refreshed', conn.scope);
 			return refreshed;
 		}
 
@@ -107,19 +110,21 @@ export async function refreshSpotifyConnection(
 	try {
 		tokens = await refreshTokens(refreshToken);
 	} catch (error) {
-		console.error('Error refreshing Spotify tokens:', error);
+		LOGGER.error('Failed to refresh Spotify token - API request failed:', error);
 		return null;
 	}
 
 	if (!tokens) {
-		console.error('SPOTIFY - refreshSpotifyConnection - no tokens');
+		LOGGER.error('Failed to refresh Spotify token - no token received');
 		return null;
 	}
 
-	const { access_token, refresh_token, expires_in, token_type, scope } = tokens;
-	if (!access_token || !refresh_token || !expires_in || !token_type || !scope) {
+	const { access_token, expires_in, token_type, scope } = tokens;
+	if (!access_token || !expires_in || !token_type || !scope) {
+		LOGGER.error('Failed to refresh Spotify token - invalid token received:', tokens);
 		return null;
 	}
+	let refresh_token = tokens.refresh_token ?? refreshToken;
 
 	const expires = Date.now() + expires_in * 1000;
 
@@ -127,7 +132,7 @@ export async function refreshSpotifyConnection(
 		.update(spotifyConnections)
 		.set({
 			accessToken: encrypt(tokens.access_token),
-			refreshToken: encrypt(tokens.refresh_token),
+			refreshToken: encrypt(refresh_token),
 			expires,
 			tokenType: token_type
 		})

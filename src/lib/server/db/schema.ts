@@ -8,13 +8,11 @@ import {
 	integer,
 	unique,
 	bigint,
-	pgEnum,
-	jsonb
+	pgEnum
 } from 'drizzle-orm/pg-core';
 import type { AdapterAccountType } from 'next-auth/adapters';
 import { db } from '.';
 import { Provider } from '../../types/constellations';
-import { sql } from 'drizzle-orm';
 
 export function enumToPgEnum<T extends Record<string, any>>(
 	myEnum: T

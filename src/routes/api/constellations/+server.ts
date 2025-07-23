@@ -11,7 +11,6 @@ import {
 	type EPlaylistMetadata
 } from '$lib/types/constellations';
 import type { MaxInt } from '@spotify/web-api-ts-sdk';
-import { error } from 'console';
 
 const getSpotifyPlaylistConstellations = async (
 	locals: App.Locals,
@@ -59,9 +58,7 @@ export async function GET({ locals, url }) {
 		}
 		// TODO(antoniae): add other providers
 	} catch (err) {
-		console.error('GET - constellations err', 'type:', typeof err, err);
 		if ((err as Error).status === 401) {
-			console.error('GET - constellations err - 401 - disconnecting Spotify');
 			await disconnectSpotify(userId);
 		}
 
