@@ -2,44 +2,51 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import PlayerBar from './PlayerBar.svelte';
-	import {
-		Provider,
-		TrackLoop,
-		TrackOrder,
-		type PlaybackTrackInfo
-	} from '$lib/types/constellations';
+	import { TrackLoop, TrackOrder, type PlaybackTrackInfo } from '$lib/types/constellations';
+	import { toPlaybackTrack } from '$lib/client/stores/player';
+	import { setRepeatMode, setShuffle } from '$lib/client/api/spotify';
 
 	const PLAYER_NAME = 'constellation.fm';
 
 	interface Props {
 		className?: string;
-		deviceId: string | null;
-		currentTrack: PlaybackTrackInfo | null;
-		onDeviceIdChange: (deviceId: string | null) => void;
-		onTrackWindowChange: ({
-			current,
-			next,
-			previous
-		}: {
-			current: PlaybackTrackInfo | null;
-			next: PlaybackTrackInfo | null;
-			previous: PlaybackTrackInfo | null;
+		playerState: {
+			currentTrack: PlaybackTrackInfo | null;
+			deviceId: string | null;
+			durationMs: number | null;
+			progressMs: number | null;
+			isPlaying: boolean;
+			order: TrackOrder;
+			repeatMode: TrackLoop;
+		};
+		onPlayerStateChange: (playerState: {
+			deviceId?: string | null;
+			durationMs?: number | null;
+			progressMs?: number | null;
+			isPlaying?: boolean;
+			order?: TrackOrder;
+			repeatMode?: TrackLoop;
+			window?: {
+				current: PlaybackTrackInfo | null;
+				next: PlaybackTrackInfo | null;
+				previous: PlaybackTrackInfo | null;
+			};
 		}) => void;
 	}
-	const { currentTrack, onDeviceIdChange, onTrackWindowChange, deviceId, ...rest }: Props =
-		$props();
+
+	let { className, playerState, onPlayerStateChange, ...rest }: Props = $props();
+
+	let deviceId = $derived(playerState.deviceId);
+	let progressMs = $derived(playerState.progressMs);
+	let isPlaying = $derived(playerState.isPlaying);
+	let order = $derived(playerState.order);
+	let repeatMode = $derived(playerState.repeatMode);
 
 	let session = $derived($page.data.session);
 	let spotifyPlaybackApi = $derived(session?.spotify?.playbackApi);
 
 	let player: any;
-	let duration = $state(0);
-	let position = $state(0);
-	let isActive = $state(false);
-	let isPaused = $state(false);
 	let isScriptLoaded = $state(false);
-	let order = $state(TrackOrder.LINEAR);
-	let loop = $state(TrackLoop.OFF);
 	let positionInterval: ReturnType<typeof setInterval> | undefined;
 
 	const onSeek = (newPosition: number) => {
@@ -55,7 +62,7 @@
 	const onPreviousTrack = () => {
 		if (!player) return;
 
-		if (position > 3000) {
+		if (progressMs !== null && progressMs > 3000) {
 			player.seek(0);
 			return;
 		}
@@ -69,33 +76,27 @@
 	};
 
 	const onToggleOrder = () => {
-		const target = order === TrackOrder.LINEAR ? TrackOrder.SHUFFLE : TrackOrder.LINEAR;
-		fetch('/api/spotify/me/player/shuffle', {
-			method: 'PUT',
-			body: JSON.stringify({
-				deviceId,
-				state: order === TrackOrder.LINEAR ? false : true
-			})
-		}).then(() => {
-			order = target;
+		const target = order === TrackOrder.SHUFFLE ? TrackOrder.LINEAR : TrackOrder.SHUFFLE;
+		setShuffle(target === TrackOrder.SHUFFLE, deviceId).then(() => {
+			onPlayerStateChange({
+				order: target
+			});
 		});
 	};
 
 	const onToggleLoop = () => {
-		const target =
-			loop === TrackLoop.OFF
-				? TrackLoop.CONTEXT
-				: loop === TrackLoop.CONTEXT
-					? TrackLoop.TRACK
-					: TrackLoop.OFF;
-		fetch('/api/spotify/me/player/repeat', {
-			method: 'PUT',
-			body: JSON.stringify({
-				deviceId,
-				state: loop === TrackLoop.OFF ? 'track' : 'context'
-			})
-		}).then(() => {
-			loop = target;
+		const target: 'track' | 'context' | 'off' =
+			repeatMode === TrackLoop.OFF ? 'context' : repeatMode === TrackLoop.CONTEXT ? 'track' : 'off';
+
+		setRepeatMode(target, deviceId).then(() => {
+			onPlayerStateChange({
+				repeatMode:
+					target === 'track'
+						? TrackLoop.TRACK
+						: target === 'context'
+							? TrackLoop.CONTEXT
+							: TrackLoop.OFF
+			});
 		});
 	};
 
@@ -109,21 +110,13 @@
 	const startPositionInterval = () => {
 		clearPositionInterval();
 		positionInterval = setInterval(() => {
-			position += 1000; // Increment by 1 second
-		}, 1000);
-	};
-
-	const toPlaybackTrack = (track: any): PlaybackTrackInfo => {
-		return {
-			provider: Provider.SPOTIFY,
-			providerTrackId: track.linked_from?.id ?? track.id,
-			name: track.name,
-			artists: track.artists.map((artist: any) => ({ name: artist.name })),
-			album: {
-				name: track.album.name,
-				images: track.album.images.map((image: any) => ({ url: image.url }))
+			if (progressMs === null) {
+				return;
 			}
-		};
+			onPlayerStateChange({
+				progressMs: progressMs + 1000
+			});
+		}, 1000);
 	};
 
 	onMount(() => {
@@ -149,6 +142,15 @@
 	});
 
 	$effect(() => {
+		console.log('Spotify Web Player - isPlaying', isPlaying);
+		if (isPlaying) {
+			startPositionInterval();
+		} else {
+			clearPositionInterval();
+		}
+	});
+
+	$effect(() => {
 		const token = spotifyPlaybackApi?.accessToken;
 		if (token && isScriptLoaded && !player) {
 			if (!token || !isScriptLoaded || !spotifyPlaybackApi) return;
@@ -163,40 +165,34 @@
 
 			player.addListener('ready', ({ device_id }: { device_id: string }) => {
 				console.log('Spotify Web Player - Ready with Device ID', device_id);
-				onDeviceIdChange(device_id);
+				onPlayerStateChange({
+					deviceId: device_id
+				});
 			});
 
 			player.addListener('not_ready', ({ device_id }: { device_id: string }) => {
 				console.log('Spotify Web Player - No longer ready with Device ID', device_id);
-				onDeviceIdChange(null);
+				onPlayerStateChange({
+					deviceId: null
+				});
 			});
 
 			player.addListener('player_state_changed', (state: any) => {
-				// console.log('Player - Player state changed', state);
+				console.log('Spotify Web Player - Player state changed', state);
 				if (!state) {
 					clearPositionInterval();
 					return;
 				}
 
 				const { current_track, next_tracks, previous_tracks } = state.track_window;
-				onTrackWindowChange({
-					current: current_track ? toPlaybackTrack(current_track) : null,
-					next: next_tracks?.[0] ? toPlaybackTrack(next_tracks?.[0]) : null,
-					previous: previous_tracks?.[0] ? toPlaybackTrack(previous_tracks?.[0]) : null
-				});
-				isPaused = state.paused;
-				position = state.position;
-				duration = state.duration;
-
-				// Start or stop the position interval based on pause state
-				if (isPaused) {
-					clearPositionInterval();
-				} else {
-					startPositionInterval();
-				}
-
-				player.getCurrentState().then((state: any) => {
-					isActive = !!state;
+				onPlayerStateChange({
+					isPlaying: !state.paused,
+					progressMs: state.position,
+					window: {
+						current: current_track ? toPlaybackTrack(current_track) : null,
+						next: next_tracks?.[0] ? toPlaybackTrack(next_tracks?.[0]) : null,
+						previous: previous_tracks?.[0] ? toPlaybackTrack(previous_tracks?.[0]) : null
+					}
 				});
 			});
 
@@ -206,13 +202,13 @@
 </script>
 
 <PlayerBar
-	{currentTrack}
-	{duration}
-	{position}
-	{isActive}
-	{isPaused}
-	{order}
-	{loop}
+	{className}
+	currentTrack={playerState.currentTrack}
+	durationMs={playerState.durationMs}
+	positionMs={playerState.progressMs}
+	isPlaying={playerState.isPlaying}
+	order={playerState.order}
+	repeatMode={playerState.repeatMode}
 	{onToggleOrder}
 	{onToggleLoop}
 	{onSeek}

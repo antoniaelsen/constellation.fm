@@ -12,12 +12,11 @@
 	export interface Props {
 		className?: string;
 		currentTrack: PlaybackTrackInfo | null;
-		duration?: number;
-		position?: number;
-		isActive?: boolean;
-		isPaused?: boolean;
-		loop: TrackLoop;
-		order: TrackOrder;
+		durationMs?: number | null;
+		positionMs?: number | null;
+		isPlaying?: boolean;
+		order?: TrackOrder;
+		repeatMode?: TrackLoop;
 		onNextTrack: () => void;
 		onPreviousTrack: () => void;
 		onToggleOrder: () => void;
@@ -29,12 +28,11 @@
 	let {
 		className,
 		currentTrack,
-		duration,
-		position,
-		isActive,
-		isPaused,
-		loop,
+		durationMs,
+		positionMs,
+		isPlaying,
 		order,
+		repeatMode,
 		onNextTrack,
 		onSeek,
 		onPreviousTrack,
@@ -43,10 +41,10 @@
 		onTogglePlay
 	}: Props = $props();
 
-	let isValid = $derived(!!currentTrack && !!duration && !!position);
+	let isValid = $derived(!!currentTrack && !!durationMs && !!positionMs);
 </script>
 
-<div class={`flex flex-grow flex-col gap-3 ${className}`}>
+<div class={`flex flex-grow flex-col gap-3  ${className}`}>
 	<div class="flex justify-center gap-2">
 		<Button
 			class="border-none p-2! hover:border-none hover:bg-transparent!"
@@ -77,10 +75,10 @@
 			size="sm"
 			onclick={() => onTogglePlay()}
 		>
-			{#if isPaused}
-				<PlayArrow color="dark" />
-			{:else}
+			{#if isPlaying}
 				<Pause color="dark" />
+			{:else}
+				<PlayArrow color="dark" />
 			{/if}
 		</Button>
 		<Button
@@ -95,15 +93,15 @@
 		</Button>
 		<Button
 			class="border-none p-2! hover:border-none hover:bg-transparent!"
-			color={loop === TrackLoop.OFF ? 'dark' : 'green'}
+			color={repeatMode === TrackLoop.OFF ? 'dark' : 'green'}
 			outline={true}
 			pill={true}
 			size="sm"
 			onclick={() => onToggleLoop()}
 		>
-			{#if loop === TrackLoop.OFF}
+			{#if repeatMode === TrackLoop.OFF}
 				<Repeat />
-			{:else if loop === TrackLoop.CONTEXT}
+			{:else if repeatMode === TrackLoop.CONTEXT}
 				<Repeat />
 			{:else}
 				<RepeatOne />
@@ -113,8 +111,8 @@
 
 	<div class="flex items-center gap-3">
 		<span class="w-9 text-center text-xs text-xs text-gray-500">
-			{#if currentTrack && !!duration && !!position}
-				{Math.floor(position / 1000 / 60)}:{String(Math.floor(position / 1000) % 60).padStart(
+			{#if currentTrack && !!durationMs && !!positionMs}
+				{Math.floor(positionMs / 1000 / 60)}:{String(Math.floor(positionMs / 1000) % 60).padStart(
 					2,
 					'0'
 				)}
@@ -126,19 +124,19 @@
 			min="0"
 			disabled={!isValid}
 			id="seek"
-			max={duration || 100}
-			value={position || 0}
+			max={durationMs || 100}
+			value={positionMs || 0}
 			class="flex-grow {!isValid ? 'opacity-50' : ''}"
 			oninput={(e: any) => {
-				if (currentTrack && !!duration) {
+				if (currentTrack && !!durationMs) {
 					const newPosition = parseInt(e.target.value);
 					onSeek(newPosition);
 				}
 			}}
 		/>
 		<span class="w-9 text-center text-xs text-xs text-gray-500">
-			{#if isValid && !!duration}
-				{Math.floor(duration / 1000 / 60)}:{String(Math.floor(duration / 1000) % 60).padStart(
+			{#if isValid && !!durationMs}
+				{Math.floor(durationMs / 1000 / 60)}:{String(Math.floor(durationMs / 1000) % 60).padStart(
 					2,
 					'0'
 				)}

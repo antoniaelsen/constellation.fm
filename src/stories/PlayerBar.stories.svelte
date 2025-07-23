@@ -4,11 +4,15 @@
 
 	import PlayerBar from '$lib/client/components/player/PlayerBar.svelte';
 	import { Provider, TrackLoop, TrackOrder } from '$lib/types/constellations';
+	import { repeat } from 'lodash';
 
 	const mockTracks = [
 		{
 			name: 'First Track',
-			artists: [{ name: 'Artist One', href: '/artist/1' }],
+			artists: [
+				{ name: 'Artist One', href: '/artist/1' },
+				{ name: 'Artist Two', href: '/artist/2' }
+			],
 			album: {
 				name: 'Album One',
 				images: [{ url: 'https://placecats.com/200/200' }]
@@ -62,12 +66,13 @@
 <Story
 	name="Basic"
 	args={{
+		_interval: 0,
 		_currentTrackIndex: 0,
-		duration: 150 * 1000,
-		position: 10,
+		durationMs: 150 * 1000,
+		positionMs: 10,
 		isActive: true,
-		isPaused: false,
-		loop: TrackLoop.OFF,
+		isPlaying: false,
+		repeatMode: TrackLoop.OFF,
 		order: TrackOrder.LINEAR,
 		onNextTrack: fn(),
 		onPreviousTrack: fn(),
@@ -80,37 +85,45 @@
 
 		<PlayerBar
 			{currentTrack}
-			duration={args.duration}
-			position={args.position}
-			isActive={args.isActive}
-			isPaused={args.isPaused}
-			loop={args.loop}
+			durationMs={args.durationMs}
+			positionMs={args.positionMs}
+			isPlaying={args.isPlaying}
 			order={args.order}
+			repeatMode={args.repeatMode}
 			onNextTrack={() => {
 				args.onNextTrack();
-				args._currentTrackIndex = (args._currentTrackIndex + 1) % mockTracks.length;
-				args.position = 10;
+
+				if (args.repeatMode === TrackLoop.TRACK) {
+					args.positionMs = 0;
+				} else {
+					args._currentTrackIndex = (args._currentTrackIndex + 1) % mockTracks.length;
+					args.positionMs = 0;
+				}
 			}}
 			onPreviousTrack={() => {
 				args.onPreviousTrack();
-				if (args.position > 3000) {
-					args.position = 0;
+				if (args.positionMs > 3000) {
+					args.positionMs = 0;
 					return;
 				}
 
-				args._currentTrackIndex =
-					(args._currentTrackIndex - 1 + mockTracks.length) % mockTracks.length;
-				args.position = 10;
+				if (args.repeatMode === TrackLoop.TRACK) {
+					args.positionMs = 0;
+				} else {
+					args._currentTrackIndex =
+						(args._currentTrackIndex - 1 + mockTracks.length) % mockTracks.length;
+					args.positionMs = 0;
+				}
 			}}
 			onSeek={(newPosition) => {
 				args.onSeek(newPosition);
-				args.position = newPosition;
+				args.positionMs = newPosition;
 			}}
 			onToggleLoop={() => {
-				args.loop =
-					args.loop === TrackLoop.OFF
+				args.repeatMode =
+					args.repeatMode === TrackLoop.OFF
 						? TrackLoop.CONTEXT
-						: args.loop === TrackLoop.CONTEXT
+						: args.repeatMode === TrackLoop.CONTEXT
 							? TrackLoop.TRACK
 							: TrackLoop.OFF;
 			}}
@@ -119,7 +132,15 @@
 			}}
 			onTogglePlay={() => {
 				args.onTogglePlay();
-				args.isPaused = !args.isPaused;
+				args.isPlaying = !args.isPlaying;
+
+				if (args.isPlaying) {
+					args._interval = setInterval(() => {
+						args.positionMs += 1000;
+					}, 1000);
+				} else {
+					clearInterval(args._interval);
+				}
 			}}
 		/>
 	{/snippet}
@@ -130,7 +151,7 @@
 	args={{
 		currentTrack: null,
 		isActive: false,
-		isPaused: true,
+		isPlaying: false,
 		onNextTrack: fn(),
 		onPreviousTrack: fn(),
 		onSeek: fn(),

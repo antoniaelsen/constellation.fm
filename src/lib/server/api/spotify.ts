@@ -6,6 +6,7 @@ import {
 	type IValidateResponses,
 	type Market,
 	type MaxInt,
+	type PlaybackState,
 	type Playlist,
 	type QueryAdditionalTypes,
 	type SdkOptions,
@@ -71,7 +72,11 @@ class ResponseDeserializer extends DefaultResponseDeserializer {
 		];
 		const blacklisted = BLACKLIST_PARSE.some((url) => response.url.startsWith(url));
 
-		if (text.length > 0 && !blacklisted) {
+		if (text.length > 0) {
+			if (blacklisted) {
+				return text as TReturnType;
+			}
+
 			try {
 				const json = JSON.parse(text);
 				return json as TReturnType;
@@ -119,14 +124,29 @@ class ResponseValidator implements IValidateResponses {
 
 const OPTS: SdkOptions = {
 	beforeRequest: (url, options) => {
-		LOGGER.info(`[${options.method}] ${url}`, options);
+		// LOGGER.trace(`[${options.method}] ${url}`, options);
 	},
 	afterRequest: (url, options, response) => {
-		LOGGER.info(`[${options.method}] ${url} ${response.status} ${response.statusText}`, options);
+		// LOGGER.info(`[${options.method}] ${url} ${response.status} ${response.statusText}`, options);
 	},
 	cachingStrategy: new InMemoryCachingStrategy(),
 	deserializer: new ResponseDeserializer(),
 	responseValidator: new ResponseValidator()
+};
+
+export const getPlaybackState = async (tokens: AccessToken): Promise<PlaybackState> => {
+	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+
+	try {
+		const res = await sdk.player.getPlaybackState();
+		return res;
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(
+			spotifyErr.cause?.code ?? 500,
+			`Failed to fetch playback state: ${spotifyErr.message}`
+		);
+	}
 };
 
 export const getPlaylist = async (
@@ -145,7 +165,7 @@ export const getPlaylist = async (
 		);
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		throw error(spotifyErr.cause.code, `Failed to fetch playlist: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to fetch playlist: ${spotifyErr.message}`);
 	}
 };
 
@@ -180,7 +200,7 @@ export const getPlaylists = async (
 		}
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		throw error(spotifyErr.cause.code, `Failed to fetch playlists: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to fetch playlists: ${spotifyErr.message}`);
 	}
 
 	return acc;
@@ -193,7 +213,7 @@ export const getProfile = async (tokens: AccessToken): Promise<UserProfile> => {
 		return await sdk.currentUser.profile();
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		throw error(spotifyErr.cause.code, `Failed to fetch profile: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to fetch profile: ${spotifyErr.message}`);
 	}
 };
 
@@ -218,7 +238,7 @@ export const getTokens = async (code: string): Promise<SpotifyAccessToken> => {
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
 		LOGGER.error('Failed to fetch tokens: ', spotifyErr.message);
-		throw error(spotifyErr.cause.code, `Failed to fetch tokens: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to fetch tokens: ${spotifyErr.message}`);
 	}
 };
 
@@ -242,7 +262,7 @@ export const refreshTokens = async (refreshToken: string): Promise<SpotifyAccess
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
 		LOGGER.error('Failed to refresh tokens: ', spotifyErr.message);
-		throw error(spotifyErr.cause.code, `Failed to refresh tokens: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to refresh tokens: ${spotifyErr.message}`);
 	}
 };
 
@@ -259,7 +279,7 @@ export const startPlayback = async (
 		return await sdk.player.startResumePlayback(deviceId, contextUri, uris, offset, positionMs);
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		throw error(spotifyErr.cause.code, `Failed to start playback: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to start playback: ${spotifyErr.message}`);
 	}
 };
 
@@ -290,7 +310,7 @@ export const toggleShuffle = async (
 		return await sdk.player.togglePlaybackShuffle(shuffle, deviceId);
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		throw error(spotifyErr.cause.code, `Failed to toggle shuffle: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to toggle shuffle: ${spotifyErr.message}`);
 	}
 };
 
@@ -305,6 +325,9 @@ export const transferPlayback = async (
 		return await sdk.player.transferPlayback([deviceId], play);
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		throw error(spotifyErr.cause.code, `Failed to transfer playback: ${spotifyErr.message}`);
+		throw error(
+			spotifyErr.cause?.code ?? 500,
+			`Failed to transfer playback: ${spotifyErr.message}`
+		);
 	}
 };

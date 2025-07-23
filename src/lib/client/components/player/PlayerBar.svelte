@@ -1,21 +1,18 @@
 <script lang="ts">
+	import { TrackLoop, TrackOrder } from '$lib/types/constellations';
 	import Player, { type Props as PlayerProps } from './Player.svelte';
 	import TrackInfo from '../TrackInfo.svelte';
-	import type { CardProps } from 'flowbite-svelte';
 
-	export interface Props extends PlayerProps {
-		className?: string;
-	}
+	export interface Props extends PlayerProps {}
 
 	let {
 		className,
 		currentTrack = null,
-		duration = 0,
-		isActive = false,
-		isPaused = true,
-		loop,
-		order,
-		position = 0,
+		durationMs = 0,
+		positionMs = 0,
+		isPlaying = false,
+		order = TrackOrder.LINEAR,
+		repeatMode = TrackLoop.OFF,
 		onNextTrack,
 		onPreviousTrack,
 		onSeek,
@@ -25,7 +22,7 @@
 	}: Props = $props();
 </script>
 
-<div class={`flex items-center gap-8 p-4`}>
+<div class={`flex items-center gap-8 ${className}`}>
 	<div class="flex-1">
 		{#if currentTrack}
 			<TrackInfo
@@ -38,12 +35,11 @@
 
 	<Player
 		{currentTrack}
-		{duration}
-		{isActive}
-		{isPaused}
-		{loop}
+		{durationMs}
+		{isPlaying}
 		{order}
-		{position}
+		{positionMs}
+		{repeatMode}
 		{onNextTrack}
 		{onPreviousTrack}
 		{onSeek}

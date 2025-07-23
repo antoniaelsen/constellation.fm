@@ -149,9 +149,7 @@
 		scale={SCALE_STAR}
 		metadata={star.star.metadata}
 		showNameplate={showNameplates}
-		onClick={() => {
-			console.log('click star', star.star.id);
-		}}
+		onClick={() => {}}
 		onNameplateButtonClick={() => {
 			onStarButtonClick?.(star.star);
 		}}
