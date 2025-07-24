@@ -41,7 +41,7 @@
 		onTogglePlay
 	}: Props = $props();
 
-	let isValid = $derived(!!currentTrack && !!durationMs && !!positionMs);
+	let isValid = $derived(!!currentTrack && !!durationMs && positionMs !== null);
 </script>
 
 <div class={`flex flex-grow flex-col gap-3  ${className}`}>
