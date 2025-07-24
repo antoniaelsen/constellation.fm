@@ -16,6 +16,7 @@ const LOGGER = logger.child({
 });
 
 const CACHE_STALE_TIME_MS = 5 * 60 * 1000;
+
 const CACHE_BLACKLIST_PATTERNS = [
 	/\/me\/player\//,
 	/\/me\/player\/currently-playing/,
@@ -26,6 +27,13 @@ const CACHE_BLACKLIST_PATTERNS = [
 	/\/me\/player\/pause/,
 	/\/me\/player\/next/,
 	/\/me\/player\/previous/
+];
+
+const CACHE_CUSTOM_STALE_TIMES = [
+	{ pattern: /\/me\/playlists/, staleTimeMs: 10 * 1000 },
+	{ pattern: /\/playlists\/[^/]+$/, staleTimeMs: 30 * 1000 },
+	{ pattern: /\/me\/top\//, staleTimeMs: 60 * 60 * 1000 },
+	{ pattern: /\/me$/, staleTimeMs: 10 * 60 * 1000 }
 ];
 
 interface CachedResponse {
@@ -86,6 +94,9 @@ class LRUCache implements ICachingStrategy {
 			this.cache.delete(cacheKey);
 		} else if (this.cache.size >= this.maxSize) {
 			const firstKey = this.cache.keys().next().value;
+			if (!firstKey) {
+				return;
+			}
 			this.cache.delete(firstKey);
 		}
 		this.cache.set(cacheKey, item);
@@ -185,6 +196,11 @@ function shouldCache(url: string): boolean {
 	return !CACHE_BLACKLIST_PATTERNS.some((pattern) => pattern.test(url));
 }
 
+function getStaleTimeForUrl(url: string): number {
+	const customStaleTime = CACHE_CUSTOM_STALE_TIMES.find(({ pattern }) => pattern.test(url));
+	return customStaleTime ? customStaleTime.staleTimeMs : CACHE_STALE_TIME_MS;
+}
+
 function createCachingFetch(cache: ICachingStrategy, tokens: AccessToken): typeof fetch {
 	const userId = getUserIdFromToken(tokens);
 
@@ -201,8 +217,9 @@ function createCachingFetch(cache: ICachingStrategy, tokens: AccessToken): typeo
 
 		if (cached) {
 			const age = Date.now() - cached.timestamp;
+			const staleTime = getStaleTimeForUrl(url);
 
-			if (age < CACHE_STALE_TIME_MS) {
+			if (age < staleTime) {
 				return new Response(cached.body, {
 					status: cached.response.status,
 					statusText: cached.response.statusText,
@@ -216,6 +233,7 @@ function createCachingFetch(cache: ICachingStrategy, tokens: AccessToken): typeo
 		if (response.ok) {
 			try {
 				const body = await response.arrayBuffer();
+				const staleTime = getStaleTimeForUrl(url);
 				const cachedResponse: CachedResponse & ICachable = {
 					response: {
 						status: response.status,
@@ -225,7 +243,7 @@ function createCachingFetch(cache: ICachingStrategy, tokens: AccessToken): typeo
 					timestamp: Date.now(),
 					body,
 					cacheKey,
-					expiry: Date.now() + CACHE_STALE_TIME_MS
+					expiry: Date.now() + staleTime
 				};
 
 				cache.setCacheItem(cacheKey, cachedResponse);
