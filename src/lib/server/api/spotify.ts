@@ -90,7 +90,7 @@ class ResponseDeserializer extends DefaultResponseDeserializer {
 }
 
 class ResponseValidator implements IValidateResponses {
-	public async validateResponse(response: Response): Promise<void> {
+	private async _validateResponse(response: Response): Promise<void> {
 		switch (response.status) {
 			case 401:
 				throw new Error(
@@ -105,10 +105,9 @@ class ResponseValidator implements IValidateResponses {
 				);
 			case 429:
 				const retryAfter = response.headers.get('Retry-After');
-				throw new Error(
-					`The app has exceeded its rate limits; retry after: ${retryAfter} seconds.`,
-					{ cause: { code: 429 } }
-				);
+				throw new Error(`The app has exceeded its rate limits; retry after ${retryAfter} seconds`, {
+					cause: { code: 429 }
+				});
 			default:
 				if (!response.status.toString().startsWith('20')) {
 					const body = await response.text();
@@ -118,6 +117,18 @@ class ResponseValidator implements IValidateResponses {
 					);
 				}
 				break;
+		}
+	}
+
+	public async validateResponse(response: Response): Promise<void> {
+		try {
+			await this._validateResponse(response);
+		} catch (err) {
+			const spotifyErr = err as SpotifyError;
+			LOGGER.error(
+				`Request failed: ${spotifyErr.cause?.code} - ${spotifyErr.message} ("${response.url}")`
+			);
+			throw error(spotifyErr.cause?.code ?? 500, spotifyErr);
 		}
 	}
 }
