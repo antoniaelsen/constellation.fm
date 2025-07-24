@@ -1,4 +1,5 @@
 import { getPlaylists } from '$lib/server/api/spotify';
+import type { MaxInt } from '@spotify/web-api-ts-sdk';
 
 export async function GET({ locals, url }) {
 	const offset = url.searchParams.get('offset');
@@ -7,7 +8,7 @@ export async function GET({ locals, url }) {
 	try {
 		const playlists = await getPlaylists(locals.spotify.webApi, {
 			offset: offset ? parseInt(offset) : undefined,
-			limit: limit ? parseInt(limit) : undefined
+			limit: limit ? (Math.max(Math.min(parseInt(limit), 50), 1) as MaxInt<50>) : undefined
 		});
 
 		return new Response(JSON.stringify(playlists), {
