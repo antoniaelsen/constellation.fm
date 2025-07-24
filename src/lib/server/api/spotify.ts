@@ -1,15 +1,11 @@
 import {
-	DefaultResponseDeserializer,
-	InMemoryCachingStrategy,
 	SpotifyApi,
 	type AccessToken,
-	type IValidateResponses,
 	type Market,
 	type MaxInt,
 	type PlaybackState,
 	type Playlist,
 	type QueryAdditionalTypes,
-	type SdkOptions,
 	type SimplifiedPlaylist,
 	type Track,
 	type TrackItem,
@@ -19,6 +15,7 @@ import { error } from '@sveltejs/kit';
 
 import type { SpotifyAccessToken } from '$lib/types';
 import { logger } from '$lib/stores/logger';
+import { createSpotifyOptions, type SpotifyError } from './spotify-client';
 
 const LOGGER = logger.child({
 	module: 'api-spotify'
@@ -54,99 +51,12 @@ export const formatScope = (scope: string | string[]) => {
 	return scopes.sort().join(' ');
 };
 
-interface SpotifyError extends Error {
-	cause: {
-		code: number;
-	};
-}
-
-class ResponseDeserializer extends DefaultResponseDeserializer {
-	public async deserialize<TReturnType>(response: Response): Promise<TReturnType> {
-		const text = await response.text();
-
-		// The Spotify Web API is returning text (not JSON) for some endpoints.
-		// Blacklist these endpoints to avoid parsing errors.
-		const BLACKLIST_PARSE = [
-			'https://api.spotify.com/v1/me/player/repeat',
-			'https://api.spotify.com/v1/me/player/shuffle'
-		];
-		const blacklisted = BLACKLIST_PARSE.some((url) => response.url.startsWith(url));
-
-		if (text.length > 0) {
-			if (blacklisted) {
-				return text as TReturnType;
-			}
-
-			try {
-				const json = JSON.parse(text);
-				return json as TReturnType;
-			} catch (err) {
-				throw new Error(`Failed to parse JSON: ${err}`, { cause: { code: 500 } });
-			}
-		}
-
-		return null as TReturnType;
-	}
-}
-
-class ResponseValidator implements IValidateResponses {
-	private async _validateResponse(response: Response): Promise<void> {
-		switch (response.status) {
-			case 401:
-				throw new Error(
-					'Bad or expired token. This can happen if the user revoked a token or the access token has expired. You should re-authenticate the user.',
-					{ cause: { code: 401 } }
-				);
-			case 403:
-				const body = await response.text();
-				throw new Error(
-					`Bad OAuth request (wrong consumer key, bad nonce, expired timestamp...). Unfortunately, re-authenticating the user won't help here. Body: ${body}`,
-					{ cause: { code: 403 } }
-				);
-			case 429:
-				const retryAfter = response.headers.get('Retry-After');
-				throw new Error(`The app has exceeded its rate limits; retry after ${retryAfter} seconds`, {
-					cause: { code: 429 }
-				});
-			default:
-				if (!response.status.toString().startsWith('20')) {
-					const body = await response.text();
-					throw new Error(
-						`Unexpected error: (${response.status}) - ${response.statusText}${body ? `\n${body}` : ''}`,
-						{ cause: { code: response.status } }
-					);
-				}
-				break;
-		}
-	}
-
-	public async validateResponse(response: Response): Promise<void> {
-		try {
-			await this._validateResponse(response);
-		} catch (err) {
-			const spotifyErr = err as SpotifyError;
-			LOGGER.error(
-				`Request failed: ${spotifyErr.cause?.code} - ${spotifyErr.message} ("${response.url}")`
-			);
-			throw error(spotifyErr.cause?.code ?? 500, spotifyErr);
-		}
-	}
-}
-
-const OPTS: SdkOptions = {
-	beforeRequest: (url, options) => {
-		// LOGGER.trace(`[${options.method}] ${url}`, options);
-	},
-	afterRequest: (url, options, response) => {
-		// LOGGER.info(`[${options.method}] ${url} ${response.status} ${response.statusText}`, options);
-	},
-	cachingStrategy: new InMemoryCachingStrategy(),
-	deserializer: new ResponseDeserializer(),
-	responseValidator: new ResponseValidator()
-};
-
 export const getPlaybackState = async (tokens: AccessToken): Promise<PlaybackState> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
 	try {
 		const res = await sdk.player.getPlaybackState();
@@ -162,7 +72,11 @@ export const getPlaylist = async (
 	playlistId: string,
 	options?: { market?: Market; fields?: string; additionalTypes?: QueryAdditionalTypes }
 ): Promise<Playlist<QueryAdditionalTypes extends undefined ? Track : TrackItem>> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
 	try {
 		return await sdk.playlists.getPlaylist(
@@ -181,7 +95,11 @@ export const getPlaylists = async (
 	tokens: AccessToken,
 	options?: { limit?: MaxInt<50>; offset?: number }
 ): Promise<SimplifiedPlaylist[]> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 	let { limit, offset } = options || {};
 	if (limit) {
 		try {
@@ -215,7 +133,11 @@ export const getPlaylists = async (
 };
 
 export const getProfile = async (tokens: AccessToken): Promise<UserProfile> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
 	try {
 		return await sdk.currentUser.profile();
@@ -280,7 +202,11 @@ export const startPlayback = async (
 	target: { contextUri: string; offset: { position: number }; uris: string[] },
 	positionMs: number
 ): Promise<void> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
 	const { contextUri, offset, uris } = target;
 	try {
@@ -296,7 +222,11 @@ export const setRepeatMode = async (
 	repeatMode: 'track' | 'context' | 'off',
 	deviceId?: string
 ): Promise<void> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
 	try {
 		return await sdk.player.setRepeatMode(repeatMode, deviceId);
@@ -312,7 +242,11 @@ export const toggleShuffle = async (
 	shuffle: boolean,
 	deviceId?: string
 ): Promise<void> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
 	try {
 		return await sdk.player.togglePlaybackShuffle(shuffle, deviceId);
@@ -327,7 +261,11 @@ export const transferPlayback = async (
 	deviceId: string,
 	play: boolean
 ): Promise<void> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
 	try {
 		return await sdk.player.transferPlayback([deviceId], play);
