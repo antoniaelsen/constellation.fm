@@ -18,7 +18,7 @@ const LOGGER = logger.child({
 const CACHE_STALE_TIME_MS = 5 * 60 * 1000;
 
 const CACHE_BLACKLIST_PATTERNS = [
-	/\/me\/player\//,
+	/\/me\/player/,
 	/\/me\/player\/currently-playing/,
 	/\/me\/player\/devices/,
 	/\/me\/player\/repeat/,
@@ -30,9 +30,8 @@ const CACHE_BLACKLIST_PATTERNS = [
 ];
 
 const CACHE_CUSTOM_STALE_TIMES = [
-	{ pattern: /\/me\/playlists/, staleTimeMs: 10 * 1000 },
-	{ pattern: /\/playlists\/[^/]+$/, staleTimeMs: 30 * 1000 },
-	{ pattern: /\/me\/top\//, staleTimeMs: 60 * 60 * 1000 },
+	{ pattern: /\/me\/playlists/, staleTimeMs: 5 * 60 * 1000 }, // TODO: 10s
+	{ pattern: /\/playlists\/[^/]+$/, staleTimeMs: 5 * 60 * 1000 },
 	{ pattern: /\/me$/, staleTimeMs: 10 * 60 * 1000 }
 ];
 
@@ -192,8 +191,13 @@ function createCacheKey(url: string, options: RequestInit, userId: string): stri
 	return `${userId}:${method}:${url}:${sortedHeaders}`;
 }
 
-function shouldCache(url: string): boolean {
-	return !CACHE_BLACKLIST_PATTERNS.some((pattern) => pattern.test(url));
+function shouldCache(url: string, init?: RequestInit): boolean {
+	if (init?.method !== 'GET') {
+		return false;
+	}
+
+	const endpoint = url.replace('https://api.spotify.com/v1', '');
+	return !CACHE_BLACKLIST_PATTERNS.some((pattern) => pattern.test(endpoint));
 }
 
 function getStaleTimeForUrl(url: string): number {
@@ -208,18 +212,18 @@ function createCachingFetch(cache: ICachingStrategy, tokens: AccessToken): typeo
 		const url = typeof input === 'string' ? input : input.toString();
 		const options = init || {};
 
-		if (!shouldCache(url)) {
+		if (!shouldCache(url, init)) {
 			return fetch(input, init);
 		}
 
 		const cacheKey = createCacheKey(url, options, userId);
 		const cached = await cache.get<CachedResponse>(cacheKey);
+		const age = cached ? Date.now() - cached.timestamp : null;
 
 		if (cached) {
-			const age = Date.now() - cached.timestamp;
 			const staleTime = getStaleTimeForUrl(url);
 
-			if (age < staleTime) {
+			if (age && age < staleTime) {
 				return new Response(cached.body, {
 					status: cached.response.status,
 					statusText: cached.response.statusText,
@@ -229,8 +233,7 @@ function createCachingFetch(cache: ICachingStrategy, tokens: AccessToken): typeo
 		}
 
 		const response = await fetch(input, init);
-
-		if (response.ok) {
+		if (response.ok && response.status === 200) {
 			try {
 				const body = await response.arrayBuffer();
 				const staleTime = getStaleTimeForUrl(url);
@@ -267,10 +270,10 @@ const sharedCache = new LRUCache(1000);
 export function createSpotifyOptions(tokens: AccessToken): SdkOptions {
 	return {
 		beforeRequest: (url, options) => {
-			// LOGGER.trace(`[${options.method}] ${url}`, options);
+			LOGGER.trace(`[${options.method}] ${url}`, options);
 		},
 		afterRequest: (url, options, response) => {
-			// LOGGER.info(`[${options.method}] ${url} ${response.status} ${response.statusText}`, options);
+			LOGGER.info(`[${options.method}] ${url} ${response.status} ${response.statusText}`, options);
 		},
 		cachingStrategy: sharedCache,
 		deserializer: new ResponseDeserializer(),

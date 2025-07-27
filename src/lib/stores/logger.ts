@@ -73,7 +73,6 @@ plogger.setLogLevel = (NODE_ENV: ServerEnvironment) => {
 			break;
 	}
 
-	logger.info(`Logger log level will be set to "${logLevel}".`);
 	plogger.level = logLevel;
 
 	return logLevel;
