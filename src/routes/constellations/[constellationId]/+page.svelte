@@ -1,10 +1,11 @@
 <script lang="ts">
+	import type { Intersection } from 'three';
 	import { useConstellation } from '$lib/client/api/constellations';
 	import { page } from '$app/stores';
 	import { startPlayback } from '$lib/client/api/spotify';
 	import Constellation from '$lib/client/components/constellations/Constellation.svelte';
 	import { playerState } from '$lib/client/stores/player';
-	import type { Star } from '$lib/types/constellations';
+	import type { Star, Edge } from '$lib/types/constellations';
 
 	const req = $derived(
 		useConstellation($page.params.constellationId, { retry: false, refetchOnWindowFocus: false })
@@ -64,6 +65,7 @@
 	};
 
 	let activeNodeId = $derived(getActiveNodeId($req.data?.stars ?? [], $playerState));
+	let selectedNodeIds = $state<string[]>([]);
 
 	const onStarButtonClick = async (star: Star) => {
 		const { deviceId } = $playerState;
@@ -80,13 +82,43 @@
 
 		await startPlayback(deviceId, uri, { position }, 0);
 	};
+
+	const onStarClick = (star: Star, event: Intersection) => {
+		const e = event.nativeEvent;
+		if (!e.shiftKey) {
+			return;
+		}
+
+		const starId = star.id;
+		const currentIndex = selectedNodeIds.indexOf(starId);
+
+		if (currentIndex >= 0) {
+			// Deselect if already selected
+			selectedNodeIds = selectedNodeIds.filter((id) => id !== starId);
+		} else {
+			// Add to selection, limit to 2
+			if (selectedNodeIds.length >= 2) {
+				selectedNodeIds = [selectedNodeIds[1], starId];
+			} else {
+				selectedNodeIds = [...selectedNodeIds, starId];
+			}
+		}
+	};
+
+	const onEdgeRemove = (edge: Edge) => {
+		console.log('Removing edge:', edge);
+		// TODO: Implement edge removal API call
+	};
 </script>
 
 {#if $req.data}
 	<Constellation
 		activeNodeId={`${activeNodeId}`}
 		constellation={$req.data}
+		{selectedNodeIds}
 		showNameplates={true}
 		{onStarButtonClick}
+		{onStarClick}
+		{onEdgeRemove}
 	/>
 {/if}

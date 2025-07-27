@@ -16,21 +16,14 @@
 
 	let graphRef = $state<ForceGraph | null>(null);
 	useTask(() => {
-		// console.log('tick');
 		if (!graphRef) {
 			return;
 		}
-		// console.log('tick frame');
 		const now = Date.now();
 		if (!lastTick || now - lastTick >= 100) {
 			graphRef.tickFrame();
 			lastTick = now;
 		}
-	});
-
-	const { camera } = useThrelte();
-	$effect(() => {
-		console.log('Camera position:', camera.current.position);
 	});
 </script>
 

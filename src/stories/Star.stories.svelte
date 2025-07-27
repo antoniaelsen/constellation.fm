@@ -24,9 +24,36 @@
 <Story
 	name="Basic"
 	args={{
+		active: false,
+		activeColor: 'cyan',
+		color: 'white',
+		scale: 1,
+		showNameplate: true,
 		index: 0,
+		isSelected: false,
 		metadata: mockTrack(),
 		onClick: fn(),
 		onNameplateButtonClick: fn()
 	}}
-/>
+>
+	{#snippet template(args)}
+		<Star
+			active={args.active}
+			activeColor={args.activeColor}
+			color={args.color}
+			scale={args.scale}
+			showNameplate={args.showNameplate}
+			index={args.index}
+			isSelected={args.isSelected}
+			metadata={args.metadata}
+			onClick={(e) => {
+				args.onClick(e);
+				if (!e.nativeEvent.altKey) {
+					return;
+				}
+
+				args.isSelected = !args.isSelected;
+			}}
+		/>
+	{/snippet}
+</Story>

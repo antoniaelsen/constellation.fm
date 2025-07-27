@@ -128,9 +128,6 @@
 	graphRef = graph;
 
 	onMount(() => {
-		console.log(' - on mount');
-		console.log('   - graph: ', graph);
-
 		graph
 			.graphData(graphData)
 			.nodeId(nodeId)
@@ -199,7 +196,6 @@
 	});
 
 	onDestroy(() => {
-		console.log(' - on destroy: ', graph);
 		if (graph) {
 			// TODO(antoniae)
 			// graph.dispose();
@@ -242,8 +238,6 @@
 				dagLevelDistance: graphRef.dagLevelDistance()
 			}
 		};
-
-		console.log('Force Graph State:', state);
 	});
 </script>
 
