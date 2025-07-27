@@ -27,7 +27,8 @@ export interface PlaybackTrackInfo {
 	album: {
 		name: string;
 		images: { url: string }[];
-	};
+	} | null;
+	isLocal: boolean;
 }
 
 /**
@@ -102,9 +103,12 @@ export interface ETrackFeatures {
  * Not stored in the database.
  */
 export interface ETrackMetadata {
-	album: EAlbumMetadata;
+	// <provider>:<providerTrackId>, e.g. "spotify:1234567890"
+	key: string;
+	album: EAlbumMetadata | null;
 	features?: ETrackFeatures;
 	artists: EArtistMetadata[];
+	isLocal: boolean;
 	isrc?: string;
 	href?: string;
 	name: string;
@@ -160,10 +164,14 @@ export interface Star extends StarPrototype {
 }
 
 export interface StarPrototype {
-	isrc: string;
+	// The ISRC of the track, if available
+	isrc: string | null;
 
+	// The provider of the track (e.g. Spotify, SoundCloud, etc.)
 	provider: Provider;
 
+	// The ID of the track in the provider's API
+	// note: in Spotify, this is either the Spotify ID, or the uri (if the track is local)
 	providerTrackId: string;
 
 	// The order (sequential) of the track in the provider's playlist
@@ -171,4 +179,7 @@ export interface StarPrototype {
 
 	// The datetime of the track in the provider's playlist (to differentiate between multiple instances of the same track)
 	providerTimestamp: Date;
+
+	// Whether the track is local to the user's library
+	isLocal: boolean;
 }

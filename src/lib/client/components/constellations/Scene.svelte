@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { OrbitControls, interactivity, transitions } from '@threlte/extras';
+	import { OrbitControls, interactivity } from '@threlte/extras';
 
 	interactivity();
-	transitions();
 
 	let { children } = $props();
 </script>

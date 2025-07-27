@@ -166,7 +166,8 @@ export const stars = pgTable(
 		providerTrackId: text('providerTrackId').notNull(),
 		providerOrder: integer('providerOrder').notNull(),
 		providerTimestamp: timestamp({ mode: 'date' }).notNull(),
-		isrc: text('isrc').notNull()
+		isrc: text('isrc'),
+		isLocal: boolean('isLocal').notNull().default(false)
 	},
 	(star) => ({
 		uniqConstellationTrack: unique().on(star.constellationId, star.provider, star.providerTrackId)

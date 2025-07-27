@@ -18,15 +18,21 @@ export interface PlayerState {
 }
 
 export const toPlaybackTrack = (track: any): PlaybackTrackInfo => {
+	const { linked_from, id, name, artists, album, is_local, uri } = track;
+	const providerTrackId = !is_local ? (linked_from?.id ?? id) : uri;
+	const albumMetadata = album
+		? {
+				name: album.name,
+				images: album.images.map((image: any) => ({ url: image.url }))
+			}
+		: null;
+
 	return {
 		provider: Provider.SPOTIFY,
-		providerTrackId: track.linked_from?.id ?? track.id,
-		name: track.name,
-		artists: track.artists.map((artist: any) => ({ name: artist.name })),
-		album: {
-			name: track.album.name,
-			images: track.album.images.map((image: any) => ({ url: image.url }))
-		}
+		providerTrackId,
+		name,
+		artists: artists.map((artist: any) => ({ name: artist.name })),
+		album: albumMetadata
 	};
 };
 

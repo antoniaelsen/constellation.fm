@@ -3,17 +3,21 @@
 	import { A, Avatar, P } from 'flowbite-svelte';
 
 	interface Props {
-		album?: EAlbumMetadata;
+		album: EAlbumMetadata | null;
 		artists: EArtistMetadata[];
 		href?: string;
 		name: string;
+		isLocal: boolean;
 	}
 
-	let { name, href, artists, album }: Props = $props();
+	let { name, href, artists, album, isLocal }: Props = $props();
 </script>
 
 <div class="flex flex-row flex-nowrap items-center justify-start gap-3">
-	<Avatar src={album?.images[0]?.url} cornerStyle="rounded" class="pointer-events-none" />
+	<!-- TODO: add local indicator -->
+	{#if album && album.images.length > 0}
+		<Avatar src={album?.images[0]?.url} cornerStyle="rounded" class="pointer-events-none"></Avatar>
+	{/if}
 
 	<div class="flex flex-col">
 		<A

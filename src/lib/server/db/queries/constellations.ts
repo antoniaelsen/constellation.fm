@@ -198,7 +198,8 @@ export async function syncStars(
 					providerTrackId: sp.providerTrackId,
 					providerOrder: sp.providerOrder,
 					providerTimestamp: sp.providerTimestamp,
-					isrc: sp.isrc
+					isrc: sp.isrc,
+					isLocal: sp.isLocal
 				};
 				await db.insert(stars).values(insert).onConflictDoNothing();
 			})

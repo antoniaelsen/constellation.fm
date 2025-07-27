@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Intersection } from 'three';
 	import ConstellationDagre from '$lib/client/components/constellations/ConstellationDagre.svelte';
 	import type { Constellation, Star, Edge } from '$lib/types/constellations';
 
@@ -9,7 +8,7 @@
 		selectedNodeIds?: string[];
 		showNameplates: boolean;
 		onStarButtonClick?: (star: Star) => void;
-		onStarClick?: (star: Star, event: Intersection) => void;
+		onStarClick?: (star: Star, event: IntersectionEvent) => void;
 		onEdgeRemove?: (edge: Edge) => void;
 	}
 

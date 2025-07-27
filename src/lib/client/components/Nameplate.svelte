@@ -5,13 +5,16 @@
 	import { PauseSolid, PlaySolid } from 'flowbite-svelte-icons';
 
 	interface Props extends Omit<CardProps, 'children'> {
-		artists: EArtistMetadata[];
-		album: EAlbumMetadata;
 		className?: string;
+
+		artists: EArtistMetadata[];
+		album: EAlbumMetadata | null;
 		href: string;
 		index: number;
 		isActive?: boolean;
+		isLocal: boolean;
 		name: string;
+
 		onButtonClick?: () => void;
 		onPointerEnter?: () => void;
 		onPointerLeave?: () => void;
@@ -29,6 +32,7 @@
 		className,
 		index,
 		isActive,
+		isLocal,
 		onClick,
 		onButtonClick,
 		onPointerEnter,
@@ -58,6 +62,7 @@
 			<Button
 				class=" border-none bg-transparent p-2! hover:border-none hover:bg-transparent!"
 				color="dark"
+				disabled={isLocal}
 				outline={true}
 				pill={true}
 				size="sm"
@@ -96,5 +101,5 @@
 		{/if}
 	</div>
 
-	<TrackInfo {name} {href} {artists} {album} />
+	<TrackInfo {name} {href} {artists} {album} {isLocal} />
 </Card>

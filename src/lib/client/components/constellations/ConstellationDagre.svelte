@@ -43,7 +43,7 @@
 		alphaTarget?: number;
 		velocityDecay?: number;
 		onStarButtonClick?: (star: StarType) => void;
-		onStarClick?: (star: StarType, event: THREE.Intersection) => void;
+		onStarClick?: (star: StarType, event: IntersectionEvent) => void;
 		onEdgeRemove?: (edge: Edge) => void;
 	}
 

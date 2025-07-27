@@ -4,7 +4,6 @@
 
 	import PlayerBar from '$lib/client/components/player/PlayerBar.svelte';
 	import { Provider, TrackLoop, TrackOrder } from '$lib/types/constellations';
-	import { repeat } from 'lodash';
 
 	const mockTracks = [
 		{

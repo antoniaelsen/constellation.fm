@@ -83,7 +83,7 @@
 		await startPlayback(deviceId, uri, { position }, 0);
 	};
 
-	const onStarClick = (star: Star, event: Intersection) => {
+	const onStarClick = (star: Star, event: IntersectionEvent) => {
 		const e = event.nativeEvent;
 		if (!e.shiftKey) {
 			return;

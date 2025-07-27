@@ -36,14 +36,14 @@ const zipConstellationMetadata = (
 	constellation: Constellation,
 	metadata: ConstellationMetadata
 ): Constellation => {
-	const starMetadata = Object.fromEntries(metadata.stars.map((star) => [star.isrc, star]));
+	const starMetadata = Object.fromEntries(metadata.stars.map((star) => [star.key, star]));
 
 	return {
 		...constellation,
 		metadata: metadata.playlist,
 		stars: constellation.stars.map((star) => ({
 			...star,
-			metadata: starMetadata[star.isrc]
+			metadata: starMetadata[`${Provider.SPOTIFY}:${star.providerTrackId}`]
 		}))
 	};
 };

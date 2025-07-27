@@ -2,8 +2,6 @@
 	import type { Snippet } from 'svelte';
 	import { Canvas } from '@threlte/core';
 	import Scene from '$lib/client/components/constellations/Scene.svelte';
-	import { transitions } from '@threlte/extras';
-	transitions();
 
 	let { children }: { children: Snippet } = $props();
 </script>

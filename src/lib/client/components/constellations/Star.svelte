@@ -83,7 +83,7 @@
 		onpointerleave={() => {
 			hovered = false;
 		}}
-		onclick={(e) => {
+		onclick={(e: IntersectionEvent) => {
 			e.stopPropagation();
 			onClick?.();
 		}}
@@ -105,11 +105,12 @@
 				>
 					<Nameplate
 						className={`${hovered || active ? 'opacity-100' : 'opacity-75 bg-transparent! border-none! shadow-none!'} translate-x-1/2 transition-all duration-500`}
+						{index}
 						name={metadata.name ?? ''}
 						href={metadata.href ?? ''}
 						artists={metadata.artists}
 						album={metadata.album}
-						{index}
+						isLocal={metadata.isLocal}
 						onButtonClick={() => {
 							onNameplateButtonClick?.();
 						}}
