@@ -1,5 +1,6 @@
 import { getPlaylists } from '$lib/server/api/spotify';
 import type { MaxInt } from '@spotify/web-api-ts-sdk';
+import type { HttpError } from '@sveltejs/kit';
 
 export async function GET({ locals, url }) {
 	const offset = url.searchParams.get('offset');
@@ -18,7 +19,7 @@ export async function GET({ locals, url }) {
 		});
 	} catch (err) {
 		return new Response(JSON.stringify({ error: 'Failed to fetch playlists' }), {
-			status: err.status ?? 500
+			status: (err as HttpError).status ?? 500
 		});
 	}
 }

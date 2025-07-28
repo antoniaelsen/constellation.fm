@@ -29,6 +29,7 @@
 				name={currentTrack.name}
 				artists={currentTrack.artists}
 				album={currentTrack.album}
+				isLocal={currentTrack.isLocal}
 			/>
 		{/if}
 	</div>

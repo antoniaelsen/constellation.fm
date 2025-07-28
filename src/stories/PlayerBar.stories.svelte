@@ -1,8 +1,9 @@
-<script module>
+<script module lang="ts">
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import { fn } from '@storybook/test';
+	import type { Component } from 'svelte';
 
-	import PlayerBar from '$lib/client/components/player/PlayerBar.svelte';
+	import PlayerBar, { type Props } from '$lib/client/components/player/PlayerBar.svelte';
 	import { Provider, TrackLoop, TrackOrder } from '$lib/types/constellations';
 
 	const mockTracks = [
@@ -17,7 +18,8 @@
 				images: [{ url: 'https://placecats.com/200/200' }]
 			},
 			provider: Provider.SPOTIFY,
-			providerTrackId: '1234567890'
+			providerTrackId: '1234567890',
+			isLocal: false
 		},
 		{
 			name: 'Second Track',
@@ -27,21 +29,42 @@
 				images: [{ url: 'https://placecats.com/200/200' }]
 			},
 			provider: Provider.SPOTIFY,
-			providerTrackId: '1234567890'
+			providerTrackId: '1234567890',
+			isLocal: false
 		},
 		{
-			name: 'Third Track',
+			name: 'Third Track (local)',
 			artists: [{ name: 'Artist Three', href: '/artist/3' }],
 			album: {
 				name: 'Album Three',
 				images: [{ url: 'https://placecats.com/200/200' }]
 			},
 			provider: Provider.SPOTIFY,
-			providerTrackId: '1234567890'
+			providerTrackId: '1234567890',
+			isLocal: true
+		},
+		{
+			name: 'Fourth Track (local, no album)',
+			artists: [{ name: 'Artist Four', href: '/artist/4' }],
+			album: null,
+			provider: Provider.SPOTIFY,
+			providerTrackId: '1234567890',
+			isLocal: true
+		},
+		{
+			name: 'Fifth Track (local, no album)',
+			artists: [{ name: 'Artist Five', href: '/artist/5' }],
+			album: null,
+			provider: Provider.SPOTIFY,
+			providerTrackId: '1234567890',
+			isLocal: false
 		}
 	];
 
-	const { Story } = defineMeta({
+	const { Story } = defineMeta<
+		unknown,
+		Component<Props & { _currentTrackIndex: number; _interval: number }, {}, ''>
+	>({
 		title: 'player/PlayerBar',
 		component: PlayerBar,
 		tags: ['autodocs'],
@@ -49,11 +72,13 @@
 			layout: 'fullscreen'
 		},
 		args: {
-			currentTrackIndex: 0,
-			position: 10,
-			duration: 150 * 1000,
-			isActive: true,
-			isPaused: false,
+			_currentTrackIndex: 0,
+			_interval: 0,
+			positionMs: 10,
+			durationMs: 150 * 1000,
+			isPlaying: false,
+			repeatMode: TrackLoop.OFF,
+			order: TrackOrder.LINEAR,
 			onNextTrack: fn(),
 			onPreviousTrack: fn(),
 			onSeek: fn(),
@@ -65,11 +90,10 @@
 <Story
 	name="Basic"
 	args={{
-		_interval: 0,
 		_currentTrackIndex: 0,
+		_interval: 0,
 		durationMs: 150 * 1000,
 		positionMs: 10,
-		isActive: true,
 		isPlaying: false,
 		repeatMode: TrackLoop.OFF,
 		order: TrackOrder.LINEAR,
@@ -80,7 +104,7 @@
 	}}
 >
 	{#snippet template(args)}
-		{@const currentTrack = mockTracks[args._currentTrackIndex || 0]}
+		{@const currentTrack = mockTracks[(args as any)._currentTrackIndex || 0]}
 
 		<PlayerBar
 			{currentTrack}
@@ -95,13 +119,14 @@
 				if (args.repeatMode === TrackLoop.TRACK) {
 					args.positionMs = 0;
 				} else {
-					args._currentTrackIndex = (args._currentTrackIndex + 1) % mockTracks.length;
+					(args as any)._currentTrackIndex =
+						((args as any)._currentTrackIndex + 1) % mockTracks.length;
 					args.positionMs = 0;
 				}
 			}}
 			onPreviousTrack={() => {
 				args.onPreviousTrack();
-				if (args.positionMs > 3000) {
+				if (args.positionMs && args.positionMs > 3000) {
 					args.positionMs = 0;
 					return;
 				}
@@ -109,8 +134,8 @@
 				if (args.repeatMode === TrackLoop.TRACK) {
 					args.positionMs = 0;
 				} else {
-					args._currentTrackIndex =
-						(args._currentTrackIndex - 1 + mockTracks.length) % mockTracks.length;
+					(args as any)._currentTrackIndex =
+						((args as any)._currentTrackIndex - 1 + mockTracks.length) % mockTracks.length;
 					args.positionMs = 0;
 				}
 			}}
@@ -134,11 +159,11 @@
 				args.isPlaying = !args.isPlaying;
 
 				if (args.isPlaying) {
-					args._interval = setInterval(() => {
-						args.positionMs += 1000;
+					(args as any)._interval = setInterval(() => {
+						args.positionMs = (args.positionMs || 0) + 1000;
 					}, 1000);
 				} else {
-					clearInterval(args._interval);
+					clearInterval((args as any)._interval);
 				}
 			}}
 		/>
@@ -149,7 +174,6 @@
 	name="Inactive"
 	args={{
 		currentTrack: null,
-		isActive: false,
 		isPlaying: false,
 		onNextTrack: fn(),
 		onPreviousTrack: fn(),

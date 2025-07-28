@@ -4,7 +4,7 @@
 	import TrackInfo from './TrackInfo.svelte';
 	import { PauseSolid, PlaySolid } from 'flowbite-svelte-icons';
 
-	interface Props extends Omit<CardProps, 'children'> {
+	interface Props {
 		className?: string;
 
 		artists: EArtistMetadata[];
@@ -15,6 +15,7 @@
 		isLocal: boolean;
 		name: string;
 
+		onClick?: () => void;
 		onButtonClick?: () => void;
 		onPointerEnter?: () => void;
 		onPointerLeave?: () => void;
@@ -42,7 +43,6 @@
 </script>
 
 <Card
-	{...rest}
 	class="flex w-max flex-row flex-nowrap items-center overflow-hidden px-4 py-3 select-none {className}"
 	onclick={() => {
 		onClick?.();
@@ -66,25 +66,25 @@
 				outline={true}
 				pill={true}
 				size="sm"
-				onpointerenter={(e) => {
+				onpointerenter={(e: MouseEvent) => {
 					e.stopPropagation();
 					isButtonHovered = true;
 				}}
-				onpointerleave={(e) => {
+				onpointerleave={(e: MouseEvent) => {
 					e.stopPropagation();
 					isPointerDown = false;
 					isButtonHovered = false;
 				}}
-				onpointerdown={(e) => {
+				onpointerdown={(e: MouseEvent) => {
 					e.stopPropagation();
 					isPointerDown = true;
 					onButtonClick?.();
 				}}
-				onpointerup={(e) => {
+				onpointerup={(e: MouseEvent) => {
 					e.stopPropagation();
 					isPointerDown = false;
 				}}
-				onpointercancel={(e) => {
+				onpointercancel={(e: MouseEvent) => {
 					e.stopPropagation();
 					isPointerDown = false;
 					isButtonHovered = false;

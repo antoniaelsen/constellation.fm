@@ -1,4 +1,5 @@
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import type { AdapterAccountType } from '@auth/sveltekit/adapters';
 import {
 	boolean,
 	timestamp,
@@ -10,7 +11,6 @@ import {
 	bigint,
 	pgEnum
 } from 'drizzle-orm/pg-core';
-import type { AdapterAccountType } from 'next-auth/adapters';
 import { db } from '.';
 import { Provider } from '../../types/constellations';
 

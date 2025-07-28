@@ -5,7 +5,7 @@
 	interface Props {
 		activeNodeId: string | null;
 		constellation: Constellation;
-		selectedNodeIds?: string[];
+		selectedNodeIds: string[];
 		showNameplates: boolean;
 		onStarButtonClick?: (star: Star) => void;
 		onStarClick?: (star: Star, event: IntersectionEvent) => void;

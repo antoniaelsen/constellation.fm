@@ -28,11 +28,12 @@ export const toPlaybackTrack = (track: any): PlaybackTrackInfo => {
 		: null;
 
 	return {
-		provider: Provider.SPOTIFY,
-		providerTrackId,
-		name,
+		album: albumMetadata,
 		artists: artists.map((artist: any) => ({ name: artist.name })),
-		album: albumMetadata
+		isLocal: is_local,
+		name,
+		provider: Provider.SPOTIFY,
+		providerTrackId
 	};
 };
 

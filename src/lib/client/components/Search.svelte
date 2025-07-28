@@ -13,13 +13,13 @@
 
 <div class="flex items-center">
 	{#if collapsed}
-		<div in:fadeIn>
+		<div in:fadeIn={{ duration: 300 }}>
 			<Button pill={true} outline={true} class="border-none! p-2!" onclick={onClick}>
 				<SearchOutline />
 			</Button>
 		</div>
 	{:else}
-		<div in:fadeIn>
+		<div in:fadeIn={{ duration: 300 }}>
 			<Search {size} clearable bind:value />
 		</div>
 	{/if}

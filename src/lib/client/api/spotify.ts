@@ -1,5 +1,5 @@
 import type { PlaybackState, SimplifiedPlaylist } from '@spotify/web-api-ts-sdk';
-import { useQuery, useQueryClient, type QueryOptions } from '@sveltestack/svelte-query';
+import { useQuery, useQueryClient, type QueryObserverOptions } from '@sveltestack/svelte-query';
 import { apiFetch } from './fetch';
 
 export const getPlaybackState = async () => {
@@ -74,7 +74,7 @@ export const setShuffle = async (state: boolean, deviceId: string | null = null)
 	});
 };
 
-export const usePlaybackState = (opts: QueryOptions<PlaybackState>) => {
+export const usePlaybackState = (opts: QueryObserverOptions<PlaybackState>) => {
 	return useQuery(['me/player'], () => getPlaybackState(), opts);
 };
 

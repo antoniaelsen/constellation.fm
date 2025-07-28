@@ -31,10 +31,12 @@
 	}
 
 	interface Props {
-		constellation: Constellation;
 		activeNodeId: string | null;
+		constellation: Constellation;
 		selectedNodeIds?: string[];
 		showNameplates?: boolean;
+
+		// Dagre specific
 		linkWidth?: number;
 		chargeStrength?: number;
 		centerStrength?: number;
@@ -42,6 +44,7 @@
 		alphaDecay?: number;
 		alphaTarget?: number;
 		velocityDecay?: number;
+
 		onStarButtonClick?: (star: StarType) => void;
 		onStarClick?: (star: StarType, event: IntersectionEvent) => void;
 		onEdgeRemove?: (edge: Edge) => void;
@@ -144,12 +147,12 @@
 		return Math.max(Math.exp(-5 * normalizedDistance), EDGE_OPACITY_MIN);
 	};
 
-	const onPointerEnter = (e: PointerEvent, i: number) => {
+	const onPointerEnter = (i: number) => {
 		if (hoverTimeout) clearTimeout(hoverTimeout);
 		hoveredEdgeIndex = i;
 	};
 
-	const onPointerLeave = (e) => {
+	const onPointerLeave = () => {
 		hoveredEdgeIndex = null;
 	};
 
@@ -162,12 +165,12 @@
 
 {#each stars as star (star.index)}
 	<Star
-		active={star.index === activeStarIndex}
-		isSelected={selectedNodeIds.includes(star.star.id)}
 		index={star.star.providerOrder}
+		isActive={star.index === activeStarIndex}
+		isSelected={selectedNodeIds.includes(star.star.id)}
+		metadata={star.star.metadata}
 		position={[star.x || 0, star.y || 0, star.z || 0]}
 		scale={SCALE_STAR}
-		metadata={star.star.metadata}
 		showNameplate={showNameplates}
 		onClick={(event) => {
 			onStarClick?.(star.star, event);
@@ -182,11 +185,11 @@
 		<T.Group
 			position={linkGeometry[i].center}
 			quaternion={linkGeometry[i].quaternion}
-			onpointerenter={(e) => {
-				onPointerEnter(e.nativeEvent, i);
+			onpointerenter={() => {
+				onPointerEnter(i);
 			}}
-			onpointerleave={(e) => {
-				onPointerLeave(e.nativeEvent);
+			onpointerleave={() => {
+				onPointerLeave();
 			}}
 		>
 			<!-- Main link mesh -->

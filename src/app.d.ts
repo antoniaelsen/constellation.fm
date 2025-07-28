@@ -5,6 +5,7 @@ import type { SpotifyAccessToken } from '$lib/types';
 declare global {
 	interface IntersectionEvent extends Intersection {
 		nativeEvent: MouseEvent | PointerEvent | WheelEvent;
+		stopPropagation: () => void;
 	}
 
 	interface Window {
@@ -20,9 +21,12 @@ declare global {
 
 	namespace App {
 		interface Session {
+			user: {
+				userId: string;
+			} & DefaultSession['user'];
 			spotify?: {
-				webApi: SpotifyAccessToken | null;
-				playbackApi: SpotifyAccessToken | null;
+				webApi: SpotifyAuth | null;
+				playbackApi: SpotifyAuth | null;
 			};
 		}
 

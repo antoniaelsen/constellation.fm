@@ -1,4 +1,4 @@
-<script module>
+<script module lang="ts">
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import { fn } from '@storybook/test';
 	import Constellation from '../lib/client/components/constellations/Constellation.svelte';
@@ -8,7 +8,7 @@
 	const { Story } = defineMeta({
 		title: 'constellations/Constellation',
 		component: Constellation,
-		decorators: [() => SceneDecorator],
+		decorators: [() => SceneDecorator as any],
 		tags: ['autodocs'],
 		parameters: {
 			layout: 'fullscreen'
@@ -46,7 +46,7 @@
 				} else {
 					args.selectedNodeIds.push(star.id);
 				}
-				args.onStarClick(star, e);
+				args.onStarClick?.(star, e);
 			}}
 		/>
 	{/snippet}

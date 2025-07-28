@@ -1,4 +1,4 @@
-<script module>
+<script module lang="ts">
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import Star from '$lib/client/components/constellations/Star.svelte';
 	import { fn } from '@storybook/test';
@@ -9,7 +9,7 @@
 	const { Story } = defineMeta({
 		title: 'constellations/Star',
 		component: Star,
-		decorators: [() => SceneDecorator],
+		decorators: [() => SceneDecorator as any],
 		tags: ['autodocs'],
 		parameters: {
 			layout: 'fullscreen'
@@ -24,12 +24,12 @@
 <Story
 	name="Basic"
 	args={{
-		active: false,
 		activeColor: 'cyan',
 		color: 'white',
 		scale: 1,
 		showNameplate: true,
 		index: 0,
+		isActive: false,
 		isSelected: false,
 		metadata: mockTrack(),
 		onClick: fn(),
@@ -38,16 +38,16 @@
 >
 	{#snippet template(args)}
 		<Star
-			active={args.active}
 			activeColor={args.activeColor}
 			color={args.color}
 			scale={args.scale}
 			showNameplate={args.showNameplate}
 			index={args.index}
+			isActive={args.isActive}
 			isSelected={args.isSelected}
 			metadata={args.metadata}
-			onClick={(e) => {
-				args.onClick(e);
+			onClick={(e: IntersectionEvent) => {
+				args.onClick?.(e);
 				if (!e.nativeEvent.altKey) {
 					return;
 				}

@@ -244,9 +244,7 @@ function createCachingFetch(cache: ICachingStrategy, tokens: AccessToken): typeo
 						headers: Object.fromEntries(response.headers.entries())
 					} as any,
 					timestamp: Date.now(),
-					body,
-					cacheKey,
-					expiry: Date.now() + staleTime
+					body
 				};
 
 				cache.setCacheItem(cacheKey, cachedResponse);

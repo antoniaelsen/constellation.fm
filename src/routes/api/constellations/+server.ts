@@ -11,6 +11,7 @@ import {
 	type EPlaylistMetadata
 } from '$lib/types/constellations';
 import type { MaxInt } from '@spotify/web-api-ts-sdk';
+import type { HttpError } from '@sveltejs/kit';
 
 const getSpotifyPlaylistConstellations = async (
 	locals: App.Locals,
@@ -58,12 +59,12 @@ export async function GET({ locals, url }) {
 		}
 		// TODO(antoniae): add other providers
 	} catch (err) {
-		if ((err as Error).status === 401) {
+		if ((err as HttpError).status === 401) {
 			await disconnectSpotify(userId);
 		}
 
 		return new Response(JSON.stringify({ error: `Failed to fetch constellations: ${err}` }), {
-			status: (err as Error).status ?? 500
+			status: (err as HttpError).status ?? 500
 		});
 	}
 

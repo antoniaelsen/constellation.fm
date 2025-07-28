@@ -25,7 +25,7 @@ const getConstellations = async (options?: {
 
 export const useConstellation = (
 	constellationId: string,
-	opts?: UseQueryOptions
+	opts?: UseQueryOptions<Constellation>
 ): UseQueryStoreResult<Constellation> => {
 	return useQuery(
 		['constellation', constellationId],
@@ -36,7 +36,7 @@ export const useConstellation = (
 
 export const useConstellations = (
 	params: { limit: number; offset: number },
-	opts?: UseQueryOptions
+	opts?: UseQueryOptions<Constellation[]>
 ) => {
 	return useQuery(['constellations', params], () => getConstellations(params), opts);
 };

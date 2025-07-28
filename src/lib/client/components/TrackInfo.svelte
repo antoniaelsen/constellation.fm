@@ -15,9 +15,11 @@
 
 <div class="flex flex-row flex-nowrap items-center justify-start gap-3">
 	<!-- TODO: add local indicator -->
-	{#if album && album.images.length > 0}
-		<Avatar src={album?.images[0]?.url} cornerStyle="rounded" class="pointer-events-none"></Avatar>
-	{/if}
+	<Avatar src={album?.images[0]?.url} cornerStyle="rounded" class="pointer-events-none">
+		{#if !album?.images?.length}
+			?
+		{/if}
+	</Avatar>
 
 	<div class="flex flex-col">
 		<A
