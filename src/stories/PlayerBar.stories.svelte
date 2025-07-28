@@ -3,8 +3,10 @@
 	import { fn } from '@storybook/test';
 	import type { Component } from 'svelte';
 
+	import DeviceMenu from '$lib/client/components/player/DeviceMenu.svelte';
 	import PlayerBar, { type Props } from '$lib/client/components/player/PlayerBar.svelte';
 	import { Provider, TrackLoop, TrackOrder } from '$lib/types/music';
+	import { MOCK_DEVICES } from './mocks/devices';
 
 	const mockTracks = [
 		{
@@ -88,7 +90,94 @@
 </script>
 
 <Story
-	name="Basic"
+	name="With Devices"
+	args={{
+		_currentTrackIndex: 0,
+		_interval: 0,
+		durationMs: 150 * 1000,
+		positionMs: 10,
+		isPlaying: false,
+		repeatMode: TrackLoop.OFF,
+		order: TrackOrder.LINEAR,
+		onNextTrack: fn(),
+		onPreviousTrack: fn(),
+		onSeek: fn(),
+		onTogglePlay: fn()
+	}}
+>
+	{#snippet template(args)}
+		{@const currentTrack = mockTracks[(args as any)._currentTrackIndex || 0]}
+
+		<PlayerBar
+			{currentTrack}
+			durationMs={args.durationMs}
+			positionMs={args.positionMs}
+			isPlaying={args.isPlaying}
+			order={args.order}
+			repeatMode={args.repeatMode}
+			onNextTrack={() => {
+				args.onNextTrack();
+
+				if (args.repeatMode === TrackLoop.TRACK) {
+					args.positionMs = 0;
+				} else {
+					(args as any)._currentTrackIndex =
+						((args as any)._currentTrackIndex + 1) % mockTracks.length;
+					args.positionMs = 0;
+				}
+			}}
+			onPreviousTrack={() => {
+				args.onPreviousTrack();
+				if (args.positionMs && args.positionMs > 3000) {
+					args.positionMs = 0;
+					return;
+				}
+
+				if (args.repeatMode === TrackLoop.TRACK) {
+					args.positionMs = 0;
+				} else {
+					(args as any)._currentTrackIndex =
+						((args as any)._currentTrackIndex - 1 + mockTracks.length) % mockTracks.length;
+					args.positionMs = 0;
+				}
+			}}
+			onSeek={(newPosition) => {
+				args.onSeek(newPosition);
+				args.positionMs = newPosition;
+			}}
+			onToggleLoop={() => {
+				args.repeatMode =
+					args.repeatMode === TrackLoop.OFF
+						? TrackLoop.CONTEXT
+						: args.repeatMode === TrackLoop.CONTEXT
+							? TrackLoop.TRACK
+							: TrackLoop.OFF;
+			}}
+			onToggleOrder={() => {
+				args.order = args.order === TrackOrder.LINEAR ? TrackOrder.SHUFFLE : TrackOrder.LINEAR;
+			}}
+			onTogglePlay={() => {
+				args.onTogglePlay();
+				args.isPlaying = !args.isPlaying;
+
+				if (args.isPlaying) {
+					(args as any)._interval = setInterval(() => {
+						args.positionMs = (args.positionMs || 0) + 1000;
+					}, 1000);
+				} else {
+					clearInterval((args as any)._interval);
+				}
+			}}
+		>
+			{#snippet right()}
+				<DeviceMenu devices={MOCK_DEVICES} onDeviceSelect={() => {}} />
+			{/snippet}
+		</PlayerBar>
+	{/snippet}
+</Story>
+
+<Story
+	name="Without Devices"
 	args={{
 		_currentTrackIndex: 0,
 		_interval: 0,

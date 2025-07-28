@@ -1,15 +1,18 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import PlayerBar from './PlayerBar.svelte';
-	import { TrackLoop, TrackOrder, type PlaybackTrackInfo } from '$lib/types/music';
-	import { toPlaybackTrack } from '$lib/client/stores/player';
+	import { page } from '$app/stores';
 	import { setRepeatMode, setShuffle } from '$lib/client/api/spotify';
+	import { toPlaybackTrack } from '$lib/client/stores/player';
+	import { type Device, TrackLoop, TrackOrder, type PlaybackTrackInfo } from '$lib/types/music';
+
+	import DeviceMenu from './DeviceMenu.svelte';
+	import PlayerBar from './PlayerBar.svelte';
 
 	const PLAYER_NAME = 'constellation.fm';
 
 	interface Props {
 		className?: string;
+		devices: Device[];
 		playerState: {
 			currentTrack: PlaybackTrackInfo | null;
 			deviceId: string | null;
@@ -19,6 +22,7 @@
 			order: TrackOrder;
 			repeatMode: TrackLoop;
 		};
+		onDeviceSelect?: (device: Device) => void;
 		onPlayerStateChange: (playerState: {
 			deviceId?: string | null;
 			durationMs?: number | null;
@@ -34,7 +38,8 @@
 		}) => void;
 	}
 
-	let { className, playerState, onPlayerStateChange, ...rest }: Props = $props();
+	let { className, devices, onDeviceSelect, onPlayerStateChange, playerState, ...rest }: Props =
+		$props();
 
 	let deviceId = $derived(playerState.deviceId);
 	let progressMs = $derived(playerState.progressMs);
@@ -216,4 +221,8 @@
 	{onPreviousTrack}
 	{onNextTrack}
 	{...rest}
-/>
+>
+	{#snippet right()}
+		<DeviceMenu {devices} {onDeviceSelect} />
+	{/snippet}
+</PlayerBar>

@@ -2,6 +2,22 @@ export enum Provider {
 	SPOTIFY = 'spotify'
 }
 
+export enum DeviceType {
+	SMARTPHONE = 'smartphone',
+	COMPUTER = 'computer',
+	SPEAKER = 'speaker'
+}
+
+export interface Device {
+	id: string | null;
+	isActive: boolean;
+	isRestricted: boolean;
+	isVolumeSupported: boolean;
+	name: string;
+	type: DeviceType;
+	volume: number;
+}
+
 export interface ProviderUser {
 	provider: Provider;
 	providerUserId: string;

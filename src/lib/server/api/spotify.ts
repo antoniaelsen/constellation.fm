@@ -1,6 +1,7 @@
 import {
 	SpotifyApi,
 	type AccessToken,
+	type Device,
 	type Market,
 	type MaxInt,
 	type PlaybackState,
@@ -49,6 +50,22 @@ export const SPOTIFY_SCOPES_PLAYBACK = ['user-read-email', 'user-read-private', 
 export const formatScope = (scope: string | string[]) => {
 	const scopes = typeof scope === 'string' ? scope.split(' ') : scope;
 	return scopes.sort().join(' ');
+};
+
+export const getAvailableDevices = async (tokens: AccessToken): Promise<Device[]> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		const res = await sdk.player.getAvailableDevices();
+		return res.devices;
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to fetch available devices: ${spotifyErr}`);
+	}
 };
 
 export const getPlaybackState = async (tokens: AccessToken): Promise<PlaybackState> => {

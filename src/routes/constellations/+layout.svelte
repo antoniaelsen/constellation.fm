@@ -4,7 +4,7 @@
 
 	import { page } from '$app/stores';
 	import { useAllConstellations } from '$lib/client/api/constellations';
-	import { usePlaybackState } from '$lib/client/api/spotify';
+	import { useAvailableDevices, usePlaybackState } from '$lib/client/api/spotify';
 	import Scene from '$lib/client/components/constellations/Scene.svelte';
 	import SpotifyPlayerBar from '$lib/client/components/player/SpotifyPlayerBar.svelte';
 	import { playerState, toPlayerState } from '$lib/client/stores/player';
@@ -47,6 +47,16 @@
 			}
 		};
 	};
+
+	const rAvailableDevices = useAvailableDevices({
+		refetchOnWindowFocus: false,
+		retry: false,
+		refetchInterval: 10000
+	});
+
+	$inspect($rAvailableDevices.data).with((type, value) =>
+		console.log(type, '(layout) $rAvailableDevices.data', value)
+	);
 
 	const rConstellations = useAllConstellations({ refetchOnWindowFocus: false, retry: false });
 	const rPlaybackState = usePlaybackState({
@@ -103,6 +113,7 @@
 
 	<SpotifyPlayerBar
 		className="fixed bottom-0 left-0 right-0 backdrop-blur-xs bg-gray-100/30 p-4 dark:bg-gray-900/30 z-5"
+		devices={$rAvailableDevices.data ?? []}
 		playerState={stateSlice}
 		{onPlayerStateChange}
 	/>

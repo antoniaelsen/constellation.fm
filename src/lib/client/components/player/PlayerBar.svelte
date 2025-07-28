@@ -3,6 +3,9 @@
 	import PlayerControls, { type Props as PlayerControlsProps } from './PlayerControls.svelte';
 	import TrackInfo from '../TrackInfo.svelte';
 
+	export interface Props extends PlayerControlsProps {
+		right?: any;
+	}
 
 	let {
 		className,
@@ -12,6 +15,7 @@
 		isPlaying = false,
 		order = TrackOrder.LINEAR,
 		repeatMode = TrackLoop.OFF,
+		right,
 		onNextTrack,
 		onPreviousTrack,
 		onSeek,
@@ -48,5 +52,9 @@
 		{onTogglePlay}
 	/>
 
-	<div class="flex-1"></div>
+	<div class="flex flex-1 justify-end">
+		{#if right}
+			{@render right()}
+		{/if}
+	</div>
 </div>

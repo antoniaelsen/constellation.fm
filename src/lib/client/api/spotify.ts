@@ -1,7 +1,20 @@
-import type { PlaybackState, SimplifiedPlaylist } from '@spotify/web-api-ts-sdk';
+import type {
+	Device as SpotifyDevice,
+	PlaybackState,
+	SimplifiedPlaylist
+} from '@spotify/web-api-ts-sdk';
 import { useQuery, useQueryClient, type QueryObserverOptions } from '@sveltestack/svelte-query';
 import { apiFetch } from './fetch';
+import { type Device, DeviceType } from '$lib/types/music';
 
+export const getAvailableDevices = async () => {
+	return apiFetch(`/api/spotify/me/player/devices`).then(async (res) => {
+		if (!res.ok) {
+			throw new Error(`Failed to get available devices: ${res.statusText}`);
+		}
+		return res.json();
+	});
+};
 export const getPlaybackState = async () => {
 	return apiFetch(`/api/spotify/me/player`).then(async (res) => {
 		if (!res.ok) {
@@ -72,6 +85,28 @@ export const setShuffle = async (state: boolean, deviceId: string | null = null)
 			throw new Error(`Failed to set shuffle: ${res.statusText}`);
 		}
 	});
+};
+
+const toDevice = (device: SpotifyDevice & { supports_volume: boolean }): Device => {
+	const { id, name, type, is_active, is_restricted, supports_volume, volume_percent } = device;
+
+	return {
+		id,
+		name,
+		type: type.toLowerCase() as DeviceType,
+		isActive: is_active,
+		isRestricted: is_restricted,
+		isVolumeSupported: supports_volume,
+		volume: volume_percent ?? 0
+	};
+};
+
+export const useAvailableDevices = (opts: QueryObserverOptions<Device[]>) => {
+	return useQuery(
+		['me/player/devices'],
+		() => getAvailableDevices().then((devices) => devices.map(toDevice)),
+		opts
+	);
 };
 
 export const usePlaybackState = (opts: QueryObserverOptions<PlaybackState>) => {
