@@ -2,7 +2,7 @@
 	import type { Intersection } from 'three';
 	import { useConstellation } from '$lib/client/api/constellations';
 	import { page } from '$app/stores';
-	import { startPlayback } from '$lib/client/api/spotify';
+	import { playbackStart } from '$lib/client/api/spotify';
 	import Constellation from '$lib/client/components/constellations/Constellation.svelte';
 	import { playerState } from '$lib/client/stores/player';
 	import type { Star, Edge } from '$lib/types/constellations';
@@ -80,7 +80,7 @@
 
 		const position = star.providerOrder;
 
-		await startPlayback(deviceId, uri, { position }, 0);
+		await playbackStart(deviceId, uri, { position }, 0);
 	};
 
 	const onStarClick = (star: Star, event: IntersectionEvent) => {

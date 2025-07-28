@@ -3,7 +3,13 @@ import type {
 	PlaybackState,
 	SimplifiedPlaylist
 } from '@spotify/web-api-ts-sdk';
-import { useQuery, useQueryClient, type QueryObserverOptions } from '@sveltestack/svelte-query';
+import {
+	useMutation,
+	useQuery,
+	useQueryClient,
+	type QueryObserverOptions,
+	type UseMutationOptions
+} from '@sveltestack/svelte-query';
 import { apiFetch } from './fetch';
 import { type Device, DeviceType } from '$lib/types/music';
 
@@ -37,25 +43,6 @@ export const getPlaylists = async (
 		});
 };
 
-export const startPlayback = async (
-	deviceId: string,
-	contextUri: string,
-	offset: { position: number },
-	positionMs: number
-) => {
-	return apiFetch(`/api/spotify/me/player/play`, {
-		method: 'PUT',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({ deviceId, contextUri, offset, positionMs })
-	}).then((res) => {
-		if (!res.ok) {
-			throw new Error(`Failed to start playback: ${res.statusText}`);
-		}
-	});
-};
-
 export const setRepeatMode = async (
 	state: 'track' | 'context' | 'off',
 	deviceId: string | null = null
@@ -87,6 +74,95 @@ export const setShuffle = async (state: boolean, deviceId: string | null = null)
 	});
 };
 
+export const playbackPause = async (deviceId: string) => {
+	return apiFetch(`/api/spotify/me/player/pause`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ deviceId })
+	}).then((res) => {
+		if (!res.ok) {
+			throw new Error(`Failed to pause playback: ${res.statusText}`);
+		}
+	});
+};
+
+export const playbackStart = async (
+	deviceId: string,
+	positionMs: number,
+	contextUri: string,
+	offset?: { position: number } | null
+) => {
+	return apiFetch(`/api/spotify/me/player/play`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ deviceId, contextUri, offset, positionMs })
+	}).then((res) => {
+		if (!res.ok) {
+			throw new Error(`Failed to start playback: ${res.statusText}`);
+		}
+	});
+};
+
+export const playbackSeekToPosition = async (deviceId: string, positionMs: number) => {
+	return apiFetch(`/api/spotify/me/player/seek`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ deviceId, positionMs })
+	}).then((res) => {
+		if (!res.ok) {
+			throw new Error(`Failed to seek to position: ${res.statusText}`);
+		}
+	});
+};
+
+export const playbackSkipNext = async (deviceId: string) => {
+	return apiFetch(`/api/spotify/me/player/next`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ deviceId })
+	}).then((res) => {
+		if (!res.ok) {
+			throw new Error(`Failed to skip next: ${res.statusText}`);
+		}
+	});
+};
+
+export const playbackSkipPrevious = async (deviceId: string) => {
+	return apiFetch(`/api/spotify/me/player/next`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ deviceId })
+	}).then((res) => {
+		if (!res.ok) {
+			throw new Error(`Failed to skip next: ${res.statusText}`);
+		}
+	});
+};
+
+export const playbackTransfer = async (deviceId: string) => {
+	return apiFetch(`/api/spotify/me/player`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ deviceId: deviceId })
+	}).then((res) => {
+		if (!res.ok) {
+			throw new Error(`Failed to transfer playback: ${res.statusText}`);
+		}
+	});
+};
+
 const toDevice = (device: SpotifyDevice & { supports_volume: boolean }): Device => {
 	const { id, name, type, is_active, is_restricted, supports_volume, volume_percent } = device;
 
@@ -101,6 +177,11 @@ const toDevice = (device: SpotifyDevice & { supports_volume: boolean }): Device 
 	};
 };
 
+export const useInvalidatePlayerDevices = () => {
+	const queryClient = useQueryClient();
+	return () => queryClient.invalidateQueries(['me/player/devices']);
+};
+
 export const useAvailableDevices = (opts: QueryObserverOptions<Device[]>) => {
 	return useQuery(
 		['me/player/devices'],
@@ -113,8 +194,110 @@ export const usePlaybackState = (opts: QueryObserverOptions<PlaybackState>) => {
 	return useQuery(['me/player'], () => getPlaybackState(), opts);
 };
 
+export const usePlaybackPause = (opts?: UseMutationOptions<void, unknown, string, unknown>) => {
+	const queryClient = useQueryClient();
+
+	return useMutation(['me/player/pause'], (deviceId: string) => playbackPause(deviceId), {
+		...opts,
+		onSuccess: (data, variables, context) => {
+			queryClient.invalidateQueries(['me/player']);
+			opts?.onSuccess?.(data, variables, context);
+		}
+	});
+};
+
+export const usePlaybackStart = (
+	opts?: UseMutationOptions<
+		void,
+		unknown,
+		{
+			deviceId: string;
+			positionMs: number;
+			offset?: { position: number };
+			contextUri: string;
+		},
+		unknown
+	>
+) => {
+	const queryClient = useQueryClient();
+
+	return useMutation(
+		['me/player/play'],
+		(params: {
+			deviceId: string;
+			positionMs: number;
+			contextUri: string;
+			offset?: { position: number };
+		}) => playbackStart(params.deviceId, params.positionMs, params.contextUri, params.offset),
+		{
+			...opts,
+			onSuccess: (data, variables, context) => {
+				queryClient.invalidateQueries(['me/player']);
+				opts?.onSuccess?.(data, variables, context);
+			}
+		}
+	);
+};
+
+export const usePlaybackSeekToPosition = (
+	opts?: UseMutationOptions<void, unknown, { deviceId: string; positionMs: number }, unknown>
+) => {
+	const queryClient = useQueryClient();
+
+	return useMutation(
+		['me/player/seek'],
+		(params: { deviceId: string; positionMs: number }) =>
+			playbackSeekToPosition(params.deviceId, params.positionMs),
+		{
+			...opts,
+			onSuccess: (data, variables, context) => {
+				queryClient.invalidateQueries(['me/player']);
+				opts?.onSuccess?.(data, variables, context);
+			}
+		}
+	);
+};
+
+export const usePlaybackSkipNext = (opts?: UseMutationOptions<void, unknown, string, unknown>) => {
+	const queryClient = useQueryClient();
+
+	return useMutation(['me/player/next'], (deviceId: string) => playbackSkipNext(deviceId), {
+		...opts,
+		onSuccess: (data, variables, context) => {
+			queryClient.invalidateQueries(['me/player']);
+			opts?.onSuccess?.(data, variables, context);
+		}
+	});
+};
+
+export const usePlaybackSkipPrevious = (
+	opts?: UseMutationOptions<void, unknown, string, unknown>
+) => {
+	const queryClient = useQueryClient();
+
+	return useMutation(['me/player/previous'], (deviceId: string) => playbackSkipPrevious(deviceId), {
+		...opts,
+		onSuccess: (data, variables, context) => {
+			queryClient.invalidateQueries(['me/player']);
+			opts?.onSuccess?.(data, variables, context);
+		}
+	});
+};
+
 export const usePlaylists = (params: { limit: number; offset: number }) => {
 	return useQuery(['me/playlists', params], () => getPlaylists(params));
+};
+
+export const useTransferPlayback = (opts?: UseMutationOptions<void, unknown, string, unknown>) => {
+	const queryClient = useQueryClient();
+
+	return useMutation(['me/player'], (deviceId: string) => playbackTransfer(deviceId), {
+		...opts,
+		onSuccess: (data, variables, context) => {
+			queryClient.invalidateQueries(['me/player/devices']);
+			opts?.onSuccess?.(data, variables, context);
+		}
+	});
 };
 
 export const useAllPlaylists = () => {

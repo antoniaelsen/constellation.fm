@@ -1,5 +1,6 @@
 <script module lang="ts">
 	import { defineMeta } from '@storybook/addon-svelte-csf';
+	import { fn } from '@storybook/test';
 	import DeviceMenu from '$lib/client/components/player/DeviceMenu.svelte';
 	import { MOCK_DEVICES } from './mocks/devices';
 
@@ -18,6 +19,6 @@
 	name="Basic"
 	args={{
 		devices: MOCK_DEVICES,
-		onDeviceSelect: (device) => console.log('Selected device:', device)
+		onDeviceSelect: fn()
 	}}
 />

@@ -213,10 +213,25 @@ export const refreshTokens = async (refreshToken: string): Promise<SpotifyAccess
 	}
 };
 
-export const startPlayback = async (
+export const playbackPause = async (tokens: AccessToken, deviceId: string): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.pausePlayback(deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to pause playback: ${spotifyErr}`);
+	}
+};
+
+export const playbackStart = async (
 	tokens: AccessToken,
 	deviceId: string,
-	target: { contextUri: string; offset: { position: number }; uris: string[] },
+	target: { contextUri: string; offset?: { position: number }; uris?: string[] },
 	positionMs: number
 ): Promise<void> => {
 	const sdk = SpotifyApi.withAccessToken(
@@ -231,6 +246,60 @@ export const startPlayback = async (
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
 		throw error(spotifyErr.cause?.code ?? 500, `Failed to start playback: ${spotifyErr}`);
+	}
+};
+
+export const playbackSeekToPosition = async (
+	tokens: AccessToken,
+	positionMs: number,
+	deviceId: string
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.seekToPosition(positionMs, deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to seek to position: ${spotifyErr}`);
+	}
+};
+
+export const playbackSkipNext = async (tokens: AccessToken, deviceId: string): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.skipToNext(deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		LOGGER.error('Failed to skip to next: ', spotifyErr);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to skip to next: ${spotifyErr}`);
+	}
+};
+
+export const playbackSkipPrevious = async (
+	tokens: AccessToken,
+	deviceId: string
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.skipToPrevious(deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		LOGGER.error('Failed to skip to previous: ', spotifyErr);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to skip to previous: ${spotifyErr}`);
 	}
 };
 

@@ -112,7 +112,12 @@ export class ResponseDeserializer extends DefaultResponseDeserializer {
 
 		const BLACKLIST_PARSE = [
 			'https://api.spotify.com/v1/me/player/repeat',
-			'https://api.spotify.com/v1/me/player/shuffle'
+			'https://api.spotify.com/v1/me/player/seek',
+			'https://api.spotify.com/v1/me/player/shuffle',
+			'https://api.spotify.com/v1/me/player/next',
+			'https://api.spotify.com/v1/me/player/pause',
+			'https://api.spotify.com/v1/me/player/play',
+			'https://api.spotify.com/v1/me/player/previous'
 		];
 		const blacklisted = BLACKLIST_PARSE.some((url) => response.url.startsWith(url));
 

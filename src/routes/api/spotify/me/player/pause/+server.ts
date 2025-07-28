@@ -1,4 +1,4 @@
-import { playbackStart } from '$lib/server/api/spotify';
+import { playbackPause } from '$lib/server/api/spotify';
 
 export async function PUT({ locals, request }) {
 	const { deviceId, contextUri, uris, offset, positionMs } = await request.json();
@@ -7,22 +7,8 @@ export async function PUT({ locals, request }) {
 			status: 400
 		});
 	}
-	if (!contextUri && !uris) {
-		return new Response(JSON.stringify({ error: 'Context URI or URIs is required' }), {
-			status: 400
-		});
-	}
 
-	await playbackStart(
-		locals.spotify.webApi,
-		deviceId,
-		{
-			contextUri,
-			uris,
-			offset
-		},
-		positionMs
-	);
+	await playbackPause(locals.spotify.webApi, deviceId);
 
 	return new Response(null, {
 		headers: {

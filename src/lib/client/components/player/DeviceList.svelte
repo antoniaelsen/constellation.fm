@@ -26,7 +26,7 @@
 	}
 
 	function handleDeviceClick(device: Device) {
-		if (!device.isRestricted && onDeviceSelect) {
+		if (!!device.id && !device.isRestricted && onDeviceSelect) {
 			onDeviceSelect(device);
 		}
 	}
@@ -41,7 +41,7 @@
 				? 'cursor-not-allowed opacity-50'
 				: 'cursor-pointer'}"
 			onclick={() => handleDeviceClick(device)}
-			disabled={device.isRestricted}
+			disabled={device.isRestricted || !device.id}
 		>
 			<div class="text-gray-600 dark:text-gray-400">
 				{#if device.type === 'smartphone'}

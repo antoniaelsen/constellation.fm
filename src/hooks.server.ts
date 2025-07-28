@@ -22,7 +22,9 @@ export const handleLog: Handle = async ({ event, resolve }) => {
 	const response = await resolve(event);
 	const end = performance.now();
 	LOGGER.info(
-		`[${event.request.method}] ${event.url.pathname} - code: ${response.status} (took ${(end - start).toFixed(2)}ms)`
+		`[${event.request.method}] ${event.url.pathname} - code: ${response.status}${
+			response.status >= 400 ? `error: ${await response.text()}` : ''
+		} (took ${(end - start).toFixed(2)}ms)`
 	);
 	return response;
 };

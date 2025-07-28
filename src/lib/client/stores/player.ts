@@ -5,6 +5,7 @@ import type { PlaybackState } from '@spotify/web-api-ts-sdk';
 export interface PlayerState {
 	contextUri: string | null;
 	deviceId: string | null;
+	deviceIdLocal: string | null;
 	durationMs: number | null;
 	isPlaying: boolean;
 	order: TrackOrder;
@@ -37,7 +38,7 @@ export const toPlaybackTrack = (track: any): PlaybackTrackInfo => {
 	};
 };
 
-export const toPlayerState = (spotifyState: PlaybackState): PlayerState => {
+export const toPlayerState = (spotifyState: PlaybackState): Omit<PlayerState, 'deviceIdLocal'> => {
 	const { is_playing, device, progress_ms, repeat_state, shuffle_state, context, item } =
 		spotifyState;
 	return {
@@ -64,6 +65,7 @@ export const toPlayerState = (spotifyState: PlaybackState): PlayerState => {
 export const playerState = writable<PlayerState>({
 	contextUri: null,
 	deviceId: null,
+	deviceIdLocal: null,
 	durationMs: 0,
 	isPlaying: false,
 	order: TrackOrder.LINEAR,

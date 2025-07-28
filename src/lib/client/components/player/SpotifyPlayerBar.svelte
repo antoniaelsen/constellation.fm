@@ -1,7 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { setRepeatMode, setShuffle } from '$lib/client/api/spotify';
+	import {
+		setRepeatMode,
+		setShuffle,
+		useInvalidatePlayerDevices,
+		usePlaybackPause,
+		usePlaybackSeekToPosition,
+		usePlaybackSkipNext,
+		usePlaybackSkipPrevious,
+		usePlaybackStart
+	} from '$lib/client/api/spotify';
 	import { toPlaybackTrack } from '$lib/client/stores/player';
 	import { type Device, TrackLoop, TrackOrder, type PlaybackTrackInfo } from '$lib/types/music';
 
@@ -10,37 +19,47 @@
 
 	const PLAYER_NAME = 'constellation.fm';
 
+	interface PlayerState {
+		contextUri: string | null;
+		currentTrack: PlaybackTrackInfo | null;
+		deviceId: string | null;
+		deviceIdLocal: string | null;
+		durationMs: number | null;
+		progressMs: number | null;
+		isPlaying: boolean;
+		order: TrackOrder;
+		repeatMode: TrackLoop;
+	}
+
+	type PlayerStateUpdate =
+		| Omit<PlayerState, 'currentTrack'>
+		| {
+				window?: {
+					current: PlaybackTrackInfo | null;
+					next: PlaybackTrackInfo | null;
+					previous: PlaybackTrackInfo | null;
+				};
+		  };
+
 	interface Props {
 		className?: string;
 		devices: Device[];
-		playerState: {
-			currentTrack: PlaybackTrackInfo | null;
-			deviceId: string | null;
-			durationMs: number | null;
-			progressMs: number | null;
-			isPlaying: boolean;
-			order: TrackOrder;
-			repeatMode: TrackLoop;
-		};
+		playerState: PlayerState;
 		onDeviceSelect?: (device: Device) => void;
-		onPlayerStateChange: (playerState: {
-			deviceId?: string | null;
-			durationMs?: number | null;
-			progressMs?: number | null;
-			isPlaying?: boolean;
-			order?: TrackOrder;
-			repeatMode?: TrackLoop;
-			window?: {
-				current: PlaybackTrackInfo | null;
-				next: PlaybackTrackInfo | null;
-				previous: PlaybackTrackInfo | null;
-			};
-		}) => void;
+		onPlayerStateChange: (playerState: Partial<PlayerStateUpdate>) => void;
 	}
 
-	let { className, devices, onDeviceSelect, onPlayerStateChange, playerState, ...rest }: Props =
+	let { className, devices, playerState, onDeviceSelect, onPlayerStateChange, ...rest }: Props =
 		$props();
+	let isLocal = $derived(playerState.deviceIdLocal === playerState.deviceId);
 
+	let mPause = usePlaybackPause();
+	let mStart = usePlaybackStart();
+	let mSeekToPosition = usePlaybackSeekToPosition();
+	let mSkipNext = usePlaybackSkipNext();
+	let mSkipPrevious = usePlaybackSkipPrevious();
+
+	let contextUri = $derived(playerState.contextUri);
 	let deviceId = $derived(playerState.deviceId);
 	let progressMs = $derived(playerState.progressMs);
 	let isPlaying = $derived(playerState.isPlaying);
@@ -55,18 +74,50 @@
 	let positionInterval: ReturnType<typeof setInterval> | undefined;
 
 	const onSeek = (newPosition: number) => {
+		if (!isLocal) {
+			if (!deviceId) return;
+			$mSeekToPosition.mutate({ deviceId, positionMs: newPosition });
+			return;
+		}
+
 		if (!player) return;
 		player.seek(newPosition);
 	};
 
 	const onTogglePlay = () => {
+		if (!isLocal) {
+			if (!deviceId || !contextUri) return;
+			if (isPlaying) {
+				$mPause.mutate(deviceId);
+			} else {
+				const isPlaylist = contextUri.startsWith('spotify:playlist:');
+				$mStart.mutate({
+					deviceId,
+					contextUri,
+					offset: isPlaylist ? { position: progressMs ?? 0 } : undefined,
+					positionMs: progressMs ?? 0
+				});
+			}
+			return;
+		}
+
 		if (!player) return;
 		player.togglePlay();
 	};
 
 	const onPreviousTrack = () => {
-		if (!player) return;
+		if (!isLocal) {
+			if (!deviceId) return;
+			if (progressMs !== null && progressMs > 3000) {
+				$mSeekToPosition.mutate({ deviceId, positionMs: 0 });
+				return;
+			}
 
+			$mSkipPrevious.mutate(deviceId);
+			return;
+		}
+
+		if (!player) return;
 		if (progressMs !== null && progressMs > 3000) {
 			player.seek(0);
 			return;
@@ -76,6 +127,11 @@
 	};
 
 	const onNextTrack = () => {
+		if (!isLocal) {
+			if (!deviceId) return;
+			$mSkipNext.mutate(deviceId);
+			return;
+		}
 		if (!player) return;
 		player.nextTrack();
 	};
@@ -147,7 +203,6 @@
 	});
 
 	$effect(() => {
-		console.log('Spotify Web Player - isPlaying', isPlaying);
 		if (isPlaying) {
 			startPositionInterval();
 		} else {
@@ -156,6 +211,8 @@
 	});
 
 	$effect(() => {
+		const invalidatePlayerDevices = useInvalidatePlayerDevices();
+
 		const token = spotifyPlaybackApi?.accessToken;
 		if (token && isScriptLoaded && !player) {
 			if (!token || !isScriptLoaded || !spotifyPlaybackApi) return;
@@ -170,20 +227,22 @@
 
 			player.addListener('ready', ({ device_id }: { device_id: string }) => {
 				console.log('Spotify Web Player - Ready with Device ID', device_id);
+				invalidatePlayerDevices();
 				onPlayerStateChange({
-					deviceId: device_id
+					deviceIdLocal: device_id
 				});
 			});
 
 			player.addListener('not_ready', ({ device_id }: { device_id: string }) => {
 				console.log('Spotify Web Player - No longer ready with Device ID', device_id);
+				invalidatePlayerDevices();
 				onPlayerStateChange({
-					deviceId: null
+					deviceIdLocal: null
 				});
 			});
 
 			player.addListener('player_state_changed', (state: any) => {
-				console.log('Spotify Web Player - Player state changed', state);
+				// console.log('Spotify Web Player - Player state changed', state);
 				if (!state) {
 					clearPositionInterval();
 					return;
