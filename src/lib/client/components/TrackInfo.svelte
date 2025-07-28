@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { EAlbumMetadata, EArtistMetadata } from '$lib/types/constellations';
+	import type { EAlbumMetadata, EArtistMetadata } from '$lib/types/music';
 	import { A, Avatar, P } from 'flowbite-svelte';
 
 	interface Props {

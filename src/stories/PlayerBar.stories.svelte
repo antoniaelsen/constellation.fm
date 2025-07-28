@@ -4,7 +4,7 @@
 	import type { Component } from 'svelte';
 
 	import PlayerBar, { type Props } from '$lib/client/components/player/PlayerBar.svelte';
-	import { Provider, TrackLoop, TrackOrder } from '$lib/types/constellations';
+	import { Provider, TrackLoop, TrackOrder } from '$lib/types/music';
 
 	const mockTracks = [
 		{

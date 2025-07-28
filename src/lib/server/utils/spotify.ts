@@ -7,13 +7,11 @@ import type {
 	TrackItem
 } from '@spotify/web-api-ts-sdk';
 import {
-	Provider,
 	type ConstellationMetadata,
 	type ConstellationPrototype,
-	type ETrackMetadata,
-	type EPlaylistMetadata,
 	type StarPrototype
 } from '$lib/types/constellations';
+import { Provider, type ETrackMetadata, type EPlaylistMetadata } from '$lib/types/music';
 
 /**
  * Get the metadata for a Spotify playlist

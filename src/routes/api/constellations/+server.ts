@@ -5,11 +5,8 @@ import {
 	spotifyPlaylistMetadata,
 	spotifyPlaylistsToConstellationPrototypes
 } from '$lib/server/utils/spotify';
-import {
-	Provider,
-	type ConstellationPrototype,
-	type EPlaylistMetadata
-} from '$lib/types/constellations';
+import { type ConstellationPrototype } from '$lib/types/constellations';
+import { Provider, type EPlaylistMetadata } from '$lib/types/music';
 import type { MaxInt } from '@spotify/web-api-ts-sdk';
 import type { HttpError } from '@sveltejs/kit';
 

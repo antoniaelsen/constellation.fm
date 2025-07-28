@@ -1,11 +1,15 @@
 <script lang="ts">
-	import { Provider, type Constellation } from '$lib/types/constellations';
 	import { Avatar, Button, Drawer, Hr, Listgroup, ListgroupItem, P } from 'flowbite-svelte';
-	import { ChevronRightOutline, ChevronLeftOutline } from 'flowbite-svelte-icons';
+	import ErrorIcon from 'virtual:icons/ic/baseline-error';
+	import ChevronLeftOutline from 'virtual:icons/ic/baseline-chevron-left';
+	import ChevronRightOutline from 'virtual:icons/ic/baseline-chevron-right';
+
 	import SortDropdown from '$lib/client/components/SortDropdown.svelte';
 	import Search from '$lib/client/components/Search.svelte';
 	import Skeleton from '$lib/client/components/Skeleton.svelte';
 	import { SortOrder } from '$lib/types';
+	import { type Constellation } from '$lib/types/constellations';
+	import { Provider } from '$lib/types/music';
 
 	interface Props {
 		activeUrl: string;
@@ -125,6 +129,13 @@
 	</div>
 
 	<div class="max-h-[calc(100vh-100px)] w-full overflow-y-auto">
+		{#if !isLoading && error}
+			<div class="mt-4 flex flex-col items-center gap-2">
+				<ErrorIcon class="h-8 w-8 text-gray-500" />
+				<P>Error: {error?.message}</P>
+			</div>
+		{/if}
+
 		<Listgroup border={false} rounded={false} class="w-full overflow-x-hidden">
 			{#if isLoading}
 				{#each Array(100) as _}
@@ -135,10 +146,6 @@
 						/>
 					</ListgroupItem>
 				{/each}
-			{/if}
-
-			{#if !isLoading && error}
-				<P>Error: {error?.message}</P>
 			{/if}
 
 			{#each results() as item}

@@ -1,10 +1,10 @@
+import { type Constellation } from '$lib/types/constellations';
 import {
 	Provider,
-	type Constellation,
 	type EAlbumMetadata,
 	type EArtistMetadata,
 	type ETrackMetadata
-} from '$lib/types/constellations';
+} from '$lib/types/music';
 
 const N_CONSTELLATIONS = 10;
 const N_STARS = 25;

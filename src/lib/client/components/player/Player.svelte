@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { TrackLoop, type PlaybackTrackInfo, TrackOrder } from '$lib/types/constellations';
+	import { TrackLoop, type PlaybackTrackInfo, TrackOrder } from '$lib/types/music';
 	import PlayArrow from 'virtual:icons/ic/baseline-play-arrow';
 	import Pause from 'virtual:icons/ic/baseline-pause';
 	import SkipNext from 'virtual:icons/ic/baseline-skip-next';

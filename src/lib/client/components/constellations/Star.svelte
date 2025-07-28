@@ -4,7 +4,7 @@
 	import { Spring } from 'svelte/motion';
 	import * as THREE from 'three';
 
-	import type { ETrackMetadata } from '$lib/types/constellations';
+	import type { ETrackMetadata } from '$lib/types/music';
 	import Nameplate from '../Nameplate.svelte';
 
 	interface Props {

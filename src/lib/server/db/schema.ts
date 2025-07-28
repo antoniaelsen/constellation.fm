@@ -12,7 +12,7 @@ import {
 	pgEnum
 } from 'drizzle-orm/pg-core';
 import { db } from '.';
-import { Provider } from '../../types/constellations';
+import { Provider } from '../../types/music';
 
 export function enumToPgEnum<T extends Record<string, any>>(
 	myEnum: T

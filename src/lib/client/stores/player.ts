@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { type PlaybackTrackInfo, Provider, TrackLoop, TrackOrder } from '$lib/types/constellations';
+import { type PlaybackTrackInfo, Provider, TrackLoop, TrackOrder } from '$lib/types/music';
 import type { PlaybackState } from '@spotify/web-api-ts-sdk';
 
 export interface PlayerState {

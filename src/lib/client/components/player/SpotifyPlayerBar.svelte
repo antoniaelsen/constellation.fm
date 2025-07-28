@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import PlayerBar from './PlayerBar.svelte';
-	import { TrackLoop, TrackOrder, type PlaybackTrackInfo } from '$lib/types/constellations';
+	import { TrackLoop, TrackOrder, type PlaybackTrackInfo } from '$lib/types/music';
 	import { toPlaybackTrack } from '$lib/client/stores/player';
 	import { setRepeatMode, setShuffle } from '$lib/client/api/spotify';
 

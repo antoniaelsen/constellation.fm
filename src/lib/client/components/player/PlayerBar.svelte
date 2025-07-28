@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { TrackLoop, TrackOrder } from '$lib/types/constellations';
+	import { TrackLoop, TrackOrder } from '$lib/types/music';
 	import Player, { type Props as PlayerProps } from './Player.svelte';
 	import TrackInfo from '../TrackInfo.svelte';
 

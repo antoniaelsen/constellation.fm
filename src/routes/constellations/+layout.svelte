@@ -8,7 +8,7 @@
 	import Scene from '$lib/client/components/constellations/Scene.svelte';
 	import SpotifyPlayerBar from '$lib/client/components/player/SpotifyPlayerBar.svelte';
 	import { playerState, toPlayerState } from '$lib/client/stores/player';
-	import { TrackLoop, TrackOrder, type PlaybackTrackInfo } from '$lib/types/constellations';
+	import { TrackLoop, TrackOrder, type PlaybackTrackInfo } from '$lib/types/music';
 
 	import Sidebar from './sidebar.svelte';
 	import type { PlaybackState } from '@spotify/web-api-ts-sdk';

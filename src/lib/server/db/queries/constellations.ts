@@ -1,4 +1,4 @@
-import { and, eq, inArray, not, or, sql } from 'drizzle-orm';
+import { and, eq, inArray, or } from 'drizzle-orm';
 import { db } from '../index';
 import { constellations, edges, stars } from '../schema';
 import type {
@@ -6,10 +6,10 @@ import type {
 	ConstellationPrototype,
 	Edge,
 	EdgePrototype,
-	Provider,
 	Star,
 	StarPrototype
 } from '$lib/types/constellations';
+import type { Provider } from '$lib/types/music';
 
 const constellationKey = (c: Pick<Constellation, 'userId' | 'provider' | 'providerPlaylistId'>) =>
 	`${c.userId}:${c.provider}:${c.providerPlaylistId}`;

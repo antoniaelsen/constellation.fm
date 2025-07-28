@@ -2,11 +2,11 @@ import { getPlaylist } from '$lib/server/api/spotify';
 import { spotifyPlaylistToConstellation } from '$lib/server/utils/spotify';
 import { getConstellation, syncEdges, syncStars } from '$lib/server/db/queries/constellations';
 import {
-	Provider,
 	type Constellation,
 	type ConstellationMetadata,
 	type ConstellationPrototype
 } from '$lib/types/constellations';
+import { Provider } from '$lib/types/music';
 
 /**
  * Get a constellation from its Spotify playlist, including ephemeral Spotify metadata

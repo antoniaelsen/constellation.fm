@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { EAlbumMetadata, EArtistMetadata } from '$lib/types/constellations';
+	import type { EAlbumMetadata, EArtistMetadata } from '$lib/types/music';
 	import { Button, Card, type CardProps } from 'flowbite-svelte';
 	import TrackInfo from './TrackInfo.svelte';
 	import { PauseSolid, PlaySolid } from 'flowbite-svelte-icons';
