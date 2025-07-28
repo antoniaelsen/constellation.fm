@@ -8,6 +8,7 @@
 	import RepeatOne from 'virtual:icons/ic/baseline-repeat-one';
 	import Shuffle from 'virtual:icons/ic/baseline-shuffle';
 	import { Button, Range } from 'flowbite-svelte';
+	import GhostButton from '../GhostButton.svelte';
 
 	export interface Props {
 		className?: string;
@@ -46,27 +47,18 @@
 
 <div class={`flex flex-grow flex-col gap-3  ${className}`}>
 	<div class="flex justify-center gap-2">
-		<Button
-			class="border-none p-2! hover:border-none hover:bg-transparent!"
+		<GhostButton
 			color={order === TrackOrder.SHUFFLE ? 'green' : 'dark'}
-			outline={true}
 			pill={true}
 			size="sm"
 			onclick={() => onToggleOrder()}
 		>
 			<Shuffle />
-		</Button>
+		</GhostButton>
 
-		<Button
-			class="border-none p-2! hover:border-none hover:bg-transparent!"
-			color="dark"
-			outline={true}
-			pill={true}
-			size="sm"
-			onclick={() => onPreviousTrack()}
-		>
+		<GhostButton color="dark" pill={true} size="sm" onclick={() => onPreviousTrack()}>
 			<SkipPrevious />
-		</Button>
+		</GhostButton>
 		<Button
 			class="p-2!"
 			color="green"
@@ -81,20 +73,11 @@
 				<PlayArrow color="dark" />
 			{/if}
 		</Button>
-		<Button
-			class="border-none p-2! hover:border-none hover:bg-transparent!"
-			color="dark"
-			outline={true}
-			pill={true}
-			size="sm"
-			onclick={() => onNextTrack()}
-		>
+		<GhostButton color="dark" pill={true} size="sm" onclick={() => onNextTrack()}>
 			<SkipNext />
-		</Button>
-		<Button
-			class="border-none p-2! hover:border-none hover:bg-transparent!"
+		</GhostButton>
+		<GhostButton
 			color={repeatMode === TrackLoop.OFF ? 'dark' : 'green'}
-			outline={true}
 			pill={true}
 			size="sm"
 			onclick={() => onToggleLoop()}
@@ -106,7 +89,7 @@
 			{:else}
 				<RepeatOne />
 			{/if}
-		</Button>
+		</GhostButton>
 	</div>
 
 	<div class="flex items-center gap-3">

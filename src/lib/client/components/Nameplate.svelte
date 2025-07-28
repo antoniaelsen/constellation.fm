@@ -3,6 +3,7 @@
 	import { Button, Card, type CardProps } from 'flowbite-svelte';
 	import TrackInfo from './TrackInfo.svelte';
 	import { PauseSolid, PlaySolid } from 'flowbite-svelte-icons';
+	import GhostButton from './GhostButton.svelte';
 
 	interface Props {
 		className?: string;
@@ -59,8 +60,7 @@
 	<div class="-ml-4 flex min-w-10 items-center justify-center">
 		{#if hovered}
 			<!-- use pointer events en lieu of click for threlte support -->
-			<Button
-				class=" border-none bg-transparent p-2! hover:border-none hover:bg-transparent!"
+			<GhostButton
 				color="dark"
 				disabled={isLocal}
 				outline={true}
@@ -95,7 +95,7 @@
 				{:else}
 					<PlaySolid />
 				{/if}
-			</Button>
+			</GhostButton>
 		{:else}
 			<p class="text-sm text-gray-500">{index + 1}</p>
 		{/if}

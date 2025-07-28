@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { TrackLoop, TrackOrder } from '$lib/types/music';
-	import Player, { type Props as PlayerProps } from './Player.svelte';
+	import PlayerControls, { type Props as PlayerControlsProps } from './PlayerControls.svelte';
 	import TrackInfo from '../TrackInfo.svelte';
 
-	export interface Props extends PlayerProps {}
 
 	let {
 		className,
@@ -34,7 +33,7 @@
 		{/if}
 	</div>
 
-	<Player
+	<PlayerControls
 		{currentTrack}
 		{durationMs}
 		{isPlaying}
