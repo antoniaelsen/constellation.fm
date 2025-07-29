@@ -16,6 +16,7 @@
 
 	import Sidebar from './sidebar.svelte';
 	import type { PlaybackState } from '@spotify/web-api-ts-sdk';
+	import { untrack } from 'svelte';
 
 	let { children } = $props();
 
@@ -76,14 +77,7 @@
 	const rPlaybackState = usePlaybackState({
 		refetchOnWindowFocus: false,
 		retry: false,
-		refetchInterval: 5000,
-		onSuccess: (data: PlaybackState) => {
-			if (!data) return;
-			$playerState = {
-				...$playerState,
-				...toPlayerState(data)
-			};
-		}
+		refetchInterval: 5000
 	});
 	const mDevices = useTransferPlayback();
 
@@ -104,9 +98,15 @@
 		$mDevices.mutate(device.id);
 	};
 
-	$inspect($rPlaybackState.data).with((type, value) =>
-		console.log(type, '(layout) $rPlaybackState.data', value)
-	);
+	$effect(() => {
+		if (!$rPlaybackState.data) return;
+		untrack(() => {
+			$playerState = {
+				...$playerState,
+				...toPlayerState($rPlaybackState.data)
+			};
+		});
+	});
 </script>
 
 <!--  -->

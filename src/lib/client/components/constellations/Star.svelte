@@ -10,7 +10,7 @@
 	interface Props {
 		activeColor?: string;
 		color?: string;
-
+		key: string;
 		index: number;
 		isActive?: boolean;
 		isSelected?: boolean;
@@ -29,6 +29,7 @@
 	let {
 		activeColor = 'cyan',
 		color = 'white',
+		key,
 		position,
 		scale = 1,
 		showNameplate = $bindable(true),
@@ -41,7 +42,7 @@
 		...rest
 	}: Props = $props();
 
-	let scaleHover = new Spring(1);
+	let scaleHover = new Spring(1, { stiffness: 0.15, damping: 1 });
 	let hovered = $state(false);
 	let platePosition = $state<[number, number, number]>([0, 0, 0]);
 	let plateQuaternion = $state<[number, number, number, number]>([0, 0, 0, 1]);
@@ -72,7 +73,7 @@
 	});
 </script>
 
-<T.Group {position} {...rest} bind:ref={groupRef}>
+<T.Group name={key} {position} {...rest} bind:ref={groupRef}>
 	<T.Mesh
 		bind:ref={starRef}
 		scale={scaleHover.current * scale}

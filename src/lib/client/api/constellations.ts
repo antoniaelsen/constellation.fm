@@ -1,10 +1,14 @@
-import type { Constellation } from '$lib/types/constellations';
+import type { Constellation, Star } from '$lib/types/constellations';
 import {
 	useQuery,
 	type UseQueryOptions,
 	type UseQueryStoreResult
 } from '@sveltestack/svelte-query';
 import { apiFetch } from './fetch';
+
+export const starKey = (star: Star) => {
+	return `star-${star.provider}:${star.providerTrackId}:${star.providerTimestamp}`;
+};
 
 const getConstellation = async (constellationId: string): Promise<Constellation> => {
 	const url = `/api/constellations/${constellationId}`;

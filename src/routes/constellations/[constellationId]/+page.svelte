@@ -1,14 +1,27 @@
 <script lang="ts">
-	import { useConstellation } from '$lib/client/api/constellations';
+	import { useThrelte } from '@threlte/core';
+	import * as THREE from 'three';
+	import { untrack } from 'svelte';
+
 	import { page } from '$app/stores';
-	import { playbackStart } from '$lib/client/api/spotify';
+	import { starKey, useConstellation } from '$lib/client/api/constellations';
+	import { usePlaybackStart } from '$lib/client/api/spotify';
 	import Constellation from '$lib/client/components/constellations/Constellation.svelte';
 	import { playerState } from '$lib/client/stores/player';
 	import type { Star, Edge } from '$lib/types/constellations';
+	import { cameraStore } from '$lib/client/stores/camera';
 
 	const req = $derived(
 		useConstellation($page.params.constellationId, { retry: false, refetchOnWindowFocus: false })
 	);
+
+	const mPlay = usePlaybackStart();
+
+	const setControlsTarget = (position: THREE.Vector3) => {
+		const target = new THREE.Vector3(position.x, position.y, position.z);
+
+		untrack(() => ($cameraStore.targetPosition = target));
+	};
 
 	const getActiveNodeId = (stars: Star[], playerState: typeof $playerState) => {
 		const { current, next, previous } = playerState.window;
@@ -78,7 +91,12 @@
 
 		const position = star.providerOrder;
 
-		await playbackStart(currentDevice.id, 0, uri, { position });
+		await $mPlay.mutateAsync({
+			deviceId: currentDevice.id,
+			positionMs: 0,
+			contextUri: uri,
+			offset: { position }
+		});
 	};
 
 	const onStarClick = (star: Star, event: IntersectionEvent) => {
@@ -107,6 +125,19 @@
 		console.log('Removing edge:', edge);
 		// TODO: Implement edge removal API call
 	};
+
+	const { scene } = useThrelte();
+
+	$effect(() => {
+		const activeStar = $req.data?.stars.find((star) => star.id === activeNodeId);
+		if (activeStar) {
+			const key = starKey(activeStar);
+			const obj = untrack(() => scene.getObjectByName(key));
+			if (obj) {
+				untrack(() => setControlsTarget(obj.position.clone()));
+			}
+		}
+	});
 </script>
 
 {#if $req.data}

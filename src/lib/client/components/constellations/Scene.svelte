@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { OrbitControls, interactivity } from '@threlte/extras';
+	import { interactivity } from '@threlte/extras';
+	import OrbitControls from './OrbitControls.svelte';
 
 	interactivity();
 

@@ -4,8 +4,9 @@
 	import * as THREE from 'three';
 
 	import type { Constellation, Edge as IEdge, Star as IStar } from '$lib/types/constellations';
-	import Star from './Star.svelte';
 	import type { Star as StarType } from '$lib/types/constellations';
+	import Star from './Star.svelte';
+	import { starKey } from '$lib/client/api/constellations';
 
 	const SCALE_STAR = 5;
 	const SCALE_LINK = 0.5;
@@ -161,23 +162,6 @@
 	});
 </script>
 
-{#each stars as star (star.index)}
-	<Star
-		index={star.star.providerOrder}
-		isActive={star.index === activeStarIndex}
-		isSelected={selectedNodeIds.includes(star.star.id)}
-		metadata={star.star.metadata}
-		position={[star.x || 0, star.y || 0, star.z || 0]}
-		scale={SCALE_STAR}
-		showNameplate={showNameplates}
-		onClick={(event) => {
-			onStarClick?.(star.star, event);
-		}}
-		onNameplateButtonClick={() => {
-			onStarButtonClick?.(star.star);
-		}}
-	/>
-{/each}
 {#each links as _, i (i)}
 	{#if linkWidth > 0}
 		<T.Group
@@ -223,4 +207,23 @@
 			</T.Mesh>
 		</T.Group>
 	{/if}
+{/each}
+
+{#each stars as star (star.index)}
+	<Star
+		key={starKey(star.star)}
+		index={star.star.providerOrder}
+		isActive={star.index === activeStarIndex}
+		isSelected={selectedNodeIds.includes(star.star.id)}
+		metadata={star.star.metadata}
+		position={[star.x || 0, star.y || 0, star.z || 0]}
+		scale={SCALE_STAR}
+		showNameplate={showNameplates}
+		onClick={(event) => {
+			onStarClick?.(star.star, event);
+		}}
+		onNameplateButtonClick={() => {
+			onStarButtonClick?.(star.star);
+		}}
+	/>
 {/each}

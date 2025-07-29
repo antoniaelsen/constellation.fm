@@ -137,7 +137,7 @@ export const playbackSkipNext = async (deviceId: string) => {
 };
 
 export const playbackSkipPrevious = async (deviceId: string) => {
-	return apiFetch(`/api/spotify/me/player/next`, {
+	return apiFetch(`/api/spotify/me/player/previous`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
