@@ -1,4 +1,8 @@
-import pino, { type Logger as PinoLogger, type LoggerOptions } from 'pino';
+import pino, {
+	type Logger as PinoLogger,
+	type LoggerOptions,
+	type TransportTargetOptions
+} from 'pino';
 import { get, readable, type Readable } from 'svelte/store';
 import { browser, dev } from '$app/environment';
 
@@ -14,13 +18,7 @@ export type Logger = PinoLogger & {
 const LOG_LEVEL_DEFAULT = 'silent';
 
 const plogger: Logger = (() => {
-	const prodTargets = [
-		{
-			level: 'trace',
-			target: 'pino/file',
-			options: { destination: './server.log' }
-		}
-	];
+	const prodTargets: TransportTargetOptions[] = [];
 
 	const devTargets = [
 		{
@@ -31,6 +29,11 @@ const plogger: Logger = (() => {
 				ignore: 'module,pid,hostname',
 				messageFormat: `[{module}] {msg}`
 			}
+		},
+		{
+			level: 'trace',
+			target: 'pino/file',
+			options: { destination: './server.log' }
 		},
 		...prodTargets
 	];
