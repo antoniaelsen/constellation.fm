@@ -14,6 +14,7 @@ import {
 } from '@spotify/web-api-ts-sdk';
 import { error } from '@sveltejs/kit';
 
+import { env } from '$env/dynamic/private';
 import type { SpotifyAccessToken } from '$lib/types';
 import { logger } from '$lib/stores/logger';
 import { createSpotifyOptions, type SpotifyError } from './spotify-client';
@@ -54,7 +55,7 @@ export const formatScope = (scope: string | string[]) => {
 
 export const getAvailableDevices = async (tokens: AccessToken): Promise<Device[]> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -70,7 +71,7 @@ export const getAvailableDevices = async (tokens: AccessToken): Promise<Device[]
 
 export const getPlaybackState = async (tokens: AccessToken): Promise<PlaybackState> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -90,7 +91,7 @@ export const getPlaylist = async (
 	options?: { market?: Market; fields?: string; additionalTypes?: QueryAdditionalTypes }
 ): Promise<Playlist<QueryAdditionalTypes extends undefined ? Track : TrackItem>> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -113,7 +114,7 @@ export const getPlaylists = async (
 	options?: { limit?: MaxInt<50>; offset?: number }
 ): Promise<SimplifiedPlaylist[]> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -151,7 +152,7 @@ export const getPlaylists = async (
 
 export const getProfile = async (tokens: AccessToken): Promise<UserProfile> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -171,12 +172,12 @@ export const getTokens = async (code: string): Promise<SpotifyAccessToken> => {
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
 				Authorization: `Basic ${Buffer.from(
-					`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+					`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
 				).toString('base64')}`
 			},
 			body: new URLSearchParams({
 				code,
-				redirect_uri: process.env.SPOTIFY_REDIRECT_URI!,
+				redirect_uri: env.SPOTIFY_REDIRECT_URI!,
 				grant_type: 'authorization_code'
 			})
 		});
@@ -196,13 +197,13 @@ export const refreshTokens = async (refreshToken: string): Promise<SpotifyAccess
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
 				Authorization: `Basic ${Buffer.from(
-					`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+					`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
 				).toString('base64')}`
 			},
 			body: new URLSearchParams({
 				grant_type: 'refresh_token',
 				refresh_token: refreshToken,
-				client_id: process.env.SPOTIFY_CLIENT_ID!
+				client_id: env.SPOTIFY_CLIENT_ID!
 			})
 		});
 		return await response.json();
@@ -215,7 +216,7 @@ export const refreshTokens = async (refreshToken: string): Promise<SpotifyAccess
 
 export const playbackPause = async (tokens: AccessToken, deviceId: string): Promise<void> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -235,7 +236,7 @@ export const playbackStart = async (
 	positionMs: number
 ): Promise<void> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -255,7 +256,7 @@ export const playbackSetVolume = async (
 	deviceId: string
 ): Promise<void> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -274,7 +275,7 @@ export const playbackSeekToPosition = async (
 	deviceId: string
 ): Promise<void> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -289,7 +290,7 @@ export const playbackSeekToPosition = async (
 
 export const playbackSkipNext = async (tokens: AccessToken, deviceId: string): Promise<void> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -308,7 +309,7 @@ export const playbackSkipPrevious = async (
 	deviceId: string
 ): Promise<void> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -328,7 +329,7 @@ export const setRepeatMode = async (
 	deviceId?: string
 ): Promise<void> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -348,7 +349,7 @@ export const toggleShuffle = async (
 	deviceId?: string
 ): Promise<void> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);
@@ -367,7 +368,7 @@ export const transferPlayback = async (
 	play: boolean
 ): Promise<void> => {
 	const sdk = SpotifyApi.withAccessToken(
-		process.env.SPOTIFY_CLIENT_ID!,
+		env.SPOTIFY_CLIENT_ID!,
 		tokens,
 		createSpotifyOptions(tokens)
 	);

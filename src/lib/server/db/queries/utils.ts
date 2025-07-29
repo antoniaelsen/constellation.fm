@@ -1,7 +1,9 @@
 import crypto from 'crypto';
-import { ENCRYPTION_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
-const ENCRYPTION_KEY_BUFFER = Buffer.from(ENCRYPTION_KEY, 'hex');
+const ENCRYPTION_KEY_BUFFER = env.ENCRYPTION_KEY
+	? Buffer.from(env.ENCRYPTION_KEY, 'hex')
+	: Buffer.from('');
 const ALGORITHM = 'aes-256-gcm';
 
 export const encrypt = (text: string) => {
