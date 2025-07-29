@@ -1,10 +1,10 @@
+import { type Constellation } from '$lib/types/constellations';
 import {
 	Provider,
-	type Constellation,
 	type EAlbumMetadata,
 	type EArtistMetadata,
 	type ETrackMetadata
-} from '$lib/types/constellations';
+} from '$lib/types/music';
 
 const N_CONSTELLATIONS = 10;
 const N_STARS = 25;
@@ -36,8 +36,12 @@ export const CONSTELLATIONS: Constellation[] = [
 			metadata: {
 				name: `Mock Track ${s}`,
 				artists: [MOCK_ARTIST],
-				album: MOCK_ALBUM
-			}
+				album: MOCK_ALBUM,
+				uri: 'mock-uri',
+				isLocal: false,
+				key: 'mock-key'
+			},
+			isLocal: false
 		})),
 		edges: Array.from({ length: N_STARS - 1 }, (_, e) => ({
 			id: e.toString(),
@@ -52,5 +56,8 @@ export const mockTrack = (): ETrackMetadata => ({
 	name: 'Mock Track',
 	artists: [MOCK_ARTIST],
 	album: MOCK_ALBUM,
-	isrc: 'ISRC-1234567890'
+	isrc: 'ISRC-1234567890',
+	isLocal: false,
+	key: 'mock-key',
+	uri: 'mock-uri'
 });

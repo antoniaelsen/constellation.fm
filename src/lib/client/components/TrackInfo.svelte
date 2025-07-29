@@ -1,22 +1,31 @@
 <script lang="ts">
-	import type { EAlbumMetadata, EArtistMetadata } from '$lib/types/constellations';
+	import type { EAlbumMetadata, EArtistMetadata } from '$lib/types/music';
 	import { A, Avatar, P } from 'flowbite-svelte';
 
 	interface Props {
-		album?: EAlbumMetadata;
+		album: EAlbumMetadata | null;
 		artists: EArtistMetadata[];
 		href?: string;
 		name: string;
+		isLocal: boolean;
 	}
 
-	let { name, href, artists, album }: Props = $props();
+	let { name, href, artists, album, isLocal }: Props = $props();
 </script>
 
 <div class="flex flex-row flex-nowrap items-center justify-start gap-3">
-	<Avatar src={album?.images[0]?.url} cornerStyle="rounded" class="pointer-events-none" />
+	<!-- TODO: add local indicator -->
+	<Avatar src={album?.images[0]?.url} cornerStyle="rounded" class="pointer-events-none">
+		{#if !album?.images?.length}
+			?
+		{/if}
+	</Avatar>
 
 	<div class="flex flex-col">
-		<A class="text-sm text-gray-900 select-none hover:no-underline dark:text-gray-100" {href}>
+		<A
+			class="text-sm text-ellipsis whitespace-nowrap text-gray-900 select-none hover:no-underline dark:text-gray-100"
+			{href}
+		>
 			{name}
 		</A>
 

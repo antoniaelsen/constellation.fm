@@ -1,4 +1,5 @@
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import type { AdapterAccountType } from '@auth/sveltekit/adapters';
 import {
 	boolean,
 	timestamp,
@@ -10,9 +11,8 @@ import {
 	bigint,
 	pgEnum
 } from 'drizzle-orm/pg-core';
-import type { AdapterAccountType } from 'next-auth/adapters';
 import { db } from '.';
-import { Provider } from '../../types/constellations';
+import { Provider } from '../../types/music';
 
 export function enumToPgEnum<T extends Record<string, any>>(
 	myEnum: T
@@ -166,7 +166,8 @@ export const stars = pgTable(
 		providerTrackId: text('providerTrackId').notNull(),
 		providerOrder: integer('providerOrder').notNull(),
 		providerTimestamp: timestamp({ mode: 'date' }).notNull(),
-		isrc: text('isrc').notNull()
+		isrc: text('isrc'),
+		isLocal: boolean('isLocal').notNull().default(false)
 	},
 	(star) => ({
 		uniqConstellationTrack: unique().on(star.constellationId, star.provider, star.providerTrackId)

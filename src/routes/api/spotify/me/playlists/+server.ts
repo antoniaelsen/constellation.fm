@@ -1,20 +1,15 @@
 import { getPlaylists } from '$lib/server/api/spotify';
+import type { MaxInt } from '@spotify/web-api-ts-sdk';
+import type { HttpError } from '@sveltejs/kit';
 
 export async function GET({ locals, url }) {
-	const { spotify: { webApi } = {} } = locals;
-	if (!webApi) {
-		return new Response(JSON.stringify({ error: 'Spotify not connected' }), {
-			status: 401
-		});
-	}
-
 	const offset = url.searchParams.get('offset');
 	const limit = url.searchParams.get('limit');
 
 	try {
-		const playlists = await getPlaylists(webApi, {
+		const playlists = await getPlaylists(locals.spotify.webApi, {
 			offset: offset ? parseInt(offset) : undefined,
-			limit: limit ? parseInt(limit) : undefined
+			limit: limit ? (Math.max(Math.min(parseInt(limit), 50), 1) as MaxInt<50>) : undefined
 		});
 
 		return new Response(JSON.stringify(playlists), {
@@ -24,7 +19,7 @@ export async function GET({ locals, url }) {
 		});
 	} catch (err) {
 		return new Response(JSON.stringify({ error: 'Failed to fetch playlists' }), {
-			status: error.status ?? 500
+			status: (err as HttpError).status ?? 500
 		});
 	}
 }

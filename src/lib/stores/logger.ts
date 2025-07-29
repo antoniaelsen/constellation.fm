@@ -24,9 +24,13 @@ const plogger: Logger = (() => {
 			},
 			targets: [
 				{
-					level: 'info',
+					level: 'trace',
 					target: 'pino-pretty',
-					options: {}
+					options: {
+						singleLine: true,
+						ignore: 'module,pid,hostname',
+						messageFormat: `[{module}] {msg}`
+					}
 				},
 				{
 					level: 'trace',
@@ -69,7 +73,6 @@ plogger.setLogLevel = (NODE_ENV: ServerEnvironment) => {
 			break;
 	}
 
-	logger.info(`Logger log level will be set to "${logLevel}".`);
 	plogger.level = logLevel;
 
 	return logLevel;

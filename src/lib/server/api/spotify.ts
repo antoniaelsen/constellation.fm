@@ -1,10 +1,10 @@
 import {
-	InMemoryCachingStrategy,
 	SpotifyApi,
 	type AccessToken,
-	type IValidateResponses,
+	type Device,
 	type Market,
 	type MaxInt,
+	type PlaybackState,
 	type Playlist,
 	type QueryAdditionalTypes,
 	type SimplifiedPlaylist,
@@ -16,6 +16,7 @@ import { error } from '@sveltejs/kit';
 
 import type { SpotifyAccessToken } from '$lib/types';
 import { logger } from '$lib/stores/logger';
+import { createSpotifyOptions, type SpotifyError } from './spotify-client';
 
 const LOGGER = logger.child({
 	module: 'api-spotify'
@@ -51,47 +52,36 @@ export const formatScope = (scope: string | string[]) => {
 	return scopes.sort().join(' ');
 };
 
-interface SpotifyError extends Error {
-	cause: {
-		code: number;
-	};
-}
+export const getAvailableDevices = async (tokens: AccessToken): Promise<Device[]> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
-class ResponseValidator implements IValidateResponses {
-	public async validateResponse(response: Response): Promise<void> {
-		switch (response.status) {
-			case 401:
-				throw new Error(
-					'Bad or expired token. This can happen if the user revoked a token or the access token has expired. You should re-authenticate the user.',
-					{ cause: { code: 401 } }
-				);
-			case 403:
-				const body = await response.text();
-				throw new Error(
-					`Bad OAuth request (wrong consumer key, bad nonce, expired timestamp...). Unfortunately, re-authenticating the user won't help here. Body: ${body}`,
-					{ cause: { code: 403 } }
-				);
-			case 429:
-				const retryAfter = response.headers.get('Retry-After');
-				throw new Error(
-					`The app has exceeded its rate limits; retry after: ${retryAfter} seconds.`,
-					{ cause: { code: 429 } }
-				);
-			default:
-				if (!response.status.toString().startsWith('20')) {
-					const body = await response.text();
-					throw new Error(
-						`Unrecognised response code: ${response.status} - ${response.statusText}. Body: ${body}`,
-						{ cause: { code: response.status } }
-					);
-				}
-		}
+	try {
+		const res = await sdk.player.getAvailableDevices();
+		return res.devices;
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to fetch available devices: ${spotifyErr}`);
 	}
-}
+};
 
-const OPTS = {
-	responseValidator: new ResponseValidator(),
-	cachingStrategy: new InMemoryCachingStrategy()
+export const getPlaybackState = async (tokens: AccessToken): Promise<PlaybackState> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		const res = await sdk.player.getPlaybackState();
+		return res;
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to fetch playback state: ${spotifyErr}`);
+	}
 };
 
 export const getPlaylist = async (
@@ -99,7 +89,11 @@ export const getPlaylist = async (
 	playlistId: string,
 	options?: { market?: Market; fields?: string; additionalTypes?: QueryAdditionalTypes }
 ): Promise<Playlist<QueryAdditionalTypes extends undefined ? Track : TrackItem>> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
 	try {
 		return await sdk.playlists.getPlaylist(
@@ -110,7 +104,7 @@ export const getPlaylist = async (
 		);
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		throw error(spotifyErr.cause.code, `Failed to fetch playlist: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to fetch playlist: ${spotifyErr}`);
 	}
 };
 
@@ -118,7 +112,11 @@ export const getPlaylists = async (
 	tokens: AccessToken,
 	options?: { limit?: MaxInt<50>; offset?: number }
 ): Promise<SimplifiedPlaylist[]> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 	let { limit, offset } = options || {};
 	if (limit) {
 		try {
@@ -145,20 +143,24 @@ export const getPlaylists = async (
 		}
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		throw error(spotifyErr.cause.code, `Failed to fetch playlists: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to fetch playlists: ${spotifyErr}`);
 	}
 
 	return acc;
 };
 
 export const getProfile = async (tokens: AccessToken): Promise<UserProfile> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
 	try {
 		return await sdk.currentUser.profile();
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		throw error(spotifyErr.cause.code, `Failed to fetch profile: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to fetch profile: ${spotifyErr}`);
 	}
 };
 
@@ -182,8 +184,8 @@ export const getTokens = async (code: string): Promise<SpotifyAccessToken> => {
 		return await response.json();
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		LOGGER.error('Failed to fetch tokens: ', spotifyErr.message);
-		throw error(spotifyErr.cause.code, `Failed to fetch tokens: ${spotifyErr.message}`);
+		LOGGER.error('Failed to fetch tokens: ', spotifyErr);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to fetch tokens: ${spotifyErr}`);
 	}
 };
 
@@ -206,25 +208,156 @@ export const refreshTokens = async (refreshToken: string): Promise<SpotifyAccess
 		return await response.json();
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		LOGGER.error('Failed to refresh tokens: ', spotifyErr.message);
-		throw error(spotifyErr.cause.code, `Failed to refresh tokens: ${spotifyErr.message}`);
+		LOGGER.error('Failed to refresh tokens: ', spotifyErr);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to refresh tokens: ${spotifyErr}`);
 	}
 };
 
-export const startPlayback = async (
+export const playbackPause = async (tokens: AccessToken, deviceId: string): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.pausePlayback(deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to pause playback: ${spotifyErr}`);
+	}
+};
+
+export const playbackStart = async (
 	tokens: AccessToken,
 	deviceId: string,
-	target: { contextUri: string; offset: { position: number }; uris: string[] },
+	target: { contextUri: string; offset?: { position: number }; uris?: string[] },
 	positionMs: number
 ): Promise<void> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
 	const { contextUri, offset, uris } = target;
 	try {
 		return await sdk.player.startResumePlayback(deviceId, contextUri, uris, offset, positionMs);
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		throw error(spotifyErr.cause.code, `Failed to start playback: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to start playback: ${spotifyErr}`);
+	}
+};
+
+export const playbackSetVolume = async (
+	tokens: AccessToken,
+	volume: number,
+	deviceId: string
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.setPlaybackVolume(volume, deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to set volume: ${spotifyErr}`);
+	}
+};
+
+export const playbackSeekToPosition = async (
+	tokens: AccessToken,
+	positionMs: number,
+	deviceId: string
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.seekToPosition(positionMs, deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to seek to position: ${spotifyErr}`);
+	}
+};
+
+export const playbackSkipNext = async (tokens: AccessToken, deviceId: string): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.skipToNext(deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		LOGGER.error('Failed to skip to next: ', spotifyErr);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to skip to next: ${spotifyErr}`);
+	}
+};
+
+export const playbackSkipPrevious = async (
+	tokens: AccessToken,
+	deviceId: string
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.skipToPrevious(deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		LOGGER.error('Failed to skip to previous: ', spotifyErr);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to skip to previous: ${spotifyErr}`);
+	}
+};
+
+export const setRepeatMode = async (
+	tokens: AccessToken,
+	repeatMode: 'track' | 'context' | 'off',
+	deviceId?: string
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.setRepeatMode(repeatMode, deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		const statusCode = spotifyErr.cause?.code || 500;
+		throw error(statusCode, `Failed to set repeat mode: ${spotifyErr}`);
+	}
+};
+
+export const toggleShuffle = async (
+	tokens: AccessToken,
+	shuffle: boolean,
+	deviceId?: string
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.togglePlaybackShuffle(shuffle, deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to toggle shuffle: ${spotifyErr}`);
 	}
 };
 
@@ -233,12 +366,16 @@ export const transferPlayback = async (
 	deviceId: string,
 	play: boolean
 ): Promise<void> => {
-	const sdk = SpotifyApi.withAccessToken(process.env.SPOTIFY_CLIENT_ID!, tokens, OPTS);
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
 
 	try {
 		return await sdk.player.transferPlayback([deviceId], play);
 	} catch (err) {
 		const spotifyErr = err as SpotifyError;
-		throw error(spotifyErr.cause.code, `Failed to transfer playback: ${spotifyErr.message}`);
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to transfer playback: ${spotifyErr}`);
 	}
 };

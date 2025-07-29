@@ -1,22 +1,25 @@
 <script lang="ts">
 	import { T, useTask, useThrelte } from '@threlte/core';
-	import { HTML } from '@threlte/extras';
+	import { HTML, Outlines } from '@threlte/extras';
 	import { Spring } from 'svelte/motion';
 	import * as THREE from 'three';
 
-	import type { ETrackMetadata } from '$lib/types/constellations';
+	import type { ETrackMetadata } from '$lib/types/music';
 	import Nameplate from '../Nameplate.svelte';
+
 	interface Props {
-		active?: boolean;
 		activeColor?: string;
 		color?: string;
-		scale?: number;
 
 		index: number;
+		isActive?: boolean;
+		isSelected?: boolean;
 		metadata?: ETrackMetadata;
+		scale?: number;
 		showNameplate?: boolean;
+		position?: [number, number, number];
 
-		onClick?: () => void;
+		onClick?: (event: IntersectionEvent) => void;
 		onNameplateButtonClick?: () => void;
 	}
 
@@ -24,11 +27,13 @@
 	let starRef = $state<THREE.Mesh | undefined>();
 
 	let {
-		active = $bindable(false),
 		activeColor = 'cyan',
 		color = 'white',
+		position,
 		scale = 1,
 		showNameplate = $bindable(true),
+		isActive = $bindable(false),
+		isSelected = false,
 		index,
 		metadata,
 		onClick,
@@ -52,30 +57,24 @@
 		const right = camera.current.getWorldDirection(new THREE.Vector3());
 		right.cross(camera.current.up).normalize();
 
-		const position = direction.multiplyScalar(100);
-		position.add(right.multiplyScalar(10));
-		platePosition = position.toArray();
+		const p = direction.multiplyScalar(100);
+		p.add(right.multiplyScalar(10));
+		platePosition = p.toArray();
 
 		plateQuaternion = camera.current.quaternion.toArray();
 	});
 
 	$effect(() => {
-		const factive = active ? 1.75 : 1;
+		const factive = isActive ? 1.75 : 1;
 		const fhover = hovered ? 1.5 : 1;
 
 		scaleHover.target = factive * fhover;
 	});
 </script>
 
-<T.Group bind:ref={groupRef} {...rest}>
+<T.Group {position} {...rest} bind:ref={groupRef}>
 	<T.Mesh
 		bind:ref={starRef}
-		transition={{
-			scale: {
-				duration: 500,
-				easing: 'easeInOut'
-			}
-		}}
 		scale={scaleHover.current * scale}
 		onpointerenter={() => {
 			hovered = true;
@@ -83,13 +82,17 @@
 		onpointerleave={() => {
 			hovered = false;
 		}}
-		onclick={(e) => {
-			e.stopPropagation();
-			onClick?.();
+		onclick={(e: IntersectionEvent) => {
+			onClick?.(e);
+			e.stopPropagation(); // Needed to prevent double
 		}}
 	>
 		<T.SphereGeometry args={[1]} />
-		<T.MeshBasicMaterial color={active ? activeColor : color} side={THREE.DoubleSide} />
+		<T.MeshBasicMaterial color={isActive ? activeColor : color} side={THREE.DoubleSide} />
+
+		{#if isSelected}
+			<Outlines color="green" thickness={0.33} />
+		{/if}
 	</T.Mesh>
 
 	{#if showNameplate && metadata}
@@ -104,11 +107,12 @@
 					}}
 				>
 					<Nameplate
-						className={`${hovered || active ? 'opacity-100' : 'opacity-75 bg-transparent! border-none! shadow-none!'} translate-x-1/2 transition-all duration-500`}
+						className={`${hovered || isActive ? 'opacity-100' : 'opacity-75 bg-transparent! border-none! shadow-none!'} absolute -translate-y-1/2 -translate-x-2 transition-all duration-500 pointer-events-auto`}
 						name={metadata.name ?? ''}
 						href={metadata.href ?? ''}
 						artists={metadata.artists}
 						album={metadata.album}
+						isLocal={metadata.isLocal}
 						{index}
 						onButtonClick={() => {
 							onNameplateButtonClick?.();

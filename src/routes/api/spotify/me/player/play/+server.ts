@@ -1,12 +1,6 @@
-import { startPlayback, transferPlayback } from '$lib/server/api/spotify';
+import { playbackStart } from '$lib/server/api/spotify';
 
 export async function PUT({ locals, request }) {
-	const { spotify: { webApi } = {} } = locals;
-	if (!webApi) {
-		return new Response(JSON.stringify({ error: 'Spotify not connected' }), {
-			status: 401
-		});
-	}
 	const { deviceId, contextUri, uris, offset, positionMs } = await request.json();
 	if (!deviceId) {
 		return new Response(JSON.stringify({ error: 'Device ID is required' }), {
@@ -19,8 +13,8 @@ export async function PUT({ locals, request }) {
 		});
 	}
 
-	await startPlayback(
-		webApi,
+	await playbackStart(
+		locals.spotify.webApi,
 		deviceId,
 		{
 			contextUri,

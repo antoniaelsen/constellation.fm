@@ -2,11 +2,11 @@ import { getPlaylist } from '$lib/server/api/spotify';
 import { spotifyPlaylistToConstellation } from '$lib/server/utils/spotify';
 import { getConstellation, syncEdges, syncStars } from '$lib/server/db/queries/constellations';
 import {
-	Provider,
 	type Constellation,
 	type ConstellationMetadata,
 	type ConstellationPrototype
 } from '$lib/types/constellations';
+import { Provider } from '$lib/types/music';
 
 /**
  * Get a constellation from its Spotify playlist, including ephemeral Spotify metadata
@@ -36,14 +36,14 @@ const zipConstellationMetadata = (
 	constellation: Constellation,
 	metadata: ConstellationMetadata
 ): Constellation => {
-	const starMetadata = Object.fromEntries(metadata.stars.map((star) => [star.isrc, star]));
+	const starMetadata = Object.fromEntries(metadata.stars.map((star) => [star.key, star]));
 
 	return {
 		...constellation,
 		metadata: metadata.playlist,
 		stars: constellation.stars.map((star) => ({
 			...star,
-			metadata: starMetadata[star.isrc]
+			metadata: starMetadata[`${Provider.SPOTIFY}:${star.providerTrackId}`]
 		}))
 	};
 };
