@@ -33,6 +33,9 @@
 </script>
 
 <div class="flex flex-col gap-2">
+	{#if devices.length === 0}
+		<div class="text-center text-gray-500 dark:text-gray-400">No devices found.</div>
+	{/if}
 	{#each devices as device (device.id)}
 		<Button
 			class="flex flex-row flex-nowrap items-center justify-start gap-3 p-3 {device.isActive

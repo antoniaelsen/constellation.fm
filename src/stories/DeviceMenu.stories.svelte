@@ -22,3 +22,11 @@
 		onDeviceSelect: fn()
 	}}
 />
+
+<Story
+	name="No Devices"
+	args={{
+		devices: [],
+		onDeviceSelect: fn()
+	}}
+/>
