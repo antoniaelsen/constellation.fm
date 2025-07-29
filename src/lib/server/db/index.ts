@@ -1,4 +1,3 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { env } from '$env/dynamic/private';
 
-export const db = drizzle(env.DATABASE_URL!);
+export const db = drizzle(process.env.DATABASE_URL!);
