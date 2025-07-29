@@ -21,9 +21,22 @@ export const handleLog: Handle = async ({ event, resolve }) => {
 	const start = performance.now();
 	const response = await resolve(event);
 	const end = performance.now();
+
+	let error = '';
+	if (response.status >= 400) {
+		const clone = response.clone();
+		if (!response.bodyUsed) {
+			try {
+				error = await clone.text();
+			} catch (err) {
+				LOGGER.error('Failed to get response text: ', err);
+			}
+		}
+	}
+
 	LOGGER.info(
 		`[${event.request.method}] ${event.url.pathname} - code: ${response.status}${
-			response.status >= 400 ? ` error: ${await response.text()}` : ''
+			error ? ` error: ${error}` : ''
 		} (took ${(end - start).toFixed(2)}ms)`
 	);
 	return response;

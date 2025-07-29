@@ -8,6 +8,7 @@ import type { Session } from '$lib/types';
 export const { handle, signIn, signOut } = SvelteKitAuth({
 	adapter: drizzleAdapter,
 	providers: [Auth0({ authorization: { params: { prompt: 'login' } } })],
+	trustHost: true,
 	callbacks: {
 		async session({ session, user }): Promise<Session> {
 			const spotifyDb = await getSpotifyConnection(user.id);
