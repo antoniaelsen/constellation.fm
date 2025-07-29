@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Intersection } from 'three';
 	import { useConstellation } from '$lib/client/api/constellations';
 	import { page } from '$app/stores';
 	import { playbackStart } from '$lib/client/api/spotify';
@@ -36,7 +35,6 @@
 
 		while (indices.length > 1) {
 			const i = indices[0].i;
-			const index = stars[i].id;
 			if (next) {
 				if (i + 1 >= stars.length) {
 					indices.shift();

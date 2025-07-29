@@ -33,7 +33,7 @@
 </script>
 
 <div class="flex flex-col gap-2">
-	{#each devices as device}
+	{#each devices as device (device.id)}
 		<Button
 			class="flex flex-row flex-nowrap items-center justify-start gap-3 p-3 {device.isActive
 				? 'bg-green-100 dark:bg-green-900'

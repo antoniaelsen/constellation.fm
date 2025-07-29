@@ -1,6 +1,5 @@
 /// <reference types="@sveltejs/kit" />
 import 'unplugin-icons/types/svelte';
-import type { SpotifyAccessToken } from '$lib/types';
 
 declare global {
 	interface IntersectionEvent extends Intersection {

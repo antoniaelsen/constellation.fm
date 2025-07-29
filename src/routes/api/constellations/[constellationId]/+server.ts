@@ -81,7 +81,7 @@ export async function GET({ locals, params }) {
 					locals,
 					providerPlaylistId
 				));
-			} catch (err) {
+			} catch {
 				// fine
 			}
 			break;

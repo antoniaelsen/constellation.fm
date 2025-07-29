@@ -4,7 +4,7 @@
 	import TrackInfo from '../TrackInfo.svelte';
 
 	export interface Props extends PlayerControlsProps {
-		right?: any;
+		right?: () => void;
 	}
 
 	let {

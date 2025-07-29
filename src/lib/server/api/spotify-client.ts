@@ -149,17 +149,19 @@ export class ResponseValidator implements IValidateResponses {
 					'Bad or expired token. This can happen if the user revoked a token or the access token has expired. You should re-authenticate the user.',
 					{ cause: { code: 401 } }
 				);
-			case 403:
+			case 403: {
 				const body = await response.text();
 				throw new Error(
 					`Bad OAuth request (wrong consumer key, bad nonce, expired timestamp...). Unfortunately, re-authenticating the user won't help here. Body: ${body}`,
 					{ cause: { code: 403 } }
 				);
-			case 429:
+			}
+			case 429: {
 				const retryAfter = response.headers.get('Retry-After');
 				throw new Error(`The app has exceeded its rate limits; retry after ${retryAfter} seconds`, {
 					cause: { code: 429 }
 				});
+			}
 			default:
 				if (!response.status.toString().startsWith('20')) {
 					const body = await response.text();
@@ -244,7 +246,6 @@ function createCachingFetch(cache: ICachingStrategy, tokens: AccessToken): typeo
 		if (response.ok && response.status === 200) {
 			try {
 				const body = await response.arrayBuffer();
-				const staleTime = getStaleTimeForUrl(url);
 				const cachedResponse: CachedResponse & ICachable = {
 					response: {
 						status: response.status,
@@ -262,7 +263,7 @@ function createCachingFetch(cache: ICachingStrategy, tokens: AccessToken): typeo
 					statusText: response.statusText,
 					headers: response.headers
 				});
-			} catch (e) {
+			} catch {
 				return response;
 			}
 		}

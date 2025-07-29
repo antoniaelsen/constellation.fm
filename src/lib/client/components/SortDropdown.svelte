@@ -39,7 +39,7 @@
 		{/if}
 	</Button>
 	<Dropdown class="w-48" simple>
-		{#each options as option}
+		{#each options as option (option.value)}
 			<DropdownItem
 				class="w-full text-left {option.isDisabled
 					? 'opacity-50 hover:bg-transparent dark:hover:bg-transparent'

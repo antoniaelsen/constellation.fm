@@ -7,10 +7,9 @@
 		artists: EArtistMetadata[];
 		href?: string;
 		name: string;
-		isLocal: boolean;
 	}
 
-	let { name, href, artists, album, isLocal }: Props = $props();
+	let { name, href, artists, album }: Props = $props();
 </script>
 
 <div class="flex flex-row flex-nowrap items-center justify-start gap-3">
@@ -30,7 +29,7 @@
 		</A>
 
 		<div class="flex flex-row flex-nowrap items-center justify-start gap-1">
-			{#each artists as artist}
+			{#each artists as artist (artist.name)}
 				<div
 					class="flex-inherit flex flex-row flex-nowrap items-center justify-start gap-0 overflow-hidden text-gray-500 dark:text-gray-500"
 				>

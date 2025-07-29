@@ -1,6 +1,6 @@
 import pino, { type Logger as PinoLogger, type LoggerOptions } from 'pino';
 import { get, readable, type Readable } from 'svelte/store';
-import { browser } from '$app/environment';
+import { browser, dev } from '$app/environment';
 
 export enum ServerEnvironment {
 	DEV,
@@ -14,6 +14,27 @@ export type Logger = PinoLogger & {
 const LOG_LEVEL_DEFAULT = 'silent';
 
 const plogger: Logger = (() => {
+	const prodTargets = [
+		{
+			level: 'trace',
+			target: 'pino/file',
+			options: { destination: './server.log' }
+		}
+	];
+
+	const devTargets = [
+		{
+			level: 'trace',
+			target: 'pino-pretty',
+			options: {
+				singleLine: true,
+				ignore: 'module,pid,hostname',
+				messageFormat: `[{module}] {msg}`
+			}
+		},
+		...prodTargets
+	];
+
 	const opts = {
 		transport: {
 			level: LOG_LEVEL_DEFAULT,
@@ -22,35 +43,22 @@ const plogger: Logger = (() => {
 					return { level: label.toUpperCase() };
 				}
 			},
-			targets: [
-				{
-					level: 'trace',
-					target: 'pino-pretty',
-					options: {
-						singleLine: true,
-						ignore: 'module,pid,hostname',
-						messageFormat: `[{module}] {msg}`
-					}
-				},
-				{
-					level: 'trace',
-					target: 'pino/file',
-					options: { destination: './server.log' }
-				}
-			]
+			targets: dev ? devTargets : prodTargets
 		}
 	};
+
 	const bopts = {
 		browser: { asObject: false },
-
-		transport: {
-			target: 'pino-pretty',
-			options: {
-				colorize: true,
-				levelFirst: true,
-				translateTime: true
-			}
-		}
+		transport: dev
+			? {
+					target: 'pino-pretty',
+					options: {
+						colorize: true,
+						levelFirst: true,
+						translateTime: true
+					}
+				}
+			: undefined
 	};
 
 	return pino(browser ? { ...bopts, ...opts } : opts);

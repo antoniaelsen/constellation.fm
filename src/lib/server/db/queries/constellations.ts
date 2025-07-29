@@ -80,7 +80,7 @@ export async function getConstellations(
 	const offset = options?.offset || 0;
 	const limit = options?.limit || -1;
 
-	let query = db
+	const query = db
 		.select()
 		.from(constellations)
 		.where(eq(constellations.userId, userId))
@@ -124,7 +124,7 @@ export async function getConstellationsByProviderId(
 		return [];
 	}
 
-	let query = db
+	const query = db
 		.select()
 		.from(constellations)
 		.where(

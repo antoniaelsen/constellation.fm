@@ -110,7 +110,7 @@
 			max={durationMs || 100}
 			value={positionMs || 0}
 			class="flex-grow {!isValid ? 'opacity-50' : ''}"
-			oninput={(e: any) => {
+			oninput={(e: Event) => {
 				if (currentTrack && !!durationMs) {
 					const newPosition = parseInt(e.target.value);
 					onSeek(newPosition);

@@ -35,7 +35,7 @@ export async function GET({ url, locals }) {
 	let data = null;
 	try {
 		data = await getTokens(code);
-	} catch (error) {
+	} catch {
 		return new Response(null, {
 			status: 302,
 			headers: {

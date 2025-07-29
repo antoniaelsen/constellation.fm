@@ -124,7 +124,7 @@ export async function refreshSpotifyConnection(
 		LOGGER.error('Failed to refresh Spotify token - invalid token received:', tokens);
 		return null;
 	}
-	let refresh_token = tokens.refresh_token ?? refreshToken;
+	const refresh_token = tokens.refresh_token ?? refreshToken;
 
 	const expires = Date.now() + expires_in * 1000;
 

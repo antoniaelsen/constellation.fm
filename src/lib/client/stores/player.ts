@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { type PlaybackTrackInfo, Provider, TrackLoop, TrackOrder } from '$lib/types/music';
-import type { PlaybackState } from '@spotify/web-api-ts-sdk';
+import type { PlaybackState, Device, Track, Artist, Image } from '@spotify/web-api-ts-sdk';
 
 export interface PlayerState {
 	contextUri: string | null;
@@ -23,19 +23,19 @@ export interface PlayerState {
 	};
 }
 
-export const toPlaybackTrack = (track: any): PlaybackTrackInfo => {
+export const toPlaybackTrack = (track: Track): PlaybackTrackInfo => {
 	const { linked_from, id, name, artists, album, is_local, uri } = track;
 	const providerTrackId = !is_local ? (linked_from?.id ?? id) : uri;
 	const albumMetadata = album
 		? {
 				name: album.name,
-				images: album.images.map((image: any) => ({ url: image.url }))
+				images: album.images.map((image: Image) => ({ url: image.url }))
 			}
 		: null;
 
 	return {
 		album: albumMetadata,
-		artists: artists.map((artist: any) => ({ name: artist.name })),
+		artists: artists.map((artist: Artist) => ({ name: artist.name })),
 		isLocal: is_local,
 		name,
 		provider: Provider.SPOTIFY,
@@ -62,7 +62,8 @@ export const toPlayerState = (spotifyState: PlaybackState): Omit<PlayerState, 'l
 			? {
 					id: device?.id ?? null,
 					isRestricted: device?.is_restricted ?? false,
-					isVolumeSupported: (device as any)?.supports_volume ?? false,
+					isVolumeSupported:
+						(device as Device & { supports_volume: boolean })?.supports_volume ?? false,
 					volume: device?.volume_percent ?? 0
 				}
 			: null,

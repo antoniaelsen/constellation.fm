@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core';
 	import { forceSimulation, forceLink, forceManyBody, forceCenter } from 'd3-force-3d';
-	import { Spring } from 'svelte/motion';
 	import * as THREE from 'three';
 
 	import type { Constellation, Edge as IEdge, Star as IStar } from '$lib/types/constellations';
 	import Star from './Star.svelte';
-	import type { Star as StarType, Edge } from '$lib/types/constellations';
+	import type { Star as StarType } from '$lib/types/constellations';
 
 	const SCALE_STAR = 5;
 	const SCALE_LINK = 0.5;
@@ -180,7 +179,7 @@
 		}}
 	/>
 {/each}
-{#each links as link, i}
+{#each links as _, i (i)}
 	{#if linkWidth > 0}
 		<T.Group
 			position={linkGeometry[i].center}
