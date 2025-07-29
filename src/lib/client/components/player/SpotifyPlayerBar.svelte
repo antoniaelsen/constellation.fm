@@ -9,30 +9,40 @@
 		usePlaybackSeekToPosition,
 		usePlaybackSkipNext,
 		usePlaybackSkipPrevious,
-		usePlaybackStart
+		usePlaybackStart,
+		usePlaybackVolume
 	} from '$lib/client/api/spotify';
 	import { toPlaybackTrack } from '$lib/client/stores/player';
 	import { type Device, TrackLoop, TrackOrder, type PlaybackTrackInfo } from '$lib/types/music';
 
 	import DeviceMenu from './DeviceMenu.svelte';
 	import PlayerBar from './PlayerBar.svelte';
+	import VolumeControl from '../VolumeControl.svelte';
 
 	const PLAYER_NAME = 'constellation.fm';
 
 	interface PlayerState {
 		contextUri: string | null;
 		currentTrack: PlaybackTrackInfo | null;
-		deviceId: string | null;
-		deviceIdLocal: string | null;
 		durationMs: number | null;
-		progressMs: number | null;
 		isPlaying: boolean;
+		localDeviceId: string | null;
 		order: TrackOrder;
+		progressMs: number | null;
 		repeatMode: TrackLoop;
+		currentDevice: {
+			id: string | null;
+			isRestricted: boolean;
+			isVolumeSupported: boolean;
+			volume: number;
+		} | null;
 	}
 
 	type PlayerStateUpdate =
-		| Omit<PlayerState, 'currentTrack'>
+		| Omit<PlayerState, 'currentTrack' | 'currentDevice'>
+		| {
+				currentDevice: Partial<PlayerState['currentDevice']> | null;
+		  }
 		| {
 				window?: {
 					current: PlaybackTrackInfo | null;
@@ -51,20 +61,23 @@
 
 	let { className, devices, playerState, onDeviceSelect, onPlayerStateChange, ...rest }: Props =
 		$props();
-	let isLocal = $derived(playerState.deviceIdLocal === playerState.deviceId);
+	let isLocal = $derived(playerState.localDeviceId === playerState.currentDevice?.id);
 
 	let mPause = usePlaybackPause();
 	let mStart = usePlaybackStart();
 	let mSeekToPosition = usePlaybackSeekToPosition();
 	let mSkipNext = usePlaybackSkipNext();
 	let mSkipPrevious = usePlaybackSkipPrevious();
+	let mSetVolume = usePlaybackVolume();
 
 	let contextUri = $derived(playerState.contextUri);
-	let deviceId = $derived(playerState.deviceId);
+	let deviceId = $derived(playerState.currentDevice?.id);
 	let progressMs = $derived(playerState.progressMs);
 	let isPlaying = $derived(playerState.isPlaying);
+	let isVolumeSupported = $derived(playerState.currentDevice?.isVolumeSupported);
 	let order = $derived(playerState.order);
 	let repeatMode = $derived(playerState.repeatMode);
+	let volume = $derived(playerState.currentDevice?.volume ?? 0);
 
 	let session = $derived($page.data.session);
 	let spotifyPlaybackApi = $derived(session?.spotify?.playbackApi);
@@ -161,6 +174,21 @@
 		});
 	};
 
+	const onVolumeChange = (newVolume: number) => {
+		if (!isLocal && deviceId) {
+			$mSetVolume.mutate({ volume: newVolume, deviceId });
+		} else if (player) {
+			player.setVolume(newVolume / 100);
+		}
+
+		onPlayerStateChange({
+			currentDevice: {
+				...playerState.currentDevice,
+				volume: newVolume
+			}
+		});
+	};
+
 	const clearPositionInterval = () => {
 		if (positionInterval) {
 			clearInterval(positionInterval);
@@ -229,7 +257,7 @@
 				console.log('Spotify Web Player - Ready with Device ID', device_id);
 				invalidatePlayerDevices();
 				onPlayerStateChange({
-					deviceIdLocal: device_id
+					localDeviceId: device_id
 				});
 			});
 
@@ -237,7 +265,7 @@
 				console.log('Spotify Web Player - No longer ready with Device ID', device_id);
 				invalidatePlayerDevices();
 				onPlayerStateChange({
-					deviceIdLocal: null
+					localDeviceId: null
 				});
 			});
 
@@ -283,5 +311,6 @@
 >
 	{#snippet right()}
 		<DeviceMenu {devices} {onDeviceSelect} />
+		<VolumeControl isDisabled={!isVolumeSupported} {volume} {onVolumeChange} />
 	{/snippet}
 </PlayerBar>

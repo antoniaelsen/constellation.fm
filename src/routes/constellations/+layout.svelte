@@ -30,22 +30,36 @@
 	};
 
 	const onPlayerStateChange = (update: {
-		deviceIdLocal?: string | null;
-		deviceId?: string | null;
+		localDeviceId?: string | null;
 		isPlaying?: boolean;
 		repeatMode?: TrackLoop;
 		order?: TrackOrder;
 		durationMs?: number | null;
 		progressMs?: number | null;
+		currentDevice?: {
+			id?: string | null;
+			isRestricted?: boolean;
+			isVolumeSupported?: boolean;
+			volume?: number;
+		} | null;
 		window?: {
 			current: PlaybackTrackInfo | null;
 			next: PlaybackTrackInfo | null;
 			previous: PlaybackTrackInfo | null;
 		};
 	}) => {
+		let currentDevice = null;
+		if (!!update.currentDevice || !!$playerState.currentDevice) {
+			currentDevice = {
+				...$playerState.currentDevice,
+				...update.currentDevice
+			};
+		}
+
 		$playerState = {
 			...$playerState,
 			...update,
+			currentDevice: currentDevice as any,
 			window: {
 				...$playerState.window,
 				...update.window
@@ -76,13 +90,13 @@
 	let stateSlice = $derived({
 		contextUri: $playerState.contextUri,
 		currentTrack: $playerState.window.current,
-		deviceId: $playerState.deviceId,
-		deviceIdLocal: $playerState.deviceIdLocal,
+		localDeviceId: $playerState.localDeviceId,
 		durationMs: $playerState.durationMs,
 		isPlaying: $playerState.isPlaying,
 		order: $playerState.order,
 		progressMs: $playerState.progressMs,
-		repeatMode: $playerState.repeatMode
+		repeatMode: $playerState.repeatMode,
+		currentDevice: $playerState.currentDevice
 	});
 
 	let handleDeviceSelect = (device: Device) => {

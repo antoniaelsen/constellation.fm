@@ -249,6 +249,25 @@ export const playbackStart = async (
 	}
 };
 
+export const playbackSetVolume = async (
+	tokens: AccessToken,
+	volume: number,
+	deviceId: string
+): Promise<void> => {
+	const sdk = SpotifyApi.withAccessToken(
+		process.env.SPOTIFY_CLIENT_ID!,
+		tokens,
+		createSpotifyOptions(tokens)
+	);
+
+	try {
+		return await sdk.player.setPlaybackVolume(volume, deviceId);
+	} catch (err) {
+		const spotifyErr = err as SpotifyError;
+		throw error(spotifyErr.cause?.code ?? 500, `Failed to set volume: ${spotifyErr}`);
+	}
+};
+
 export const playbackSeekToPosition = async (
 	tokens: AccessToken,
 	positionMs: number,

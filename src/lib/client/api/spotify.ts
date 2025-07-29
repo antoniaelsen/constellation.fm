@@ -21,6 +21,7 @@ export const getAvailableDevices = async () => {
 		return res.json();
 	});
 };
+
 export const getPlaybackState = async () => {
 	return apiFetch(`/api/spotify/me/player`).then(async (res) => {
 		if (!res.ok) {
@@ -149,6 +150,20 @@ export const playbackSkipPrevious = async (deviceId: string) => {
 	});
 };
 
+export const playbackSetVolume = async (volume: number, deviceId: string) => {
+	return apiFetch(`/api/spotify/me/player/volume`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ volume, deviceId })
+	}).then((res) => {
+		if (!res.ok) {
+			throw new Error(`Failed to set volume: ${res.statusText}`);
+		}
+	});
+};
+
 export const playbackTransfer = async (deviceId: string) => {
 	return apiFetch(`/api/spotify/me/player`, {
 		method: 'PUT',
@@ -185,7 +200,10 @@ export const useInvalidatePlayerDevices = () => {
 export const useAvailableDevices = (opts: QueryObserverOptions<Device[]>) => {
 	return useQuery(
 		['me/player/devices'],
-		() => getAvailableDevices().then((devices) => devices.map(toDevice)),
+		() =>
+			getAvailableDevices().then((devices) => {
+				return devices.map(toDevice);
+			}),
 		opts
 	);
 };
@@ -288,13 +306,35 @@ export const usePlaylists = (params: { limit: number; offset: number }) => {
 	return useQuery(['me/playlists', params], () => getPlaylists(params));
 };
 
+export const usePlaybackVolume = (
+	opts?: UseMutationOptions<void, unknown, { volume: number; deviceId: string }, unknown>
+) => {
+	const queryClient = useQueryClient();
+
+	return useMutation(
+		['me/player/volume'],
+		(params: { volume: number; deviceId: string }) =>
+			playbackSetVolume(params.volume, params.deviceId),
+		{
+			...opts,
+			onSuccess: (data, variables, context) => {
+				queryClient.invalidateQueries(['me/player']);
+				opts?.onSuccess?.(data, variables, context);
+			}
+		}
+	);
+};
+
 export const useTransferPlayback = (opts?: UseMutationOptions<void, unknown, string, unknown>) => {
 	const queryClient = useQueryClient();
 
 	return useMutation(['me/player'], (deviceId: string) => playbackTransfer(deviceId), {
 		...opts,
 		onSuccess: (data, variables, context) => {
-			queryClient.invalidateQueries(['me/player/devices']);
+			setTimeout(() => {
+				queryClient.invalidateQueries(['me/player']);
+				queryClient.invalidateQueries(['me/player/devices']);
+			}, 500);
 			opts?.onSuccess?.(data, variables, context);
 		}
 	});

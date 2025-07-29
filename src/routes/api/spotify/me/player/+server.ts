@@ -12,7 +12,7 @@ export async function GET({ locals }) {
 }
 
 export async function PUT({ locals, request }) {
-	const { deviceId, play = false } = await request.json();
+	const { deviceId, play = true } = await request.json();
 	if (!deviceId) {
 		return new Response(JSON.stringify({ error: 'Device IDs are required' }), {
 			status: 400

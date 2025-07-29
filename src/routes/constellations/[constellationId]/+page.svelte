@@ -68,8 +68,8 @@
 	let selectedNodeIds = $state<string[]>([]);
 
 	const onStarButtonClick = async (star: Star) => {
-		const { deviceId } = $playerState;
-		if (!deviceId) {
+		const { currentDevice } = $playerState;
+		if (!currentDevice?.id) {
 			return;
 		}
 
@@ -80,7 +80,7 @@
 
 		const position = star.providerOrder;
 
-		await playbackStart(deviceId, uri, { position }, 0);
+		await playbackStart(currentDevice.id, 0, uri, { position });
 	};
 
 	const onStarClick = (star: Star, event: IntersectionEvent) => {

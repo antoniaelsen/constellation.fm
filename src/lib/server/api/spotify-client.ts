@@ -110,6 +110,8 @@ export class ResponseDeserializer extends DefaultResponseDeserializer {
 	public async deserialize<TReturnType>(response: Response): Promise<TReturnType> {
 		const text = await response.text();
 
+		// The spotify Web API returns text for some endpoints that the SDK would otherwise try to parse as JSON.
+		// This is a workaround to prevent the SDK from throwing an error.
 		const BLACKLIST_PARSE = [
 			'https://api.spotify.com/v1/me/player/repeat',
 			'https://api.spotify.com/v1/me/player/seek',
@@ -117,7 +119,8 @@ export class ResponseDeserializer extends DefaultResponseDeserializer {
 			'https://api.spotify.com/v1/me/player/next',
 			'https://api.spotify.com/v1/me/player/pause',
 			'https://api.spotify.com/v1/me/player/play',
-			'https://api.spotify.com/v1/me/player/previous'
+			'https://api.spotify.com/v1/me/player/previous',
+			'https://api.spotify.com/v1/me/player/volume'
 		];
 		const blacklisted = BLACKLIST_PARSE.some((url) => response.url.startsWith(url));
 

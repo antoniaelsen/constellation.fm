@@ -5,6 +5,7 @@
 
 	import DeviceMenu from '$lib/client/components/player/DeviceMenu.svelte';
 	import PlayerBar, { type Props } from '$lib/client/components/player/PlayerBar.svelte';
+	import VolumeControl from '$lib/client/components/VolumeControl.svelte';
 	import { Provider, TrackLoop, TrackOrder } from '$lib/types/music';
 	import { MOCK_DEVICES } from './mocks/devices';
 
@@ -171,6 +172,7 @@
 		>
 			{#snippet right()}
 				<DeviceMenu devices={MOCK_DEVICES} onDeviceSelect={() => {}} />
+				<VolumeControl isDisabled={false} volume={50} onVolumeChange={() => {}} />
 			{/snippet}
 		</PlayerBar>
 	{/snippet}
