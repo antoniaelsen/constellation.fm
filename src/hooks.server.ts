@@ -58,8 +58,7 @@ export const handleAuthorization: Handle = async ({ event, resolve }) => {
 	const userId = session?.user?.id;
 
 	if (!userId && pathname !== '/') {
-		// TODO(antoniae): redirect to appropriate page
-		return new Response('Unauthorized', { status: 401 });
+		return Response.redirect(new URL('/', event.url), 302);
 	}
 
 	event.locals.userId = userId;
