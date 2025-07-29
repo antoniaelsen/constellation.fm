@@ -46,7 +46,7 @@
 
 		onStarButtonClick?: (star: StarType) => void;
 		onStarClick?: (star: StarType, event: IntersectionEvent) => void;
-		onEdgeRemove?: (edge: Edge) => void;
+		onEdgeRemove?: (edge: IEdge) => void;
 	}
 
 	const {
@@ -57,7 +57,6 @@
 		showNameplates,
 		onStarButtonClick,
 		onStarClick,
-		onEdgeRemove,
 
 		linkWidth = 1,
 

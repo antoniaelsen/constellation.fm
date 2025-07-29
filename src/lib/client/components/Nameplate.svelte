@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { EAlbumMetadata, EArtistMetadata } from '$lib/types/music';
-	import { Button, Card, type CardProps } from 'flowbite-svelte';
+	import { Card } from 'flowbite-svelte';
 	import TrackInfo from './TrackInfo.svelte';
 	import { PauseSolid, PlaySolid } from 'flowbite-svelte-icons';
 	import GhostButton from './GhostButton.svelte';
@@ -23,8 +23,6 @@
 	}
 
 	let hovered = $state(false);
-	let isButtonHovered = $state(false);
-	let isPointerDown = $state(false);
 
 	let {
 		name,
@@ -39,7 +37,6 @@
 		onButtonClick,
 		onPointerEnter,
 		onPointerLeave,
-		...rest
 	}: Props = $props();
 </script>
 
@@ -66,28 +63,9 @@
 				outline={true}
 				pill={true}
 				size="sm"
-				onpointerenter={(e: MouseEvent) => {
-					e.stopPropagation();
-					isButtonHovered = true;
-				}}
-				onpointerleave={(e: MouseEvent) => {
-					e.stopPropagation();
-					isPointerDown = false;
-					isButtonHovered = false;
-				}}
 				onpointerdown={(e: MouseEvent) => {
 					e.stopPropagation();
-					isPointerDown = true;
 					onButtonClick?.();
-				}}
-				onpointerup={(e: MouseEvent) => {
-					e.stopPropagation();
-					isPointerDown = false;
-				}}
-				onpointercancel={(e: MouseEvent) => {
-					e.stopPropagation();
-					isPointerDown = false;
-					isButtonHovered = false;
 				}}
 			>
 				{#if isActive}
