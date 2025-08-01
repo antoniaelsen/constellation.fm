@@ -36,7 +36,7 @@
 		onClick,
 		onButtonClick,
 		onPointerEnter,
-		onPointerLeave,
+		onPointerLeave
 	}: Props = $props();
 </script>
 
@@ -79,5 +79,5 @@
 		{/if}
 	</div>
 
-	<TrackInfo {name} {href} {artists} {album} {isLocal} />
+	<TrackInfo {name} {href} {artists} {album} />
 </Card>

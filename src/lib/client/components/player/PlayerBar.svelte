@@ -2,9 +2,10 @@
 	import { TrackLoop, TrackOrder } from '$lib/types/music';
 	import PlayerControls, { type Props as PlayerControlsProps } from './PlayerControls.svelte';
 	import TrackInfo from '../TrackInfo.svelte';
+	import type { Snippet } from 'svelte';
 
 	export interface Props extends PlayerControlsProps {
-		right?: () => void;
+		right?: Snippet;
 	}
 
 	let {
@@ -32,7 +33,6 @@
 				name={currentTrack.name}
 				artists={currentTrack.artists}
 				album={currentTrack.album}
-				isLocal={currentTrack.isLocal}
 			/>
 		{/if}
 	</div>

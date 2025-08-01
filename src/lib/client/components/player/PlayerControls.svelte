@@ -111,7 +111,7 @@
 			value={positionMs || 0}
 			class="flex-grow {!isValid ? 'opacity-50' : ''}"
 			oninput={(e: Event) => {
-				if (currentTrack && !!durationMs) {
+				if (currentTrack && !!durationMs && e.target instanceof HTMLInputElement) {
 					const newPosition = parseInt(e.target.value);
 					onSeek(newPosition);
 				}

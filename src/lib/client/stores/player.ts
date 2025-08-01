@@ -1,6 +1,12 @@
 import { writable } from 'svelte/store';
 import { type PlaybackTrackInfo, Provider, TrackLoop, TrackOrder } from '$lib/types/music';
-import type { PlaybackState, Device, Track, Artist, Image } from '@spotify/web-api-ts-sdk';
+import type {
+	PlaybackState,
+	Device,
+	Track,
+	Image,
+	SimplifiedArtist
+} from '@spotify/web-api-ts-sdk';
 
 export interface PlayerState {
 	contextUri: string | null;
@@ -35,7 +41,7 @@ export const toPlaybackTrack = (track: Track): PlaybackTrackInfo => {
 
 	return {
 		album: albumMetadata,
-		artists: artists.map((artist: Artist) => ({ name: artist.name })),
+		artists: artists.map((artist: SimplifiedArtist) => ({ name: artist.name })),
 		isLocal: is_local,
 		name,
 		provider: Provider.SPOTIFY,
@@ -70,7 +76,7 @@ export const toPlayerState = (spotifyState: PlaybackState): Omit<PlayerState, 'l
 		window: {
 			next: null,
 			previous: null,
-			current: item ? toPlaybackTrack(item) : null
+			current: item?.type === 'track' ? toPlaybackTrack(item as Track) : null
 		}
 	};
 };
